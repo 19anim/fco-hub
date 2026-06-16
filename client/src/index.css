@@ -1,0 +1,277 @@
+@import "tailwindcss";
+
+@theme {
+  /* PlayStation Brand Colors */
+  --color-brand-blue: #1d9bf0;
+  --color-brand-blue-dark: #1477c9;
+  --color-brand-orange: #d53b00;
+  --color-canvas-black: #000000;
+  --color-canvas-dark: #101010;
+  --color-surface-1: #1c1c1c;
+  --color-surface-2: #262626;
+  --color-surface-3: #333333;
+  --color-hairline-dark: #1a1a1a;
+  --color-hairline: #262626;
+
+  /* Text Colors */
+  --color-ink: #ffffff;
+  --color-ink-muted: rgba(255, 255, 255, 0.6);
+  --color-ink-subtle: rgba(255, 255, 255, 0.4);
+
+  /* Semantic Colors */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Typography */
+  --font-family-display: 'Sora', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-family-body: 'Sora', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  font-family: var(--font-family-body);
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: dark;
+  background-color: var(--color-canvas-black);
+  color: var(--color-ink);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar - PlayStation Style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-canvas-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-3);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus ring - PlayStation blue */
+*:focus-visible {
+  outline: 2px solid var(--color-brand-blue);
+  outline-offset: 2px;
+}
+
+/* Typography utilities */
+.text-display-xl {
+  font-size: 3.75rem; /* 60px */
+  font-weight: 300;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+
+.text-display-lg {
+  font-size: 2.25rem; /* 36px */
+  font-weight: 300;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.text-display-md {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.text-display-sm {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+.text-eyebrow {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.text-body-lg {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.text-body-md {
+  font-size: 1rem; /* 16px */
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.text-body-sm {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.text-caption {
+  font-size: 0.75rem; /* 12px */
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Button styles - PlayStation pill shape */
+.btn-primary {
+  background-color: var(--color-brand-blue);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease-out;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #005bb5;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-ink);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 1px solid var(--color-hairline);
+  transition: all 0.2s ease-out;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-surface-1);
+  border-color: var(--color-surface-2);
+}
+
+/* Card styles */
+.card {
+  background-color: var(--color-surface-1);
+  border: 1px solid var(--color-hairline);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease-out;
+}
+
+.card:hover {
+  border-color: var(--color-surface-2);
+  transform: translateY(-4px);
+}
+
+.surface-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    var(--color-surface-1);
+  border: 1px solid var(--color-hairline);
+  border-radius: 0.5rem;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+}
+
+.utility-tile {
+  display: block;
+  min-height: 14rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-hairline);
+  background: var(--color-surface-1);
+  padding: 1.25rem;
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.utility-tile:hover {
+  border-color: rgba(29, 155, 240, 0.55);
+  background: var(--color-surface-2);
+  transform: translateY(-2px);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Animation utilities */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Staggered animation delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+
+/* Light mode overrides */
+.light {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}

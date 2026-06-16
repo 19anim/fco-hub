@@ -1,0 +1,20 @@
+{
+  "player": {
+    "name": "Toni Kroos",
+    "season": "ICON",
+    "primaryPos": "CM",
+    "ovr": 105,
+    "price": 2500000000000,
+    "salary": 25,
+    "positions": ["CM", "CAM"],
+    "traitsDescription": [{ "name": "Thánh chuyền bóng", "description": "Tăng độ chính xác..." }],
+    "detailed": {
+      "pace": [{ "label": "Tăng tốc", "value": 90 }, { "label": "Tốc độ", "value": 92 }],
+      "shooting": [{ "label": "Dứt điểm", "value": 95 }, { "label": "Lực sút", "value": 98 }, { "label": "Sút xa", "value": 99 }, { "label": "Vô-lê", "value": 90 }, { "label": "Penalty", "value": 85 }, { "label": "Chọn vị trí", "value": 88 }],
+      "passing": [{ "label": "Tầm nhìn", "value": 105 }, { "label": "Tạt bóng", "value": 102 }, { "label": "Chuyền ngắn", "value": 108 }, { "label": "Chuyền dài", "value": 110 }, { "label": "Sút xoáy", "value": 98 }, { "label": "Đá phạt", "value": 95 }],
+      "dribbling": [{ "label": "Khéo léo", "value": 90 }, { "label": "Thăng bằng", "value": 88 }, { "label": "Phản ứng", "value": 92 }, { "label": "Giữ bóng", "value": 100 }, { "label": "Rê bóng", "value": 95 }, { "label": "Bình tĩnh", "value": 98 }],
+      "defending": [{ "label": "Cắt bóng", "value": 90 }, { "label": "Đánh đầu", "value": 85 }, { "label": "Kèm người", "value": 88 }, { "label": "Lấy bóng", "value": 90 }, { "label": "Xoạc bóng", "value": 85 }],
+      "physical": [{ "label": "Sức mạnh", "value": 85 }, { "label": "Thể lực", "value": 92 }, { "label": "Quyết đoán", "value": 88 }, { "label": "Nhảy", "value": 80 }]
+    }
+  }
+}
