@@ -50,7 +50,11 @@ app.use('/api/enrichment', enrichmentRoutes);
 app.use('/api/players', playerRoutes);
 app.use('/api/usage', usageRoutes);
 
-// Health check route
+// Health check routes
+app.get('/health', (req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
