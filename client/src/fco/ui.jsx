@@ -71,18 +71,22 @@ export function PosPill({ pos, faded }) {
 
 // ── Season Chip ────────────────────────────────────────────────────────────────
 export function SeasonChip({ code, name, full = false, img, sprite }) {
+  const [imgError, setImgError] = useState(false);
   const s = getSeason(code);
   const resolvedSprite = sprite || getSeasonSprite(code);
   const label = full ? (name || s.name || code) : (name || code || 'NG');
-  if (img || resolvedSprite) {
+
+  const showImg = img && !imgError;
+
+  if (showImg || resolvedSprite) {
     return (
       <span
         title={name || s.name || code}
         className="fco-season-chip"
         style={{ '--season-ring': s.ring, '--season-bg': s.bg }}
       >
-        {img ? (
-          <img src={img} alt={label} onError={e => { e.currentTarget.style.display = 'none'; }} />
+        {showImg ? (
+          <img src={img} alt={label} onError={() => setImgError(true)} />
         ) : (
           <span
             className="fco-season-sprite"

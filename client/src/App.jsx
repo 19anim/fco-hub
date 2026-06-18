@@ -10,6 +10,7 @@ import VideosPage from './pages/VideosPage';
 import CalculatorPage from './pages/CalculatorPage';
 import MarketPage from './pages/MarketPage';
 import SettingsPage from './pages/SettingsPage';
+import { fetchMeta } from './fco/api.js';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
@@ -18,6 +19,11 @@ export default function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('light', !darkMode);
   }, [darkMode]);
+
+  // Load global metadata (seasons, sprites, etc.) once on app start
+  useEffect(() => {
+    fetchMeta().catch(err => console.error('Failed to fetch meta:', err));
+  }, []);
 
   return (
     <BrowserRouter>

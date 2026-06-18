@@ -44,7 +44,7 @@ function formatPosChipValue(selected) {
 }
 const DEFAULT_SALARY   = 999999;
 const DEFAULT_PRICE    = 999999;
-const DEFAULT_PAGESIZE = 20;
+const DEFAULT_PAGESIZE = 12;
 
 // ── URL query-string ↔ filter helpers ────────────────────────────────────────
 // We use the REAL URL search (?...), completely separate from the hash (#/db).
