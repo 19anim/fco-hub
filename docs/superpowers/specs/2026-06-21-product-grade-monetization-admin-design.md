@@ -161,6 +161,47 @@ settings.edit
 
 Use both role and permissions. Roles are templates or broad categories; permissions enforce exact access.
 
+### Owner Bootstrap
+
+The first Owner/Admin account must be created through server-side bootstrap only. There must be no public admin registration route.
+
+Recommended first-release flow:
+
+1. Production environment defines bootstrap variables:
+
+```env
+ADMIN_BOOTSTRAP_EMAIL=owner@example.com
+ADMIN_BOOTSTRAP_PASSWORD=temporary-strong-password
+ADMIN_BOOTSTRAP_NAME=Owner
+```
+
+2. On server startup, the backend checks whether an Owner already exists:
+
+```txt
+if no AdminUser with role=owner exists:
+  create Owner from bootstrap env
+  set mustChangePassword=true
+  set status=pending_password_change
+else:
+  ignore bootstrap env completely
+```
+
+3. Owner logs into `/admin/login` with the temporary password.
+4. Owner is forced to change password.
+5. After first successful login/password change, the bootstrap password should be removed or rotated from the hosting environment.
+
+Security rules:
+
+- Do not expose `POST /api/admin/register` or any public setup route.
+- Owner creation must not happen through normal admin APIs.
+- `POST /api/admin/users` can create Manager accounts only, not Owner accounts.
+- Manager accounts cannot create Owner accounts or elevate themselves.
+- In the first product release, only Owner should be allowed to create, disable, reset password, or update permissions for Managers.
+- If an Owner already exists, server restarts must never create another Owner from env.
+- User/account actions must be audit logged.
+
+A maintenance script such as `npm run admin:create-owner` can be added later, but it must use the same invariant: it only creates an Owner when no Owner exists.
+
 ### Auth APIs
 
 ```txt
