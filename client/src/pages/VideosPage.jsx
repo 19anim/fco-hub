@@ -2,6 +2,7 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import { Play, Search, Video } from 'lucide-react';
 import YouTubeEmbed from '../components/YouTubeEmbed';
 import AdSlot from '../components/AdSlot';
+import MonetizationSlot from '../components/monetization/MonetizationSlot';
 
 const sampleVideos = [
   {
@@ -63,6 +64,8 @@ export default function VideosPage() {
       </section>
 
       <AdSlot type="leaderboard" />
+
+      <MonetizationSlot placement="videos_top" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" />
 
       <section className="grid gap-5 lg:grid-cols-2">
         {visibleVideos.map((video) => (

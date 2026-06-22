@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchPlayerDetail } from '../api.js';
+import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpers.js';
 import { PlayerAvatar, OvrBox, PosPill, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
 import * as I from '../Icons.jsx';
@@ -258,6 +259,12 @@ export default function DetailView({ id, role, watch, onToggleWatch, onBack, onS
               </div>
             </div>
           </div>
+
+          <MonetizationSlot
+            placement="player_detail_sidebar"
+            entity={{ type: 'player', id: String(p.spid) }}
+            className="space-y-3"
+          />
 
           {/* Trust (admin) */}
           {isAdmin && trust && (
