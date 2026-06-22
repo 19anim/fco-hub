@@ -12,6 +12,8 @@ import MonetizationEditPage from './pages/admin/MonetizationEditPage';
 import PlacementsPage from './pages/admin/PlacementsPage';
 import DataOpsPage from './pages/admin/DataOpsPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
+import AuditLogPage from './pages/admin/AuditLogPage';
+import SettingsPage from './pages/admin/SettingsPage';
 
 export default function App() {
   return (
@@ -39,7 +41,8 @@ export default function App() {
             <Route path="placements" element={<PlacementsPage />} />
             <Route path="data-ops" element={<DataOpsPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
-            {/* Additional routes added per phase */}
+            <Route path="audit-log" element={<AuditLogPage />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           {/* Public app — existing FcoApp handles all hash-based routing internally */}
