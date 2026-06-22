@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import AdminUser from '../models/AdminUser.js';
+import { createAuditLog } from '../services/auditLog.js';
 
 export const login = async (req, res) => {
   try {
@@ -27,6 +28,8 @@ export const login = async (req, res) => {
 
     user.lastLoginAt = new Date();
     await user.save();
+
+    await createAuditLog({ actorUserId: user._id, actorEmail: user.email, action: 'admin.login', req });
 
     req.session.adminUserId = user._id;
     req.session.adminUser = {
@@ -59,6 +62,10 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    const actor = req.session?.adminUser;
+    if (actor) {
+      await createAuditLog({ actorUserId: actor.id, actorEmail: actor.email, action: 'admin.logout', req });
+    }
     req.session.destroy((err) => {
       if (err) {
         return res.status(500).json({ success: false, message: 'Logout error' });
@@ -152,6 +159,8 @@ export const changePassword = async (req, res) => {
 
     req.session.adminUser.mustChangePassword = false;
     req.session.adminUser.status = user.status;
+
+    await createAuditLog({ actorUserId: userId, actorEmail: user.email, action: 'user.password_change', resourceType: 'AdminUser', resourceId: userId, req });
 
     res.json({ success: true, message: 'Password changed successfully' });
   } catch (error) {

@@ -10,6 +10,7 @@ import enrichmentRoutes from './routes/enrichment.routes.js';
 import playerRoutes from './routes/player.routes.js';
 import usageRoutes from './routes/usage.routes.js';
 import adminAuthRoutes from './routes/adminAuth.routes.js';
+import adminUsersRoutes from './routes/adminUsers.routes.js';
 import FCOCrawler from './services/fcoCrawler.js';
 import { syncFifaAddict } from './services/fifaAddictSource.js';
 import { syncNexonPlayers } from './services/nexonMetadata.js';
@@ -65,6 +66,7 @@ app.use(
 
 // Routes
 app.use('/api/admin/auth', adminAuthRoutes);
+app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/enrichment', enrichmentRoutes);
 app.use('/api/players', playerRoutes);
