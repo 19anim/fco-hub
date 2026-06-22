@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { adminPlacementsService } from '../../../services/adminPlacements';
+import LinkedEntityPicker from './LinkedEntityPicker';
 
 const TYPES = ['youtube_video', 'affiliate_link', 'sponsor_banner', 'ad_slot', 'custom_cta'];
 const PLATFORMS = ['youtube', 'shopee', 'tiktok_shop', 'google_ads', 'custom'];
@@ -196,6 +197,13 @@ export default function ItemForm({ data, onChange, errors = [] }) {
           </div>
         </div>
       )}
+
+      <Field label="Linked Players" note="Link players for entity-targeted placement">
+        <LinkedEntityPicker
+          linkedEntities={data.linkedEntities ?? []}
+          onChange={(v) => onChange({ ...data, linkedEntities: v })}
+        />
+      </Field>
 
       <Field label="Placements">
         <div className="rounded-lg border border-hairline bg-canvas-dark p-3 space-y-1.5 max-h-40 overflow-y-auto">

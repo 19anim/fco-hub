@@ -9,6 +9,7 @@ import AdminOverviewPage from './pages/admin/AdminOverviewPage';
 import UsersPage from './pages/admin/UsersPage';
 import MonetizationListPage from './pages/admin/MonetizationListPage';
 import MonetizationEditPage from './pages/admin/MonetizationEditPage';
+import PlacementsPage from './pages/admin/PlacementsPage';
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="monetization" element={<MonetizationListPage />} />
             <Route path="monetization/new" element={<MonetizationEditPage />} />
             <Route path="monetization/:id" element={<MonetizationEditPage />} />
+            <Route path="placements" element={<PlacementsPage />} />
             {/* Additional routes added per phase */}
           </Route>
 
