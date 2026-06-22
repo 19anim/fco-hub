@@ -20,7 +20,7 @@ function EntityOverridePanel({ entity, onChange, onRemove }) {
     <div className="rounded-lg border border-hairline bg-canvas-dark">
       <div className="flex items-center gap-3 px-3 py-2">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-ink truncate">{entity.displayLabel}</p>
+          <p className="text-sm font-medium text-ink truncate">{entity.label || entity.displayLabel || entity.entityId}</p>
           <p className="text-xs text-ink-muted">{entity.entityType} · {entity.relationType}</p>
         </div>
         <button onClick={() => setOpen(o => !o)} className="text-ink-muted hover:text-ink transition-colors">
@@ -119,16 +119,17 @@ export default function LinkedEntityPicker({ linkedEntities = [], onChange }) {
   }, [query]);
 
   const addPlayer = (player) => {
+    const entityId = String(player.entityId || player._id);
     const alreadyAdded = linkedEntities.some(
-      e => e.entityType === 'player' && e.entityId === String(player.spid)
+      e => e.entityType === 'player' && e.entityId === entityId
     );
     if (alreadyAdded) return;
     onChange([
       ...linkedEntities,
       {
         entityType: 'player',
-        entityId: String(player.spid),
-        displayLabel: `${player.name} (${player.seasonName || player.seasonId})`,
+        entityId,
+        label: `${player.name} (${player.seasonName || player.seasonId})`,
         relationType: 'primary',
       },
     ]);
@@ -163,12 +164,13 @@ export default function LinkedEntityPicker({ linkedEntities = [], onChange }) {
       {results.length > 0 && (
         <div className="rounded-lg border border-hairline bg-canvas-dark divide-y divide-hairline overflow-hidden max-h-56 overflow-y-auto">
           {results.map(player => {
+            const entityId = String(player.entityId || player._id);
             const added = linkedEntities.some(
-              e => e.entityType === 'player' && e.entityId === String(player.spid)
+              e => e.entityType === 'player' && e.entityId === entityId
             );
             return (
               <button
-                key={player.spid}
+                key={entityId}
                 disabled={added}
                 onClick={() => addPlayer(player)}
                 className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors ${added ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-2'}`}

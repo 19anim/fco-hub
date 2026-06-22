@@ -45,7 +45,7 @@ export default function SettingsPage() {
     setSaving(true);
     setResult(null);
     try {
-      await api.post('/change-password', { currentPassword: current, newPassword: next });
+      await api.post('/change-password', { currentPassword: current, newPassword: next, confirmPassword: confirm });
       setResult({ ok: true, msg: 'Password changed successfully.' });
       setCurrent(''); setNext(''); setConfirm('');
     } catch (err) {

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { adminPlacementsService } from '../../../services/adminPlacements';
 import LinkedEntityPicker from './LinkedEntityPicker';
+import { filterLivePlacements } from './livePlacements';
+import { normalizePlacementIds } from './placementIds';
+import { applyYoutubeUrl } from './youtubeContent';
 
 const TYPES = ['youtube_video', 'affiliate_link', 'sponsor_banner', 'ad_slot', 'custom_cta'];
 const PLATFORMS = ['youtube', 'shopee', 'tiktok_shop', 'google_ads', 'custom'];
@@ -58,12 +61,14 @@ export default function ItemForm({ data, onChange, errors = [] }) {
   const set = (key) => (val) => onChange({ ...data, [key]: val });
   const setContent = (key) => (val) => onChange({ ...data, content: { ...data.content, [key]: val } });
 
+  const placementIds = normalizePlacementIds(data.placementIds);
+
   const togglePlacement = (id) => {
-    const ids = data.placementIds ?? [];
-    onChange({ ...data, placementIds: ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id] });
+    onChange({ ...data, placementIds: placementIds.includes(id) ? placementIds.filter((x) => x !== id) : [...placementIds, id] });
   };
 
-  const filteredPlacements = placements.filter((p) => !data.type || p.supportedTypes?.includes(data.type));
+  const filteredPlacements = filterLivePlacements(placements)
+    .filter((p) => !data.type || p.supportedTypes?.includes(data.type));
 
   return (
     <div className="space-y-5">
@@ -137,7 +142,11 @@ export default function ItemForm({ data, onChange, errors = [] }) {
       {data.type === 'youtube_video' && (
         <>
           <Field label="YouTube URL" note="Video ID will be parsed automatically">
-            <Input value={data.content?.youtubeUrl} onChange={setContent('youtubeUrl')} placeholder="https://www.youtube.com/watch?v=..." />
+            <Input
+              value={data.content?.youtubeUrl}
+              onChange={(v) => onChange({ ...data, content: applyYoutubeUrl(data.content, v) })}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
           </Field>
           <Field label="Channel Name">
             <Input value={data.content?.channelName} onChange={setContent('channelName')} placeholder="Channel name" />
@@ -213,7 +222,7 @@ export default function ItemForm({ data, onChange, errors = [] }) {
             <label key={p._id} className="flex items-center gap-2 text-xs text-ink-muted hover:text-ink cursor-pointer">
               <input
                 type="checkbox"
-                checked={(data.placementIds ?? []).includes(p._id)}
+                checked={placementIds.includes(p._id)}
                 onChange={() => togglePlacement(p._id)}
                 className="accent-brand-blue h-3.5 w-3.5"
               />

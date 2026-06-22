@@ -1,6 +1,7 @@
 import express from 'express';
-import Player from '../models/Player.js';
+import PlayerEnrichment from '../models/PlayerEnrichment.js';
 import { adminAuth } from '../middleware/adminAuth.js';
+import { buildAdminPlayerSearchQuery, toLinkedPlayerResult } from '../services/adminPlayerSearch.js';
 
 const router = express.Router();
 router.use(adminAuth);
@@ -8,23 +9,15 @@ router.use(adminAuth);
 router.get('/players', async (req, res) => {
   try {
     const { q, season, position, limit = 20 } = req.query;
-    const filter = { isActive: true };
+    const filter = buildAdminPlayerSearchQuery({ q, season, position });
 
-    if (q) {
-      filter.$or = [
-        { name: { $regex: q, $options: 'i' } },
-        { searchName: { $regex: q, $options: 'i' } },
-      ];
-    }
-    if (season)   filter.seasonId = Number(season);
-    if (position) filter.position = position;
+    const players = await PlayerEnrichment.find(filter)
+      .select('_id sourceUid displayNameVi displayNameEn bestPosition positions overall seasonName seasonCode imageUrl')
+      .sort({ overall: -1, syncedAt: -1 })
+      .limit(Math.min(Number(limit), 50))
+      .lean();
 
-    const players = await Player.find(filter)
-      .select('spid name position overall seasonName seasonId imageUrl')
-      .sort({ overall: -1 })
-      .limit(Math.min(Number(limit), 50));
-
-    res.json({ success: true, data: { players } });
+    res.json({ success: true, data: { players: players.map(toLinkedPlayerResult) } });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Search failed', error: err.message });
   }

@@ -129,8 +129,8 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ success: false, message: 'New passwords do not match' });
     }
 
-    if (newPassword.length < 12) {
-      return res.status(400).json({ success: false, message: 'Password must be at least 12 characters' });
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
     }
 
     const user = await AdminUser.findById(userId).select('+passwordHash');

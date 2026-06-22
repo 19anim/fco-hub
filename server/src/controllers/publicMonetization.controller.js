@@ -1,6 +1,7 @@
 import MonetizationItem from '../models/MonetizationItem.js';
 import MonetizationPlacement from '../models/MonetizationPlacement.js';
 import MonetizationEvent from '../models/MonetizationEvent.js';
+import { isSafeRedirectUrl, sanitizeAffiliateLinks } from '../services/urlSafety.js';
 
 const PUBLIC_ITEM_FIELDS = 'type title description platform priority isFeatured displayStrategy content affiliateLinks startAt endAt';
 
@@ -30,6 +31,10 @@ function sanitizeItem(item, entityType, entityId) {
   if (obj.type === 'ad_slot' && obj.content?.providerConfig) {
     const { provider, slotId, size } = obj.content.providerConfig;
     obj.content = { ...obj.content, providerConfig: { provider, slotId, size } };
+  }
+
+  if (Array.isArray(obj.affiliateLinks)) {
+    obj.affiliateLinks = sanitizeAffiliateLinks(obj.affiliateLinks);
   }
 
   if (entityType && entityId) {
@@ -162,8 +167,12 @@ export const recordClick = async (req, res) => {
       $set: { 'tracking.lastClickedAt': new Date() },
     });
 
-    const targetUrl = item.content?.targetUrl || item.affiliateLinks?.[0]?.url;
+    const linkIndex = Number(req.query.linkIndex ?? -1);
+    const targetUrl = linkIndex >= 0
+      ? item.affiliateLinks?.[linkIndex]?.url
+      : item.content?.targetUrl || item.affiliateLinks?.[0]?.url;
     if (!targetUrl) return res.status(400).json({ success: false, message: 'No target URL' });
+    if (!isSafeRedirectUrl(targetUrl)) return res.status(400).json({ success: false, message: 'Unsafe target URL' });
 
     res.redirect(302, targetUrl);
   } catch (err) {

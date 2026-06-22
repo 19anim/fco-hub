@@ -28,17 +28,18 @@ export default function AffiliateCtaCard({ item, placement, entity }) {
           item.affiliateLinks.map((link, i) => (
             <a
               key={i}
-              href={link.url}
+              href={getClickUrl(item._id, placement, entity?.type, entity?.id, i)}
               target="_blank"
               rel="noopener noreferrer sponsored"
               className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-blue/80 transition-colors"
             >
-              {link.label} <ExternalLink className="h-3 w-3" />
+              {link.label || item.content?.ctaLabel || 'Xem ngay'} <ExternalLink className="h-3 w-3" />
             </a>
           ))
         ) : (
           <a
             href={clickUrl}
+            target="_blank"
             rel="noopener noreferrer sponsored"
             className="inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-blue/80 transition-colors"
           >

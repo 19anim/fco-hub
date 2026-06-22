@@ -262,7 +262,7 @@ export default function DetailView({ id, role, watch, onToggleWatch, onBack, onS
 
           <MonetizationSlot
             placement="player_detail_sidebar"
-            entity={p.spid ? { type: 'player', id: String(p.spid) } : null}
+            entity={p.id ? { type: 'player', id: String(p.id) } : null}
             className="space-y-3"
           />
 

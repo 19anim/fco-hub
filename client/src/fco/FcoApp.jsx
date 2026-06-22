@@ -8,11 +8,13 @@ import DetailView from './views/DetailView.jsx';
 import CompareView from './views/CompareView.jsx';
 import WatchlistView from './views/WatchlistView.jsx';
 import DataOpsView from './views/DataOpsView.jsx';
+import VideosView from './views/VideosView.jsx';
 import * as I from './Icons.jsx';
 
 const NAV_ITEMS = [
   { id: 'db',        label: 'Database',   icon: I.Database  },
   { id: 'events',    label: 'Sự kiện',    icon: I.Calendar  },
+  { id: 'videos',    label: 'Videos',     icon: I.Video     },
   { id: 'upgrade',   label: 'Nâng cấp',   icon: I.Zap       },
   { id: 'compare',   label: 'So sánh',    icon: I.Compare   },
   { id: 'watchlist', label: 'Theo dõi',   icon: I.Star      },
@@ -21,43 +23,78 @@ const ADMIN_ITEMS = [
   { id: 'dataops', label: 'Data Ops', icon: I.Hammer },
 ];
 
-// ── Hash router ───────────────────────────────────────────────────────────────
-// URL format:  #/<view>/<param>
-// Query string (?search=...) lives in the REAL URL search, NOT inside the hash.
-// This way parseHash never collides with filter params.
-//
-// Examples:
-//   /#/db                    → list view (filter params in ?search=messi&pos=FWD)
-//   /#/detail/abc123         → player detail
-//   /#/compare               → compare view
-//   /#/watchlist             → watchlist
-//   /#/dataops               → admin data ops
+const VIEW_PATHS = {
+  db: '/players',
+  events: '/events',
+  videos: '/videos',
+  upgrade: '/upgrade',
+  compare: '/compare',
+  watchlist: '/watchlist',
+  dataops: '/dataops',
+};
 
-function parseHash(hash = window.location.hash) {
-  // Strip leading #/ or #
-  const path = hash.replace(/^#\/?/, '').split('?')[0] || 'db';
+const LEGACY_VIEW_MAP = {
+  db: 'db',
+  detail: 'detail',
+  events: 'events',
+  videos: 'videos',
+  upgrade: 'upgrade',
+  compare: 'compare',
+  watchlist: 'watchlist',
+  dataops: 'dataops',
+};
+
+function parseLegacyHash(hash = window.location.hash) {
+  const path = hash.replace(/^#\/?/, '').split('?')[0];
   const parts = path.split('/').filter(Boolean);
-  const view  = parts[0] || 'db';
-  const param = parts.slice(1).join('/') || null;
-  return { view, param };
+  const legacyView = parts[0];
+  const view = LEGACY_VIEW_MAP[legacyView];
+
+  if (!view) return null;
+
+  if (view === 'detail') {
+    return { view: 'detail', param: parts.slice(1).join('/') || null };
+  }
+
+  return { view, param: null };
+}
+
+function parsePath(pathname = window.location.pathname, hash = window.location.hash) {
+  const legacyRoute = parseLegacyHash(hash);
+  if (legacyRoute) {
+    return { ...legacyRoute, legacyPath: routeUrl(legacyRoute.view, legacyRoute.param, { keepSearch: legacyRoute.view === 'db' }) };
+  }
+
+  const parts = pathname.split('/').filter(Boolean);
+  const first = parts[0];
+
+  if (!first) return { view: 'db', param: null, legacyPath: '/players' };
+  if (first === 'players') return { view: parts[1] ? 'detail' : 'db', param: parts.slice(1).join('/') || null, legacyPath: null };
+  if (VIEW_PATHS[first]) return { view: first, param: null, legacyPath: null };
+
+  return { view: 'db', param: null, legacyPath: '/players' };
 }
 
 function routeUrl(view, param = null, { keepSearch = false } = {}) {
-  const hash = param ? `#/${view}/${encodeURIComponent(param)}` : `#/${view}`;
   const search = keepSearch ? window.location.search : '';
-  return `${window.location.pathname}${search}${hash}`;
+
+  if (view === 'detail' && param) {
+    return `/players/${encodeURIComponent(param)}${search}`;
+  }
+
+  return `${VIEW_PATHS[view] || '/players'}${search}`;
 }
 
-function setHash(view, param = null) {
+function setPath(view, param = null) {
   const keepSearch = view === 'db';
   const next = routeUrl(view, param, { keepSearch });
-  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-  if (current !== next) {
+  const current = `${window.location.pathname}${window.location.search}`;
+  if (current !== next || window.location.hash) {
     window.history.pushState(null, '', next);
   }
 }
 
-function replaceHash(view, param = null) {
+function replacePath(view, param = null) {
   window.history.replaceState(null, '', routeUrl(view, param, { keepSearch: view === 'db' }));
 }
 
@@ -73,7 +110,7 @@ function savePersisted(s) {
 export default function FcoApp() {
   const persisted = loadPersisted();
 
-  const [route,      setRoute]      = useState(() => parseHash());
+  const [route,      setRoute]      = useState(() => parsePath());
   const [role,       setRole]       = useState(persisted.role || 'viewer');
   const [watch,      setWatch]      = useState(persisted.watch || []);
   const [compareIds, setCompareIds] = useState(persisted.compareIds || []);
@@ -81,10 +118,15 @@ export default function FcoApp() {
 
   // Listen to browser back/forward
   useEffect(() => {
-    function onPop() { setRoute(parseHash()); }
+    function onPop() { setRoute(parsePath()); }
     window.addEventListener('popstate', onPop);
-    // Set canonical initial URL if bare
-    if (!window.location.hash) replaceHash('db');
+
+    const currentRoute = parsePath();
+    if (currentRoute.legacyPath) {
+      replacePath(currentRoute.view, currentRoute.param);
+      setRoute(parsePath());
+    }
+
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
@@ -101,8 +143,8 @@ export default function FcoApp() {
   function showToast(msg, variant = 'info') { setToast({ msg, variant }); }
 
   function navigate(view, param = null) {
-    setHash(view, param);
-    setRoute({ view, param });
+    setPath(view, param);
+    setRoute(parsePath());
   }
 
   function toggleWatch(id) {
@@ -177,6 +219,9 @@ export default function FcoApp() {
         )}
         {activeView === 'events' && (
           <EventsView showToast={showToast} />
+        )}
+        {activeView === 'videos' && (
+          <VideosView />
         )}
         {activeView === 'detail' && decodedParam && (
           <DetailView

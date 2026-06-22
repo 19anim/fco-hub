@@ -13,15 +13,52 @@ async function fetchStatus() {
   return { enrichment: enr, players };
 }
 
+// Pipeline chính: 1 → 2 → 3 (theo thứ tự)
+// sync-nexon chạy độc lập để đồng bộ metadata từ Nexon
+// Các luồng cũ (discover-hybrid, sync-full, sync, resync) đã bị ẩn
 const ACTIONS = [
-  { key: 'scrape-seasons',    label: 'Scrape Seasons',          path: '/enrichment/fifaaddict/scrape-seasons',    body: { headless: true },                                         confirm: false },
-  { key: 'discover-hybrid',   label: 'Discover Hybrid',         path: '/enrichment/fifaaddict/discover-hybrid',   body: {},                                                         confirm: true },
-  { key: 'discover-by-season',label: 'Discover by Season',      path: '/enrichment/fifaaddict/discover-by-season',body: { maxRoundsPerSeason: 50, delayMs: 500 },                    confirm: true },
-  { key: 'sync-full',         label: 'FIFAAddict Full Sync',    path: '/enrichment/fifaaddict/sync-full',         body: {},                                                         confirm: true },
-  { key: 'sync',              label: 'FIFAAddict Incremental',  path: '/enrichment/fifaaddict/sync',              body: {},                                                         confirm: false },
-  { key: 'resync',            label: 'Resync Failed',           path: '/enrichment/fifaaddict/resync',            body: {},                                                         confirm: false },
-  { key: 'bulk-detail',       label: 'Bulk Detail Hydrate',     path: '/enrichment/fifaaddict/bulk-detail',       body: { batchSize: 50, delayMs: 500, limit: 0 },                   confirm: true },
-  { key: 'sync-nexon',        label: 'Sync Nexon Metadata',     path: '/players/sync-nexon',                      body: { limit: 90000 },                                           confirm: true },
+  {
+    step: 1,
+    key: 'scrape-seasons',
+    label: 'Scrape Seasons',
+    desc: 'Cập nhật danh sách mùa thẻ và sprite icon từ FIFAAddict',
+    path: '/enrichment/fifaaddict/scrape-seasons',
+    body: { headless: true },
+    confirm: false,
+  },
+  {
+    step: 2,
+    key: 'discover-by-season',
+    label: 'Discover by Season',
+    desc: 'Crawl danh sách cầu thủ theo từng mùa, upsert PlayerEnrichment cơ bản',
+    path: '/enrichment/fifaaddict/discover-by-season',
+    body: { maxRoundsPerSeason: 50, delayMs: 500 },
+    confirm: true,
+  },
+  {
+    step: 3,
+    key: 'bulk-detail',
+    label: 'Bulk Detail Hydrate',
+    desc: 'Fetch chi tiết stats, traits, workrate cho các record còn thiếu',
+    path: '/enrichment/fifaaddict/bulk-detail',
+    body: { batchSize: 50, delayMs: 500, limit: 0 },
+    confirm: true,
+  },
+  {
+    step: null,
+    key: 'sync-nexon',
+    label: 'Sync Nexon Metadata',
+    desc: 'Đồng bộ danh sách cầu thủ từ Nexon (chạy độc lập)',
+    path: '/players/sync-nexon',
+    body: { limit: 90000 },
+    confirm: true,
+  },
+
+  // --- Luồng cũ, không dùng nữa ---
+  // { key: 'discover-hybrid',  label: 'Discover Hybrid',        path: '/enrichment/fifaaddict/discover-hybrid',  body: {} },
+  // { key: 'sync-full',        label: 'FIFAAddict Full Sync',   path: '/enrichment/fifaaddict/sync-full',        body: {} },
+  // { key: 'sync',             label: 'FIFAAddict Incremental', path: '/enrichment/fifaaddict/sync',             body: {} },
+  // { key: 'resync',           label: 'Resync Failed',          path: '/enrichment/fifaaddict/resync',           body: {} },
 ];
 
 function StatCard({ label, value }) {
@@ -130,25 +167,57 @@ export default function DataOpsPage() {
         </div>
       )}
 
-      {/* Actions */}
-      <div className="rounded-xl border border-hairline bg-surface-1 divide-y divide-hairline overflow-hidden">
-        <div className="px-5 py-3 text-xs font-semibold text-ink-muted uppercase tracking-wider">Actions</div>
-        {ACTIONS.map(action => (
-          <div key={action.key} className="flex items-center gap-4 px-5 py-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-ink">{action.label}</p>
-              <p className="text-xs text-ink-subtle">{action.path}</p>
-            </div>
-            <button
-              onClick={() => runAction(action)}
-              disabled={!!busy[action.key]}
-              className="flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-2 px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-3 transition-colors disabled:opacity-50 disabled:cursor-wait"
-            >
-              <Play className="h-3 w-3" />
-              {busy[action.key] ? 'Running...' : 'Run'}
-            </button>
+      {/* Pipeline Actions */}
+      <div className="space-y-4">
+        <div>
+          <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-2">Pipeline chính (chạy theo thứ tự)</p>
+          <div className="rounded-xl border border-hairline bg-surface-1 divide-y divide-hairline overflow-hidden">
+            {ACTIONS.filter(a => a.step !== null).map(action => (
+              <div key={action.key} className="flex items-center gap-4 px-5 py-4">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brand-blue/40 bg-brand-blue/10 text-sm font-bold text-brand-blue">
+                  {action.step}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-ink">{action.label}</p>
+                  <p className="text-xs text-ink-muted mt-0.5">{action.desc}</p>
+                </div>
+                <button
+                  onClick={() => runAction(action)}
+                  disabled={!!busy[action.key]}
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-hairline bg-surface-2 px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-3 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                >
+                  <Play className="h-3 w-3" />
+                  {busy[action.key] ? 'Running...' : 'Run'}
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-2">Chạy độc lập</p>
+          <div className="rounded-xl border border-hairline bg-surface-1 divide-y divide-hairline overflow-hidden">
+            {ACTIONS.filter(a => a.step === null).map(action => (
+              <div key={action.key} className="flex items-center gap-4 px-5 py-4">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface-2">
+                  <Database className="h-4 w-4 text-ink-muted" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-ink">{action.label}</p>
+                  <p className="text-xs text-ink-muted mt-0.5">{action.desc}</p>
+                </div>
+                <button
+                  onClick={() => runAction(action)}
+                  disabled={!!busy[action.key]}
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-hairline bg-surface-2 px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-3 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                >
+                  <Play className="h-3 w-3" />
+                  {busy[action.key] ? 'Running...' : 'Run'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Activity log */}

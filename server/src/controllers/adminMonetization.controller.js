@@ -1,6 +1,7 @@
 import MonetizationItem from '../models/MonetizationItem.js';
 import { validateMonetizationItem } from '../services/monetizationValidator.js';
 import { createAuditLog } from '../services/auditLog.js';
+import { normalizeYoutubeContent } from '../services/youtubeContent.js';
 
 export const listItems = async (req, res) => {
   try {
@@ -48,9 +49,8 @@ export const createItem = async (req, res) => {
     const { valid, errors } = validateMonetizationItem(req.body);
     if (!valid) return res.status(400).json({ success: false, message: 'Validation failed', errors });
 
-    if (req.body.type === 'youtube_video' && req.body.content?.youtubeUrl && !req.body.content?.youtubeVideoId) {
-      const match = req.body.content.youtubeUrl.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-      if (match) req.body.content.youtubeVideoId = match[1];
+    if (req.body.type === 'youtube_video') {
+      req.body.content = normalizeYoutubeContent(req.body.content);
     }
 
     const item = await MonetizationItem.create({ ...req.body, createdBy: actor.id, status: 'draft' });
@@ -81,10 +81,12 @@ export const updateItem = async (req, res) => {
       if (req.body[field] !== undefined) item[field] = req.body[field];
     }
 
-    if (item.type === 'youtube_video' && item.content?.youtubeUrl && !item.content?.youtubeVideoId) {
-      const match = item.content.youtubeUrl.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-      if (match) item.content.youtubeVideoId = match[1];
+    if (item.type === 'youtube_video') {
+      item.content = normalizeYoutubeContent(item.content);
     }
+
+    const { valid, errors } = validateMonetizationItem(item.toObject());
+    if (!valid) return res.status(400).json({ success: false, message: 'Validation failed', errors });
 
     item.updatedBy = actor.id;
     await item.save();

@@ -1,3 +1,5 @@
+import { isSafeRedirectUrl } from './urlSafety.js';
+
 export function validateMonetizationItem(data) {
   const errors = [];
   const { type, title, placementIds, content = {} } = data;
@@ -34,6 +36,18 @@ export function validateMonetizationItem(data) {
   if (type === 'youtube_video' && content.youtubeUrl && !content.youtubeVideoId) {
     const match = content.youtubeUrl.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
     if (!match) errors.push('content.youtubeUrl does not contain a valid YouTube video ID');
+  }
+
+  if (content.targetUrl && !isSafeRedirectUrl(content.targetUrl)) {
+    errors.push('content.targetUrl must be a safe http(s) URL without credentials');
+  }
+
+  if (Array.isArray(data.affiliateLinks)) {
+    data.affiliateLinks.forEach((link, index) => {
+      if (link.url && !isSafeRedirectUrl(link.url)) {
+        errors.push(`affiliateLinks[${index}].url must be a safe http(s) URL without credentials`);
+      }
+    });
   }
 
   return { valid: errors.length === 0, errors };

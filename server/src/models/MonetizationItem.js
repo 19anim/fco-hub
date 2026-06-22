@@ -5,6 +5,11 @@ const linkedEntitySchema = new mongoose.Schema(
     entityType: { type: String, required: true },
     entityId: { type: String, required: true },
     label: { type: String },
+    relationType: { type: String, enum: ['primary', 'secondary', 'mentioned', 'comparison'], default: 'primary' },
+    priorityOverride: { type: Number },
+    featuredOverride: { type: Boolean },
+    startAtOverride: { type: Date },
+    endAtOverride: { type: Date },
     addedAt: { type: Date, default: Date.now },
   },
   { _id: false }

@@ -18,9 +18,10 @@ export function trackImpression(itemId, placementKey, entityType, entityId) {
   }).catch(() => {});
 }
 
-export function getClickUrl(itemId, placementKey, entityType, entityId) {
+export function getClickUrl(itemId, placementKey, entityType, entityId, linkIndex) {
   const params = new URLSearchParams({ placement: placementKey, sessionId: getSessionId() });
   if (entityType) params.set('entityType', entityType);
   if (entityId)   params.set('entityId', entityId);
+  if (linkIndex != null) params.set('linkIndex', String(linkIndex));
   return `${API_BASE}/monetization/click/${itemId}?${params}`;
 }
