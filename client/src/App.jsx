@@ -7,6 +7,8 @@ import LoginPage from './pages/admin/LoginPage';
 import ChangePasswordPage from './pages/admin/ChangePasswordPage';
 import AdminOverviewPage from './pages/admin/AdminOverviewPage';
 import UsersPage from './pages/admin/UsersPage';
+import MonetizationListPage from './pages/admin/MonetizationListPage';
+import MonetizationEditPage from './pages/admin/MonetizationEditPage';
 
 export default function App() {
   return (
@@ -28,6 +30,9 @@ export default function App() {
           >
             <Route index element={<AdminOverviewPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="monetization" element={<MonetizationListPage />} />
+            <Route path="monetization/new" element={<MonetizationEditPage />} />
+            <Route path="monetization/:id" element={<MonetizationEditPage />} />
             {/* Additional routes added per phase */}
           </Route>
 

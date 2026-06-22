@@ -11,10 +11,13 @@ import playerRoutes from './routes/player.routes.js';
 import usageRoutes from './routes/usage.routes.js';
 import adminAuthRoutes from './routes/adminAuth.routes.js';
 import adminUsersRoutes from './routes/adminUsers.routes.js';
+import adminMonetizationRoutes from './routes/adminMonetization.routes.js';
+import adminPlacementsRoutes from './routes/adminPlacements.routes.js';
 import FCOCrawler from './services/fcoCrawler.js';
 import { syncFifaAddict } from './services/fifaAddictSource.js';
 import { syncNexonPlayers } from './services/nexonMetadata.js';
 import { bootstrapOwner } from './services/adminBootstrap.js';
+import { seedPlacements } from './services/seedPlacements.js';
 import Event from './models/Event.js';
 
 // Load environment variables
@@ -26,6 +29,7 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 bootstrapOwner();
+seedPlacements();
 
 // Middleware
 const allowedOrigins = new Set([
@@ -67,6 +71,8 @@ app.use(
 // Routes
 app.use('/api/admin/auth', adminAuthRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
+app.use('/api/admin/monetization', adminMonetizationRoutes);
+app.use('/api/admin/placements', adminPlacementsRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/enrichment', enrichmentRoutes);
 app.use('/api/players', playerRoutes);
