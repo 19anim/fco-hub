@@ -4,7 +4,7 @@ import LinkedEntityPicker from './LinkedEntityPicker';
 
 const TYPES = ['youtube_video', 'affiliate_link', 'sponsor_banner', 'ad_slot', 'custom_cta'];
 const PLATFORMS = ['youtube', 'shopee', 'tiktok_shop', 'google_ads', 'custom'];
-const STATUSES = ['draft', 'scheduled', 'disabled'];
+const STATUSES = ['draft', 'published', 'scheduled', 'disabled'];
 
 function Field({ label, children, note }) {
   return (
