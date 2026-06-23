@@ -105,8 +105,7 @@ function filtersToQS(f) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function DatabaseView({ role, watch, onToggleWatch, onSelect }) {
-  const isAdmin = role === 'admin';
+export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }) {
 
   // Init from URL query string
   const init = filtersFromQS();
@@ -462,7 +461,7 @@ export default function DatabaseView({ role, watch, onToggleWatch, onSelect }) {
               <PlayerRow
                 key={p.id}
                 player={p}
-                role={role}
+                isAdmin={isAdmin}
                 watched={watch.includes(p.id)}
                 onToggleWatch={() => onToggleWatch(p.id)}
                 onClick={() => onSelect(p.id)}
@@ -507,8 +506,7 @@ export default function DatabaseView({ role, watch, onToggleWatch, onSelect }) {
 }
 
 // ── Player row ────────────────────────────────────────────────────────────────
-function PlayerRow({ player: p, role, watched, onToggleWatch, onClick }) {
-  const isAdmin = role === 'admin';
+function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
   if (!p || !p.name) return null; // Safety check for malformed data
   return (
     <div className="fco-row" tabIndex={0} role="button"

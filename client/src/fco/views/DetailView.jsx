@@ -23,8 +23,7 @@ const GK_STAT_GROUPS = [
   { key: 'positioning', label: 'Chọn vị trí', en: 'Positioning' },
 ];
 
-export default function DetailView({ id, role, watch, onToggleWatch, onBack, onSelect, onCompare }) {
-  const isAdmin = role === 'admin';
+export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, onSelect, onCompare }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

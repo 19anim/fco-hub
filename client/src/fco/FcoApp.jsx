@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAdminAuth } from '../contexts/AdminAuthContext';
 import './fco.css';
 import { LS_KEY } from './constants.js';
 import DatabaseView from './views/DatabaseView.jsx';
@@ -109,9 +110,10 @@ function savePersisted(s) {
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function FcoApp() {
   const persisted = loadPersisted();
+  const { user } = useAdminAuth();
+  const isAdmin = !!user;
 
   const [route,      setRoute]      = useState(() => parsePath());
-  const [role,       setRole]       = useState(persisted.role || 'viewer');
   const [watch,      setWatch]      = useState(persisted.watch || []);
   const [compareIds, setCompareIds] = useState(persisted.compareIds || []);
   const [toast,      setToast]      = useState(null);
@@ -130,8 +132,8 @@ export default function FcoApp() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  // Persist role/watch/compare
-  useEffect(() => { savePersisted({ role, watch, compareIds }); }, [role, watch, compareIds]);
+  // Persist watch/compare
+  useEffect(() => { savePersisted({ watch, compareIds }); }, [watch, compareIds]);
 
   // Toast auto-dismiss
   useEffect(() => {
@@ -174,7 +176,7 @@ export default function FcoApp() {
   // Decode param in case it was encoded
   const decodedParam = param ? decodeURIComponent(param) : null;
   const activeView = (view === 'detail' && decodedParam) ? 'detail' : (view || 'db');
-  const navItems = role === 'admin' ? [...NAV_ITEMS, ...ADMIN_ITEMS] : NAV_ITEMS;
+  const navItems = isAdmin ? [...NAV_ITEMS, ...ADMIN_ITEMS] : NAV_ITEMS;
 
   return (
     <div className="fco-app">
@@ -201,21 +203,11 @@ export default function FcoApp() {
           ))}
         </div>
 
-        <div className="fco-nav-right">
-          <div className="fco-role">
-            <button className={`fco-role-btn${role === 'viewer' ? ' on' : ''}`} onClick={() => setRole('viewer')}>
-              <I.Eye size={13} />Viewer
-            </button>
-            <button className={`fco-role-btn${role === 'admin' ? ' on admin' : ''}`} onClick={() => setRole('admin')}>
-              <I.ShieldCheck size={13} />Admin
-            </button>
-          </div>
-        </div>
       </nav>
 
       <main className="fco-main">
         {activeView === 'db' && (
-          <DatabaseView role={role} watch={watch} onToggleWatch={toggleWatch} onSelect={selectPlayer} />
+          <DatabaseView isAdmin={isAdmin} watch={watch} onToggleWatch={toggleWatch} onSelect={selectPlayer} />
         )}
         {activeView === 'events' && (
           <EventsView showToast={showToast} />
@@ -226,7 +218,7 @@ export default function FcoApp() {
         {activeView === 'detail' && decodedParam && (
           <DetailView
             id={decodedParam}
-            role={role}
+            isAdmin={isAdmin}
             watch={watch}
             onToggleWatch={toggleWatch}
             onBack={goBack}
@@ -235,7 +227,7 @@ export default function FcoApp() {
           />
         )}
         {activeView === 'compare' && (
-          <CompareView compareIds={compareIds} onUpdateCompare={setCompareIds} role={role} onSelect={selectPlayer} />
+          <CompareView compareIds={compareIds} onUpdateCompare={setCompareIds} isAdmin={isAdmin} onSelect={selectPlayer} />
         )}
         {activeView === 'watchlist' && (
           <WatchlistView watch={watch} onToggleWatch={toggleWatch} onSelect={selectPlayer} />
@@ -243,7 +235,7 @@ export default function FcoApp() {
         {activeView === 'upgrade' && (
           <UpgradeView onSelect={selectPlayer} />
         )}
-        {activeView === 'dataops' && role === 'admin' && <DataOpsView />}
+        {activeView === 'dataops' && isAdmin && <DataOpsView />}
       </main>
 
       {toast && (

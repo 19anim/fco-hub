@@ -21,7 +21,7 @@ const COMPARE_ROWS = [
   { key: 'salary',    label: 'Lương', type: 'coin' },
 ];
 
-export default function CompareView({ compareIds, onUpdateCompare, role, onSelect }) {
+export default function CompareView({ compareIds, onUpdateCompare, onSelect }) {
   const [players, setPlayers] = useState({});
   const [loading, setLoading] = useState({});
   const [pickerOpen, setPickerOpen] = useState(false);
