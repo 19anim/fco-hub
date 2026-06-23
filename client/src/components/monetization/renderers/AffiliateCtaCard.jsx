@@ -15,7 +15,11 @@ export default function AffiliateCtaCard({ item, placement, entity }) {
   const clickUrl = getClickUrl(item._id, placement, entity?.type, entity?.id);
 
   return (
-    <div className="rounded-xl border border-hairline bg-surface-1 p-4 space-y-3">
+    <div className="rounded-xl border border-hairline bg-surface-1 overflow-hidden">
+      {item.content?.imageUrl && (
+        <img src={item.content.imageUrl} alt={item.title} className="w-full object-cover max-h-48" />
+      )}
+      <div className="p-4 space-y-3">
       {item.content?.logoUrl && (
         <img src={item.content.logoUrl} alt="" className="h-8 w-auto object-contain" />
       )}
@@ -46,6 +50,7 @@ export default function AffiliateCtaCard({ item, placement, entity }) {
             {item.content?.ctaLabel || 'Xem ngay'} <ExternalLink className="h-3 w-3" />
           </a>
         )}
+      </div>
       </div>
     </div>
   );
