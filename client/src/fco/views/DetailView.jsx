@@ -3,6 +3,7 @@ import { fetchPlayerDetail } from '../api.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpers.js';
 import { PlayerAvatar, OvrBox, PosPill, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
+import { getOvrIncreaseForLevel } from '../upgradeHelpers.js';
 import * as I from '../Icons.jsx';
 
 const STAT_GROUPS = [
@@ -23,14 +24,94 @@ const GK_STAT_GROUPS = [
   { key: 'positioning', label: 'Chọn vị trí', en: 'Positioning' },
 ];
 
+const GK_GROUP = { key: 'gk', label: 'Thủ môn', en: 'Goalkeeper' };
+const DEFAULT_STAT_ORDER = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical', 'gk'];
+const POSITION_STAT_ORDER = {
+  ST: ['shooting', 'pace', 'dribbling', 'physical', 'passing', 'defending', 'gk'],
+  CF: ['shooting', 'dribbling', 'passing', 'pace', 'physical', 'defending', 'gk'],
+  LW: ['pace', 'dribbling', 'shooting', 'passing', 'physical', 'defending', 'gk'],
+  RW: ['pace', 'dribbling', 'shooting', 'passing', 'physical', 'defending', 'gk'],
+  LM: ['pace', 'passing', 'dribbling', 'shooting', 'physical', 'defending', 'gk'],
+  RM: ['pace', 'passing', 'dribbling', 'shooting', 'physical', 'defending', 'gk'],
+  CAM: ['passing', 'dribbling', 'shooting', 'pace', 'physical', 'defending', 'gk'],
+  CM: ['passing', 'dribbling', 'physical', 'defending', 'shooting', 'pace', 'gk'],
+  CDM: ['defending', 'physical', 'passing', 'pace', 'dribbling', 'shooting', 'gk'],
+  LWB: ['pace', 'defending', 'physical', 'passing', 'dribbling', 'shooting', 'gk'],
+  RWB: ['pace', 'defending', 'physical', 'passing', 'dribbling', 'shooting', 'gk'],
+  LB: ['defending', 'pace', 'physical', 'passing', 'dribbling', 'shooting', 'gk'],
+  RB: ['defending', 'pace', 'physical', 'passing', 'dribbling', 'shooting', 'gk'],
+  CB: ['defending', 'physical', 'pace', 'passing', 'dribbling', 'shooting', 'gk'],
+  GK: ['gk', 'pace', 'passing', 'physical', 'defending', 'dribbling', 'shooting'],
+};
+
+const GRADE_OPTIONS = Array.from({ length: 14 }, (_, value) => value);
+const OVR_POSITION = 'OVR';
+const GK_POSITION = 'GK';
+const OVR_STAT_KEY = 'ovr';
+const GRADE_STAT_KEYS = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical'];
+
+function getOvrBonusForGrade(grade) {
+  return grade === 0 ? -3 : getOvrIncreaseForLevel(grade);
+}
+
+function getStatBonusForGrade(grade) {
+  return Math.max(0, Number(grade) - 1);
+}
+
+function addGrade(value, grade) {
+  if (value == null) return value;
+  const number = Number(value);
+  return Number.isFinite(number) ? number + grade : value;
+}
+
+function expandPositionLabel(label) {
+  if (!label || label === OVR_POSITION) return [];
+  if (label.startsWith('L/R')) return [`L${label.slice(3)}`, `R${label.slice(3)}`];
+  return [label];
+}
+
+function getStatOrderForPosition(label) {
+  const positions = expandPositionLabel(label);
+  return POSITION_STAT_ORDER[positions[0]] || DEFAULT_STAT_ORDER;
+}
+
+function applyGradeBonus(player, grade) {
+  if (grade == null) return player;
+
+  const ovrBonus = getOvrBonusForGrade(grade);
+  const statBonus = getStatBonusForGrade(grade);
+  const detailed = player.detailed
+    ? Object.fromEntries(Object.entries(player.detailed).map(([group, value]) => [
+        group,
+        Array.isArray(value)
+          ? value.map((stat) => ({ ...stat, value: addGrade(stat.value, statBonus) }))
+          : Object.fromEntries(Object.entries(value).map(([key, statValue]) => [key, addGrade(statValue, statBonus)])),
+      ]))
+    : player.detailed;
+
+  return {
+    ...player,
+    [OVR_STAT_KEY]: addGrade(player[OVR_STAT_KEY], ovrBonus),
+    ...Object.fromEntries(GRADE_STAT_KEYS.map((key) => [key, addGrade(player[key], statBonus)])),
+    positionRatings: player.positionRatings?.map((rating) => ({ ...rating, value: addGrade(rating.value, ovrBonus) })) || [],
+    detailed,
+    boost: grade,
+    ovrBoost: ovrBonus,
+  };
+}
+
 export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, onSelect, onCompare }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [grade, setGrade] = useState(1);
+  const [activePosition, setActivePosition] = useState('');
 
   useEffect(() => {
     setLoading(true);
     setError(null);
+    setGrade(1);
+    setActivePosition('');
     fetchPlayerDetail(id)
       .then(res => { setData(res); setLoading(false); })
       .catch(e => { setError(e.message); setLoading(false); });
@@ -43,10 +124,20 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
       action={<Button variant="outline" icon={I.ArrowLeft} onClick={onBack}>Quay lại</Button>} />
   );
 
-  const { player: p, related } = data;
+  const { player, related } = data;
+  const p = applyGradeBonus(player, grade);
   const s = getSeason(p.season);
   const trust = getTrust(p.trust);
-  const isGK = p.primaryPos === 'GK';
+  const positionRatings = [{ code: OVR_POSITION, label: OVR_POSITION, value: p.ovr }, ...(p.positionRatings || [])];
+  const defaultPosition = p.positionRatings?.find((rating) => rating.recommended)?.label || OVR_POSITION;
+  const selectedPosition = activePosition || defaultPosition;
+  const activeRating = positionRatings.find((rating) => rating.label === selectedPosition);
+  const displayedOvr = activeRating?.value ?? p.ovr;
+  const selectedPositions = expandPositionLabel(selectedPosition);
+  const displayedPositions = selectedPositions.length
+    ? [...selectedPositions, ...(p.positions || []).filter((pos) => !selectedPositions.includes(pos))]
+    : p.positions;
+  const statOrder = getStatOrderForPosition(selectedPosition);
   const watched = watch.includes(p.id);
 
   return (
@@ -90,11 +181,12 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
 
         <div className="fco-detail-stats">
           <div className="fco-detail-ovr">
-            <div style={{ fontFamily: 'var(--mono)', fontWeight: 800, fontSize: 52, lineHeight: 1, color: statColor(p.ovr) }}>{p.ovr}</div>
-            <div className="fco-detail-ovr-lab">OVERALL</div>
+            <div style={{ fontFamily: 'var(--mono)', fontWeight: 800, fontSize: 52, lineHeight: 1, color: statColor(displayedOvr) }}>{displayedOvr}</div>
+            <div className="fco-detail-ovr-lab">{selectedPosition || 'OVERALL'}{p.ovrBoost > 0 ? ` (+${p.ovrBoost})` : ''}</div>
           </div>
+          <GradeSelector grade={grade} onChange={setGrade} />
           <div className="fco-detail-posrow">
-            {p.positions?.map((pos, i) => <PosPill key={pos} pos={pos} faded={i > 0} />)}
+            {displayedPositions?.map((pos, i) => <PosPill key={pos} pos={pos} faded={i > 0} />)}
           </div>
           <div className="fco-detail-money">
             {p.price > 0 && (
@@ -130,14 +222,12 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
           {/* Stats panel */}
           <div className="fco-panel">
             <div className="fco-panel-head">
-              <div className="fco-panel-title">Chỉ số</div>
+              <div className="fco-panel-title">Chỉ số {selectedPosition && <span className="fco-panel-title-sub">{selectedPosition}</span>}</div>
             </div>
             <div className="fco-panel-body">
               {p.detailed
-                ? isGK
-                  ? <GKStats gk={p.detailed.gk} />
-                  : <OutfieldStats p={p} />
-                : <MainOnlyStats p={p} isGK={isGK} />
+                ? <AllStats p={p} order={statOrder} />
+                : <MainOnlyStats p={p} order={statOrder} />
               }
             </div>
           </div>
@@ -148,15 +238,24 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
               <div className="fco-panel-head"><div className="fco-panel-title">Chỉ số theo vị trí</div></div>
               <div className="fco-panel-body">
                 <div className="fco-posrating-grid">
-                  {p.positionRatings.map((pr, i) => (
-                    <div key={i} className={`fco-posrating${pr.recommended ? ' rec' : ''}`}>
-                      <div className="fco-posrating-code">
-                        {pr.label}
-                        {pr.recommended && <I.StarFill size={9} style={{ color: '#f5c84b' }} />}
-                      </div>
-                      <div className="fco-posrating-val" style={{ color: statColor(pr.value) }}>{pr.value}</div>
-                    </div>
-                  ))}
+                  {positionRatings.map((pr, i) => {
+                    const isActive = pr.label === selectedPosition;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        className={`fco-posrating${pr.recommended ? ' rec' : ''}${isActive ? ' on' : ''}`}
+                        onClick={() => setActivePosition(pr.label)}
+                        aria-pressed={isActive}
+                      >
+                        <div className="fco-posrating-code">
+                          {pr.label}
+                          {pr.recommended && <I.StarFill size={9} style={{ color: '#f5c84b' }} />}
+                        </div>
+                        <div className="fco-posrating-val" style={{ color: statColor(pr.value) }}>{pr.value}</div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -324,6 +423,31 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   );
 }
 
+function GradeSelector({ grade, onChange }) {
+  return (
+    <div className="fco-grade-selector" aria-label="FO4 Grade">
+      <div className="fco-grade-title">
+        <span>FO4 Grade</span>
+        <strong>+{grade}</strong>
+      </div>
+      <div className="fco-grade-grid">
+        {GRADE_OPTIONS.map((value) => (
+          <button
+            key={value}
+            type="button"
+            className={`fco-grade-btn grade${value}${grade === value ? ' on' : ''}`}
+            onClick={() => onChange(value)}
+            aria-pressed={grade === value}
+            title={`Grade +${value}`}
+          >
+            +{value}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Một dòng chỉ số thành phần: tên bên trái, số bên phải (màu theo statColor).
 // Không dùng progress bar — màu text đã thể hiện mạnh/yếu.
 function AttrLine({ label, value }) {
@@ -337,53 +461,37 @@ function AttrLine({ label, value }) {
   );
 }
 
-function OutfieldStats({ p }) {
+function AllStats({ p, order }) {
+  const groups = buildStatGroups(p, order);
+
   return (
     <div className="fco-attrs-grid">
-      {STAT_GROUPS.map(g => {
-        const mainVal = p[g.key];
-        const subs = p.detailed?.[g.key] || [];
-        return (
-          <div key={g.key} className="fco-attr-group">
-            <div className="fco-attr-group-title" style={{ color: mainVal != null ? statColor(mainVal) : 'var(--text)' }}>
-              {g.label}
-              <span style={{ float: 'right' }}>{mainVal || '—'}</span>
-            </div>
-            <div className="fco-attr-lines">
-              {subs.filter(s => s.value != null).map(s => (
-                <AttrLine key={s.label} label={s.label} value={s.value} />
-              ))}
-            </div>
+      {groups.map((group) => (
+        <div key={group.key} className={`fco-attr-group${group.key === 'gk' ? ' gk' : ''}`}>
+          <div className="fco-attr-group-title" style={{ color: group.value != null ? statColor(group.value) : 'var(--text)' }}>
+            {group.label}
+            <span style={{ float: 'right' }}>{group.value ?? '—'}</span>
           </div>
-        );
-      })}
+          <div className="fco-attr-lines">
+            {group.subs.filter((stat) => stat.value != null).map((stat) => (
+              <AttrLine key={stat.label} label={stat.label} value={stat.value} />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-function GKStats({ gk }) {
-  if (!gk) return <div className="fco-muted">Chưa có dữ liệu GK.</div>;
-  return (
-    <div className="fco-attr-lines">
-      {GK_STAT_GROUPS.map(g => {
-        const v = gk[g.key];
-        if (v == null) return null;
-        return <AttrLine key={g.key} label={g.label} value={v} />;
-      })}
-    </div>
-  );
-}
-
-function MainOnlyStats({ p, isGK }) {
-  const groups = isGK ? [] : STAT_GROUPS;
-  const vals = groups.map(g => ({ ...g, value: p[g.key] })).filter(g => g.value != null);
+function MainOnlyStats({ p, order }) {
+  const vals = buildStatGroups(p, order).filter((group) => group.value != null);
   return (
     <div>
       <div className="fco-mainonly">
-        {vals.map(g => (
-          <div key={g.key} className="fco-mainonly-cell">
-            <div style={{ fontFamily: 'var(--mono)', fontWeight: 800, fontSize: 22, color: statColor(g.value) }}>{g.value}</div>
-            <div className="fco-mainonly-lab">{g.label}</div>
+        {vals.map((group) => (
+          <div key={group.key} className="fco-mainonly-cell">
+            <div style={{ fontFamily: 'var(--mono)', fontWeight: 800, fontSize: 22, color: statColor(group.value) }}>{group.value}</div>
+            <div className="fco-mainonly-lab">{group.label}</div>
           </div>
         ))}
       </div>
@@ -393,6 +501,26 @@ function MainOnlyStats({ p, isGK }) {
       </div>
     </div>
   );
+}
+
+function buildStatGroups(p, order) {
+  const byKey = Object.fromEntries(STAT_GROUPS.map((group) => [group.key, {
+    ...group,
+    value: p[group.key],
+    subs: p.detailed?.[group.key] || [],
+  }]));
+
+  const gkStats = GK_STAT_GROUPS.map((group) => ({ label: group.label, value: p.detailed?.gk?.[group.key] ?? null }));
+  const gkValues = gkStats.map((stat) => stat.value).filter((value) => value != null);
+  byKey.gk = {
+    ...GK_GROUP,
+    value: gkValues.length ? Math.round(gkValues.reduce((sum, value) => sum + value, 0) / gkValues.length) : null,
+    subs: gkStats,
+  };
+
+  return [...order, ...DEFAULT_STAT_ORDER.filter((key) => !order.includes(key))]
+    .map((key) => byKey[key])
+    .filter(Boolean);
 }
 
 function LoadingDetail() {

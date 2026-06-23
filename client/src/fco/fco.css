@@ -285,6 +285,13 @@ button { font-family: inherit; }
 .fco-money-lab { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-faint); margin-bottom: 3px; }
 .fco-money-val { font-family: var(--mono); font-weight: 800; font-size: 19px; }
 .fco-money-val .fco-bp { font-size: 11px; color: var(--text-faint); margin-left: 4px; font-weight: 600; }
+.fco-grade-selector { width: 252px; padding: 10px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border)); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015)), var(--surface-2); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+.fco-grade-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
+.fco-grade-title strong { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0; }
+.fco-grade-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.fco-grade-btn { height: 27px; border: 1px solid var(--border-soft); border-radius: 7px; background: rgba(0,0,0,.12); color: var(--text-dim); font-family: var(--mono); font-size: 11px; font-weight: 800; cursor: pointer; transition: transform .12s ease, border-color .12s ease, background .12s ease, color .12s ease; }
+.fco-grade-btn:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--text); }
+.fco-grade-btn.on { border-color: var(--accent); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 26%, transparent), color-mix(in srgb, var(--accent) 12%, transparent)); color: var(--text); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent), 0 8px 22px color-mix(in srgb, var(--accent) 16%, transparent); }
 
 .fco-banner { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 12px; }
 .fco-banner.warn { background: rgba(226,86,111,.08); border: 1px solid rgba(226,86,111,.28); color: #ff9aa9; }
@@ -297,7 +304,8 @@ button { font-family: inherit; }
 .fco-detail-left, .fco-detail-right { display: flex; flex-direction: column; gap: 16px; }
 .fco-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
 .fco-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-bottom: 1px solid var(--border-soft); }
-.fco-panel-title { font-weight: 650; font-size: 14px; }
+.fco-panel-title { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 14px; }
+.fco-panel-title-sub { padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); font-family: var(--mono); font-size: 11px; font-weight: 800; }
 .fco-panel-body { padding: 16px; }
 .fco-statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
 .fco-statgroup { }
@@ -399,9 +407,12 @@ button { font-family: inherit; }
 
 /* Chỉ số theo vị trí */
 .fco-posrating-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
-.fco-posrating { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 6px; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 10px; }
+.fco-posrating { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 6px; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 10px; color: inherit; cursor: pointer; transition: transform .12s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease; }
+.fco-posrating:hover { transform: translateY(-1px); border-color: var(--accent); background: var(--surface-3); }
 .fco-posrating.rec { border-color: rgba(245,200,75,.5); background: rgba(245,200,75,.08); }
+.fco-posrating.on { border-color: var(--accent); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 20%, transparent), rgba(255,255,255,.03)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent), 0 8px 20px rgba(0,0,0,.18); }
 .fco-posrating-code { display: flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+.fco-posrating.on .fco-posrating-code { color: var(--text); }
 .fco-posrating-val { font-family: var(--mono); font-weight: 800; font-size: 18px; line-height: 1; }
 
 /* Lịch sử thi đấu */
@@ -703,6 +714,7 @@ button { font-family: inherit; }
   .fco-detail-header { gap: 14px; }
   .fco-detail-name { font-size: 24px; }
   .fco-detail-stats { align-items: flex-start; width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+  .fco-grade-selector { width: 100%; order: 3; }
   .fco-tiles { grid-template-columns: repeat(2, 1fr); }
   .fco-relgrid { grid-template-columns: 1fr; }
   .fco-kvgrid { grid-template-columns: 1fr 1fr; }

@@ -97,7 +97,7 @@ export function normalizePlayer(raw) {
   const trust = deriveTrust(raw);
 
   // Detailed stats from merged stat map
-  const detailed = buildDetailed(statMap, primaryPos);
+  const detailed = buildDetailed(statMap);
 
   return {
     id: String(raw._id),
@@ -161,46 +161,46 @@ function deriveSeasonCode(seasonName) {
 
 const STAT_KEY_MAP = {
   // pace
-  'tốc độ': 'sprintSpeed', 'sprint speed': 'sprintSpeed',
+  'tốc độ': 'sprintSpeed', 'sprint speed': 'sprintSpeed', 'sprintspeed': 'sprintSpeed',
   'tăng tốc': 'acceleration', 'acceleration': 'acceleration',
   // shooting
   'dứt điểm': 'finishing', 'finishing': 'finishing',
-  'lực sút': 'shotPower', 'shot power': 'shotPower',
-  'sút xa': 'longShots', 'long shots': 'longShots',
+  'lực sút': 'shotPower', 'shot power': 'shotPower', 'shotpower': 'shotPower',
+  'sút xa': 'longShots', 'long shots': 'longShots', 'longshots': 'longShots',
   'vô-lê': 'volleys', 'volleys': 'volleys',
   'penalty': 'penalties', 'penalties': 'penalties',
   'chọn vị trí': 'positioning', 'positioning': 'positioning',
   // passing
-  'ch.ngắn': 'shortPassing', 'chuyền ngắn': 'shortPassing', 'short passing': 'shortPassing',
+  'ch.ngắn': 'shortPassing', 'chuyền ngắn': 'shortPassing', 'short passing': 'shortPassing', 'shortpassing': 'shortPassing',
   'tầm nhìn': 'vision', 'vision': 'vision',
   'tạt bóng': 'crossing', 'crossing': 'crossing',
-  'ch.dài': 'longPassing', 'chuyền dài': 'longPassing', 'long passing': 'longPassing',
-  'đá phạt': 'fkAccuracy', 'fk accuracy': 'fkAccuracy',
+  'ch.dài': 'longPassing', 'chuyền dài': 'longPassing', 'long passing': 'longPassing', 'longpassing': 'longPassing',
+  'đá phạt': 'fkAccuracy', 'fk accuracy': 'fkAccuracy', 'freekickaccuracy': 'fkAccuracy',
   'sút xoáy': 'curve', 'curve': 'curve',
   // dribbling
   'rê bóng': 'dribbling', 'dribbling': 'dribbling',
-  'giữ bóng': 'ballControl', 'ball control': 'ballControl',
+  'giữ bóng': 'ballControl', 'ball control': 'ballControl', 'ballcontrol': 'ballControl',
   'khéo léo': 'agility', 'agility': 'agility',
   'thăng bằng': 'balance', 'balance': 'balance',
   'phản ứng': 'reactions', 'reactions': 'reactions',
-  'bình tĩnh': 'composure', 'composure': 'composure',
+  'bình tĩnh': 'composure', 'binh tĩnh': 'composure', 'composure': 'composure',
   // defending
   'kèm người': 'defAwareness', 'marking': 'defAwareness',
-  'lấy bóng': 'standingTackle', 'tackle': 'standingTackle',
+  'lấy bóng': 'standingTackle', 'lắy bóng': 'standingTackle', 'tackle': 'standingTackle', 'standingtackle': 'standingTackle',
   'cắt bóng': 'interceptions', 'interceptions': 'interceptions',
-  'xoạc bóng': 'slidingTackle', 'sliding tackle': 'slidingTackle',
-  'đánh đầu': 'heading', 'heading': 'heading',
+  'xoạc bóng': 'slidingTackle', 'sliding tackle': 'slidingTackle', 'slidingtackle': 'slidingTackle',
+  'đánh đầu': 'heading', 'heading': 'heading', 'headingaccuracy': 'heading',
   // physical
   'sức mạnh': 'strength', 'strength': 'strength',
   'thể lực': 'stamina', 'stamina': 'stamina',
   'quyết đoán': 'aggression', 'aggression': 'aggression',
   'nhảy': 'jumping', 'jumping': 'jumping',
   // gk
-  'tm đổ người': 'diving', 'gk diving': 'diving',
-  'tm bắt bóng': 'handling', 'gk handling': 'handling',
-  'tm phát bóng': 'kicking', 'gk kicking': 'kicking',
-  'tm phản xạ': 'reflexes', 'gk reflexes': 'reflexes',
-  'tm chọn vị trí': 'gkPositioning', 'gk positioning': 'gkPositioning',
+  'tm đổ người': 'diving', 'gk diving': 'diving', 'gkdiving': 'diving',
+  'tm bắt bóng': 'handling', 'gk handling': 'handling', 'gkhandling': 'handling',
+  'tm phát bóng': 'kicking', 'gk kicking': 'kicking', 'gkkicking': 'kicking',
+  'tm phản xạ': 'reflexes', 'gk reflexes': 'reflexes', 'gkreflexes': 'reflexes',
+  'tm chọn vị trí': 'gkPositioning', 'gk positioning': 'gkPositioning', 'gkpositioning': 'gkPositioning',
 };
 
 // Build a merged stat map from all enrichment stat sources
@@ -235,24 +235,19 @@ function deriveGroupStat(statMap, group) {
   return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
 }
 
-function buildDetailed(statMap, primaryPos) {
+function buildDetailed(statMap) {
   if (!Object.keys(statMap).length) return null;
   const v = statMap;
 
-  if (primaryPos === 'GK') {
-    return {
-      gk: {
-        diving: v.diving ?? null,
-        handling: v.handling ?? null,
-        kicking: v.kicking ?? null,
-        reflexes: v.reflexes ?? null,
-        speed: v.sprintSpeed ?? v.acceleration ?? null,
-        positioning: v.gkPositioning ?? null,
-      }
-    };
-  }
-
   return {
+    gk: {
+      diving: v.diving ?? null,
+      handling: v.handling ?? null,
+      kicking: v.kicking ?? null,
+      reflexes: v.reflexes ?? null,
+      speed: v.sprintSpeed ?? v.acceleration ?? null,
+      positioning: v.gkPositioning ?? null,
+    },
     pace: [
       { label: 'Tăng tốc', value: v.acceleration ?? null },
       { label: 'Tốc độ', value: v.sprintSpeed ?? null },
