@@ -13,12 +13,17 @@ export function formatCoins(n) {
 }
 
 export function statColor(v) {
-  if (v >= 95) return '#00e08a';
-  if (v >= 90) return '#43d98b';
-  if (v >= 80) return '#9bd64b';
-  if (v >= 70) return '#f5c84b';
-  if (v >= 60) return '#ff9b4d';
-  return '#ff6b6b';
+  const value = Number(v);
+  if (!Number.isFinite(value)) return '#6b6e76';
+  if (value >= 130) return '#dc0000';
+  if (value >= 120) return '#cf13c0';
+  if (value >= 110) return '#b33bff';
+  if (value >= 100) return '#6e3bff';
+  if (value >= 90) return '#175dde';
+  if (value >= 80) return '#2194d6';
+  if (value >= 70) return '#deded8';
+  if (value >= 60) return '#9ea6b2';
+  return '#6b6e76';
 }
 
 export function initials(name) {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchPlayerDetail } from '../api.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpers.js';
-import { PlayerAvatar, OvrBox, PosPill, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
+import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
 import { getOvrIncreaseForLevel } from '../upgradeHelpers.js';
 import * as I from '../Icons.jsx';
 
@@ -138,6 +138,17 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
     ? [...selectedPositions, ...(p.positions || []).filter((pos) => !selectedPositions.includes(pos))]
     : p.positions;
   const statOrder = getStatOrderForPosition(selectedPosition);
+  const summaryGroups = getSummaryGroups(p, statOrder, selectedPosition);
+  const bioItems = [
+    p.nation,
+    p.club,
+    p.league,
+    p.age ? `${p.age} tuổi` : '',
+    p.birthDate,
+    p.height ? `${p.height}cm / ${p.weight || '—'}kg` : '',
+    p.foot === 'right' ? 'Chân phải' : p.foot === 'left' ? 'Chân trái' : '',
+    p.workRateAttack ? `Xu hướng ${p.workRateAttack}/${p.workRateDefense}` : '',
+  ].filter(Boolean);
   const watched = watch.includes(p.id);
 
   return (
@@ -159,50 +170,50 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
         </div>
       </div>
 
-      {/* Header card */}
-      <div className="fco-detail-header" style={{ '--season-ring': s.ring }}>
-        <PlayerAvatar player={p} size={88} />
-
-        <div className="fco-detail-id">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <SeasonChip code={p.season} name={p.seasonName} img={p.seasonImg} full />
-            {isAdmin && trust && <TrustBadge id={p.trust} size="sm" />}
+      <div className="fa-detail-sheet" style={{ '--season-ring': s.ring }}>
+        <div className="fa-detail-hero">
+          <div className="fa-detail-main">
+            <div className="fa-title-row">
+              <SeasonChip code={p.season} name={p.seasonName} img={p.seasonImg} full />
+              {isAdmin && trust && <TrustBadge id={p.trust} size="sm" />}
+              <span className="fa-primary-pos">{selectedPosition || p.primaryPos}</span>
+              <span className="fa-hero-ovr" style={{ color: statColor(displayedOvr) }}>{displayedOvr}</span>
+            </div>
+            <h1 className="fa-player-name">{cleanName(p.name)}</h1>
+            <div className="fa-bio-grid">
+              {bioItems.map((item) => <span key={item}>{item}</span>)}
+            </div>
+            <div className="fa-position-pills">
+              {displayedPositions?.map((pos, i) => (
+                <span key={pos} className={i > 0 ? 'muted' : ''}>{pos}</span>
+              ))}
+            </div>
+            <div className="fa-economy-row">
+              {p.price > 0 && <span><I.Coins size={12} />Giá <b>{formatCoins(p.price)}</b></span>}
+              {p.salary > 0 && <span><I.Wallet size={12} />Lương <b>{p.salary}</b></span>}
+              {p.ovrBoost > 0 && <span>OVR boost <b>+{p.ovrBoost}</b></span>}
+            </div>
           </div>
-          <div className="fco-detail-name">{cleanName(p.name)}</div>
-          <div className="fco-detail-meta">
-            {p.nation && <span>{p.nation}</span>}
-            {p.club && <><span className="fco-dotsep" /><span>{p.club}</span></>}
-            {p.league && <><span className="fco-dotsep" /><span>{p.league}</span></>}
-            {p.age && <><span className="fco-dotsep" /><span>{p.age} tuổi</span></>}
-            {p.height && <><span className="fco-dotsep" /><span>{p.height}cm</span></>}
-            {p.foot && <><span className="fco-dotsep" /><span>{p.foot === 'right' ? 'Chân phải' : 'Chân trái'}</span></>}
+
+          <div className="fa-upgrade-panel">
+            <div className="fa-upgrade-label">UPGRADE</div>
+            <GradeSelector grade={grade} onChange={setGrade} />
+          </div>
+
+          <div className="fa-player-art">
+            <PlayerAvatar player={p} size={132} />
           </div>
         </div>
 
-        <div className="fco-detail-stats">
-          <div className="fco-detail-ovr">
-            <div style={{ fontFamily: 'var(--mono)', fontWeight: 800, fontSize: 52, lineHeight: 1, color: statColor(displayedOvr) }}>{displayedOvr}</div>
-            <div className="fco-detail-ovr-lab">{selectedPosition || 'OVERALL'}{p.ovrBoost > 0 ? ` (+${p.ovrBoost})` : ''}</div>
-          </div>
-          <GradeSelector grade={grade} onChange={setGrade} />
-          <div className="fco-detail-posrow">
-            {displayedPositions?.map((pos, i) => <PosPill key={pos} pos={pos} faded={i > 0} />)}
-          </div>
-          <div className="fco-detail-money">
-            {p.price > 0 && (
-              <div className="fco-money-cell">
-                <div className="fco-money-lab"><I.Coins size={12} />Giá</div>
-                <div className="fco-money-val" style={{ color: 'var(--accent)' }}>{formatCoins(p.price)}</div>
-              </div>
-            )}
-            {p.salary > 0 && (
-              <div className="fco-money-cell">
-                <div className="fco-money-lab"><I.Wallet size={12} />Lương</div>
-                <div className="fco-money-val">{p.salary}</div>
-              </div>
-            )}
-          </div>
-        </div>
+        <SummaryStats groups={summaryGroups} />
+
+        {positionRatings.length > 1 && (
+          <PositionRatingsRow
+            ratings={positionRatings}
+            selectedPosition={selectedPosition}
+            onSelect={setActivePosition}
+          />
+        )}
       </div>
 
       {/* Korean banner */}
@@ -232,34 +243,6 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
             </div>
           </div>
 
-          {/* Chỉ số theo vị trí */}
-          {p.positionRatings?.length > 0 && (
-            <div className="fco-panel">
-              <div className="fco-panel-head"><div className="fco-panel-title">Chỉ số theo vị trí</div></div>
-              <div className="fco-panel-body">
-                <div className="fco-posrating-grid">
-                  {positionRatings.map((pr, i) => {
-                    const isActive = pr.label === selectedPosition;
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        className={`fco-posrating${pr.recommended ? ' rec' : ''}${isActive ? ' on' : ''}`}
-                        onClick={() => setActivePosition(pr.label)}
-                        aria-pressed={isActive}
-                      >
-                        <div className="fco-posrating-code">
-                          {pr.label}
-                          {pr.recommended && <I.StarFill size={9} style={{ color: '#f5c84b' }} />}
-                        </div>
-                        <div className="fco-posrating-val" style={{ color: statColor(pr.value) }}>{pr.value}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Traits */}
           {p.traitsDescription?.length > 0 ? (
@@ -423,6 +406,46 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   );
 }
 
+function SummaryStats({ groups }) {
+  return (
+    <div className="fa-summary-strip">
+      {groups.slice(0, 6).map((group) => (
+        <div key={group.key} className="fa-summary-cell">
+          <div className="fa-summary-value" style={{ color: group.value != null ? statColor(group.value) : 'var(--text-faint)' }}>
+            {group.value ?? '—'}
+          </div>
+          <div className="fa-summary-label">{group.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PositionRatingsRow({ ratings, selectedPosition, onSelect }) {
+  return (
+    <div className="fa-position-row" aria-label="Chỉ số theo vị trí">
+      {ratings.map((rating, i) => {
+        const isActive = rating.label === selectedPosition;
+        return (
+          <button
+            key={`${rating.label}-${i}`}
+            type="button"
+            className={`fa-position-rating${rating.recommended ? ' rec' : ''}${isActive ? ' on' : ''}`}
+            onClick={() => onSelect(rating.label)}
+            aria-pressed={isActive}
+          >
+            <span>
+              {rating.label}
+              {rating.recommended && <I.StarFill size={8} />}
+            </span>
+            <strong style={{ color: rating.value != null ? statColor(rating.value) : 'var(--text-faint)' }}>{rating.value ?? '—'}</strong>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function GradeSelector({ grade, onChange }) {
   return (
     <div className="fco-grade-selector" aria-label="FO4 Grade">
@@ -462,22 +485,22 @@ function AttrLine({ label, value }) {
 }
 
 function AllStats({ p, order }) {
-  const groups = buildStatGroups(p, order);
+  const groups = buildStatGroups(p, order).filter((group) => group.subs.some((stat) => stat.value != null));
 
   return (
-    <div className="fco-attrs-grid">
+    <div className="fa-attribute-grid">
       {groups.map((group) => (
-        <div key={group.key} className={`fco-attr-group${group.key === 'gk' ? ' gk' : ''}`}>
-          <div className="fco-attr-group-title" style={{ color: group.value != null ? statColor(group.value) : 'var(--text)' }}>
-            {group.label}
-            <span style={{ float: 'right' }}>{group.value ?? '—'}</span>
-          </div>
+        <section key={group.key} className={`fa-attribute-group${group.key === 'gk' ? ' gk' : ''}`}>
+          <header className="fa-attribute-group-head">
+            <span>{group.label}</span>
+            <strong style={{ color: group.value != null ? statColor(group.value) : 'var(--text-faint)' }}>{group.value ?? '—'}</strong>
+          </header>
           <div className="fco-attr-lines">
             {group.subs.filter((stat) => stat.value != null).map((stat) => (
               <AttrLine key={stat.label} label={stat.label} value={stat.value} />
             ))}
           </div>
-        </div>
+        </section>
       ))}
     </div>
   );
@@ -501,6 +524,15 @@ function MainOnlyStats({ p, order }) {
       </div>
     </div>
   );
+}
+
+function getSummaryGroups(p, order, selectedPosition) {
+  if ((selectedPosition === GK_POSITION || p.primaryPos === GK_POSITION) && p.detailed?.gk) {
+    const gkGroups = GK_STAT_GROUPS.map((group) => ({ ...group, value: p.detailed.gk[group.key] ?? null }));
+    if (gkGroups.some((group) => group.value != null)) return gkGroups;
+  }
+
+  return buildStatGroups(p, order).filter((group) => group.key !== 'gk' && group.value != null);
 }
 
 function buildStatGroups(p, order) {
