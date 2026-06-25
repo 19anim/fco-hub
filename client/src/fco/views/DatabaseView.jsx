@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { fetchPlayers, fetchMeta } from '../api.js';
 import { formatCoins, statColor, cleanName } from '../helpers.js';
 import { POS_GROUPS, SORTS, POSITIONS_META } from '../constants.js';
+import PlayerSearchForm from '../components/PlayerSearchForm.jsx';
 import {
   PlayerAvatar, OvrBox, PosPill, SeasonChip, TrustBadge,
   Button, IconButton, FilterChip, EmptyState, SkeletonRow,
@@ -86,6 +87,22 @@ function filtersFromQS() {
     sort: p.get('sort') || DEFAULT_SORT,
     page,
     pageSize,
+    league: p.get('league') || '',
+    nation: p.get('nation') || '',
+    clubSearch: p.get('club') || '',
+    preferredFoot: p.get('foot') || '',
+    weakFoot: p.get('wf') || '',
+    skillMoves: p.get('sm') || '',
+    workRateAttack: p.get('wra') || '',
+    workRateDefense: p.get('wrd') || '',
+    heightMin: p.get('hMin') || '',
+    heightMax: p.get('hMax') || '',
+    weightMin: p.get('wtMin') || '',
+    weightMax: p.get('wtMax') || '',
+    reputation: p.get('rep') || '',
+    statFilter: p.get('stat') || '',
+    statMin: p.get('statMin') || '',
+    statMax: p.get('statMax') || '',
   };
 }
 
@@ -101,6 +118,22 @@ function filtersToQS(f) {
   if (f.sort !== DEFAULT_SORT)     p.set('sort',   f.sort);
   if (f.page > 1)                  p.set('page',   f.page);
   if (f.pageSize !== DEFAULT_PAGESIZE) p.set('size', f.pageSize);
+  if (f.league) p.set('league', f.league);
+  if (f.nation) p.set('nation', f.nation);
+  if (f.clubSearch) p.set('club', f.clubSearch);
+  if (f.preferredFoot) p.set('foot', f.preferredFoot);
+  if (f.weakFoot) p.set('wf', f.weakFoot);
+  if (f.skillMoves) p.set('sm', f.skillMoves);
+  if (f.workRateAttack) p.set('wra', f.workRateAttack);
+  if (f.workRateDefense) p.set('wrd', f.workRateDefense);
+  if (f.heightMin) p.set('hMin', f.heightMin);
+  if (f.heightMax) p.set('hMax', f.heightMax);
+  if (f.weightMin) p.set('wtMin', f.weightMin);
+  if (f.weightMax) p.set('wtMax', f.weightMax);
+  if (f.reputation) p.set('rep', f.reputation);
+  if (f.statFilter) p.set('stat', f.statFilter);
+  if (f.statMin) p.set('statMin', f.statMin);
+  if (f.statMax) p.set('statMax', f.statMax);
   return p;
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,6 +148,22 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const [ovr,       setOvr]       = useState(init.ovr);
   const [salaryMax, setSalaryMax] = useState(init.salaryMax);
   const [priceMax,  setPriceMax]  = useState(init.priceMax);
+  const [league,          setLeague]          = useState(init.league || '');
+  const [nation,          setNation]          = useState(init.nation || '');
+  const [clubSearch,      setClubSearch]      = useState(init.clubSearch || '');
+  const [preferredFoot,   setPreferredFoot]   = useState(init.preferredFoot || '');
+  const [weakFoot,        setWeakFoot]        = useState(init.weakFoot || '');
+  const [skillMoves,      setSkillMoves]      = useState(init.skillMoves || '');
+  const [workRateAttack,  setWorkRateAttack]  = useState(init.workRateAttack || '');
+  const [workRateDefense, setWorkRateDefense] = useState(init.workRateDefense || '');
+  const [heightMin,       setHeightMin]       = useState(init.heightMin || '');
+  const [heightMax,       setHeightMax]       = useState(init.heightMax || '');
+  const [weightMin,       setWeightMin]       = useState(init.weightMin || '');
+  const [weightMax,       setWeightMax]       = useState(init.weightMax || '');
+  const [reputation,      setReputation]      = useState(init.reputation || '');
+  const [statFilter,      setStatFilter]      = useState(init.statFilter || '');
+  const [statMin,         setStatMin]         = useState(init.statMin || '');
+  const [statMax,         setStatMax]         = useState(init.statMax || '');
   const [sort,      setSort]      = useState(init.sort);
   const [page,      setPage]      = useState(init.page);
   const [pageSize,  setPageSize]  = useState(init.pageSize);
@@ -143,14 +192,30 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
 
   // Sync filter state → URL query string (replaceState = no history spam)
   useEffect(() => {
-    writeQS(filtersToQS({ search, posGroups, seasons, ovr, salaryMax, priceMax, sort, page, pageSize }));
-  }, [search, posGroups, seasons, ovr, salaryMax, priceMax, sort, page, pageSize]);
+    writeQS(filtersToQS({
+      search, posGroups, seasons, ovr, salaryMax, priceMax,
+      league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+      workRateAttack, workRateDefense, heightMin, heightMax,
+      weightMin, weightMax, reputation, statFilter, statMin, statMax,
+      sort, page, pageSize,
+    }));
+  }, [search, posGroups, seasons, ovr, salaryMax, priceMax,
+      league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+      workRateAttack, workRateDefense, heightMin, heightMax,
+      weightMin, weightMax, reputation, statFilter, statMin, statMax,
+      sort, page, pageSize]);
 
   // Fetch data whenever any filter changes
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetchPlayers({ search, posGroups, seasons, ovr, salaryMax, priceMax, sort, page, pageSize });
+      const res = await fetchPlayers({
+        search, posGroups, seasons, ovr, salaryMax, priceMax,
+        league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+        workRateAttack, workRateDefense, heightMin, heightMax,
+        weightMin, weightMax, reputation, statFilter, statMin, statMax,
+        sort, page, pageSize,
+      });
       setPlayers(res.players);
       setTotal(res.total);
       setTotalPages(res.totalPages);
@@ -159,7 +224,11 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     } finally {
       setLoading(false);
     }
-  }, [search, posGroups, seasons, ovr, salaryMax, priceMax, sort, page, pageSize]);
+  }, [search, posGroups, seasons, ovr, salaryMax, priceMax,
+      league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+      workRateAttack, workRateDefense, heightMin, heightMax,
+      weightMin, weightMax, reputation, statFilter, statMin, statMax,
+      sort, page, pageSize]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -177,6 +246,22 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     setOvr(DEFAULT_OVR);
     setSalaryMax(DEFAULT_SALARY);
     setPriceMax(DEFAULT_PRICE);
+    setLeague('');
+    setNation('');
+    setClubSearch('');
+    setPreferredFoot('');
+    setWeakFoot('');
+    setSkillMoves('');
+    setWorkRateAttack('');
+    setWorkRateDefense('');
+    setHeightMin('');
+    setHeightMax('');
+    setWeightMin('');
+    setWeightMax('');
+    setReputation('');
+    setStatFilter('');
+    setStatMin('');
+    setStatMax('');
     setSort(DEFAULT_SORT);
     setPage(1);
   }
@@ -216,45 +301,19 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
 
   return (
     <div className="fco-db">
-      {/* Toolbar */}
-      <div className="fco-toolbar">
-        <div className="fco-search">
-          <I.Search size={16} style={{ color: 'var(--text-faint)', flex: '0 0 16px' }} />
-          <input
-            className="fco-search-input"
-            placeholder="Tìm cầu thủ…"
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1); }}
-          />
-          {search && (
-            <button className="fco-search-clear" onClick={() => { setSearch(''); setPage(1); }}>
-              <I.X size={14} />
-            </button>
-          )}
-        </div>
+      <PlayerSearchForm
+        search={search}
+        setSearch={(val) => { setSearch(val); setPage(1); }}
+        positions={posGroups}
+        setPositions={(val) => { setPosGroups(val); setPage(1); }}
+        ovr={ovr}
+        setOvr={(val) => { setOvr(val); setPage(1); }}
+        salaryMax={salaryMax}
+        setSalaryMax={(val) => { setSalaryMax(val); setPage(1); }}
+        onReset={resetFilters}
+        onSearch={load}
+      />
 
-        {/* Sort dropdown */}
-        <FilterButton
-          anchorRef={sortRef}
-          label={SORTS.find(s => s.value === sort)?.label || 'Sắp xếp'}
-          icon={I.ArrowUpDown}
-          active={openPop === 'sort'}
-          onClick={() => setOpenPop(p => p === 'sort' ? null : 'sort')}
-        />
-        <Popover open={openPop === 'sort'} anchorRef={sortRef} onClose={() => setOpenPop(null)} width={210} align="right">
-          <div className="fco-pop-title">Sắp xếp</div>
-          {SORTS.map(s => (
-            <button key={s.value}
-              className={`fco-sortopt${sort === s.value ? ' on' : ''}`}
-              onClick={() => { setSort(s.value); setPage(1); setOpenPop(null); }}>
-              {sort === s.value && <I.Check size={13} style={{ color: 'var(--accent)', flex: '0 0 13px' }} />}
-              <span>{s.label}</span>
-            </button>
-          ))}
-        </Popover>
-
-        <IconButton icon={I.List} label={dense ? 'Bình thường' : 'Rút gọn'} active={dense} onClick={() => setDense(d => !d)} />
-      </div>
 
       {/* Filter bar */}
       <div className="fco-filterbar" style={{ gap: 12 }}>

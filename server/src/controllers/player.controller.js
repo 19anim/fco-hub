@@ -93,9 +93,20 @@ function buildEnrichmentSearchQuery(search, seasonId, filters = {}) {
     }
   }
   if (filters.trait) query.hiddenTraits = { $regex: filters.trait, $options: 'i' };
+  if (filters.league) query.league = { $regex: filters.league, $options: 'i' };
+  if (filters.nation) query.nation = { $regex: filters.nation, $options: 'i' };
+  if (filters.club) query.club = { $regex: filters.club, $options: 'i' };
+  if (filters.preferredFoot) query.preferredFoot = filters.preferredFoot;
+  if (filters.workRateAttack) query.workRateAttack = filters.workRateAttack;
+  if (filters.workRateDefense) query.workRateDefense = filters.workRateDefense;
+  if (filters.weakFoot) query.weakFoot = { $gte: Number(filters.weakFoot) };
+  if (filters.skillMoves) query.skillMoves = { $gte: Number(filters.skillMoves) };
+  if (filters.reputation) query.reputation = filters.reputation;
   addNumberRange(query, 'overall', filters.minOverall, filters.maxOverall);
   addNumberRange(query, 'price', filters.minPrice, filters.maxPrice);
   addNumberRange(query, 'salary', filters.minSalary, filters.maxSalary);
+  addNumberRange(query, 'height', filters.minHeight, filters.maxHeight);
+  addNumberRange(query, 'weight', filters.minWeight, filters.maxWeight);
   for (const field of ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical']) {
     const min = filters[`min${field[0].toUpperCase()}${field.slice(1)}`];
     const max = filters[`max${field[0].toUpperCase()}${field.slice(1)}`];
@@ -183,6 +194,19 @@ export const getPlayers = async (req, res) => {
       minSalary,
       maxSalary,
       trait,
+      league,
+      nation,
+      preferredFoot,
+      weakFoot,
+      skillMoves,
+      workRateAttack,
+      workRateDefense,
+      club,
+      reputation,
+      minHeight,
+      maxHeight,
+      minWeight,
+      maxWeight,
       minPace,
       maxPace,
       minShooting,
@@ -209,6 +233,8 @@ export const getPlayers = async (req, res) => {
       position, minOverall, maxOverall,
       minPrice, maxPrice, minSalary, maxSalary,
       trait,
+      league, nation, club, preferredFoot, weakFoot, skillMoves, workRateAttack, workRateDefense,
+      reputation, minHeight, maxHeight, minWeight, maxWeight,
       minPace, maxPace, minShooting, maxShooting,
       minPassing, maxPassing, minDribbling, maxDribbling,
       minDefending, maxDefending, minPhysical, maxPhysical,

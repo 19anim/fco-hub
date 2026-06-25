@@ -6,7 +6,13 @@ import { API_BASE } from '../config/api.js';
 const BASE = API_BASE;
 
 export async function fetchPlayers(params = {}) {
-  const { search, posGroups, seasons, ovr, salaryMax, priceMax, traits, leagues, sort, page, pageSize } = params;
+  const {
+    search, posGroups, seasons, ovr, salaryMax, priceMax,
+    league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+    workRateAttack, workRateDefense, heightMin, heightMax,
+    weightMin, weightMax, reputation, statFilter, statMin, statMax,
+    traits, sort, page, pageSize,
+  } = params;
 
   const q = {};
   if (search) q.search = search;
@@ -21,7 +27,21 @@ export async function fetchPlayers(params = {}) {
   if (salaryMax != null && salaryMax < 999999) q.maxSalary = salaryMax;
   if (priceMax != null && priceMax < 999999) q.maxPrice = priceMax;
   if (traits?.length) q.trait = traits[0];
-  if (leagues?.length) q.league = leagues.join(',');
+  if (league) q.league = league;
+  if (nation) q.nation = nation;
+  if (clubSearch) q.club = clubSearch;
+  if (preferredFoot) q.preferredFoot = preferredFoot;
+  if (weakFoot) q.weakFoot = weakFoot;
+  if (skillMoves) q.skillMoves = skillMoves;
+  if (workRateAttack) q.workRateAttack = workRateAttack;
+  if (workRateDefense) q.workRateDefense = workRateDefense;
+  if (heightMin) q.minHeight = heightMin;
+  if (heightMax) q.maxHeight = heightMax;
+  if (weightMin) q.minWeight = weightMin;
+  if (weightMax) q.maxWeight = weightMax;
+  if (reputation) q.reputation = reputation;
+  if (statFilter && statMin) q[`min${statFilter.charAt(0).toUpperCase() + statFilter.slice(1)}`] = statMin;
+  if (statFilter && statMax) q[`max${statFilter.charAt(0).toUpperCase() + statFilter.slice(1)}`] = statMax;
   q.page = page || 1;
   q.limit = pageSize || 20;
 
