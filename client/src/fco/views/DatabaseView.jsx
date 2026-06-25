@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { fetchPlayers, fetchMeta } from '../api.js';
+import { fetchPlayers, fetchMeta, fetchClubsByLeague } from '../api.js';
 import { formatCoins, statColor, cleanName } from '../helpers.js';
 import { POS_GROUPS, SORTS, POSITIONS_META } from '../constants.js';
 import PlayerSearchForm from '../components/PlayerSearchForm.jsx';
@@ -10,6 +10,7 @@ import {
 } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 import { SEASONS_META } from '../constants.js';
+import { shouldClearCareerClubForLeagueChange, shouldLoadClubsForLeague } from './DatabaseView.filters.js';
 
 const MAIN_STATS = [
   { key: 'pace',      label: 'PAC' },
@@ -89,7 +90,7 @@ function filtersFromQS() {
     pageSize,
     league: p.get('league') || '',
     nation: p.get('nation') || '',
-    clubSearch: p.get('club') || '',
+    careerClub: p.get('club') || '',
     preferredFoot: p.get('foot') || '',
     weakFoot: p.get('wf') || '',
     skillMoves: p.get('sm') || '',
@@ -120,7 +121,7 @@ function filtersToQS(f) {
   if (f.pageSize !== DEFAULT_PAGESIZE) p.set('size', f.pageSize);
   if (f.league) p.set('league', f.league);
   if (f.nation) p.set('nation', f.nation);
-  if (f.clubSearch) p.set('club', f.clubSearch);
+  if (f.careerClub) p.set('club', f.careerClub);
   if (f.preferredFoot) p.set('foot', f.preferredFoot);
   if (f.weakFoot) p.set('wf', f.weakFoot);
   if (f.skillMoves) p.set('sm', f.skillMoves);
@@ -150,7 +151,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const [priceMax,  setPriceMax]  = useState(init.priceMax);
   const [league,          setLeague]          = useState(init.league || '');
   const [nation,          setNation]          = useState(init.nation || '');
-  const [clubSearch,      setClubSearch]      = useState(init.clubSearch || '');
+  const [careerClub,      setCareerClub]      = useState(init.careerClub || '');
   const [preferredFoot,   setPreferredFoot]   = useState(init.preferredFoot || '');
   const [weakFoot,        setWeakFoot]        = useState(init.weakFoot || '');
   const [skillMoves,      setSkillMoves]      = useState(init.skillMoves || '');
@@ -170,6 +171,9 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const [dense,     setDense]     = useState(false);
 
   const [allSeasons, setAllSeasons] = useState([]);
+  const [allNations, setAllNations] = useState([]);
+  const [allLeagues, setAllLeagues] = useState([]);
+  const [allTopClubs, setAllTopClubs] = useState([]);
   const [seasonSearch, setSeasonSearch] = useState('');
 
   const [players,    setPlayers]    = useState([]);
@@ -183,24 +187,40 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const salaryRef = useRef(null);
   const priceRef  = useRef(null);
   const seasonRef = useRef(null);
+  const previousLeagueRef = useRef(undefined);
 
   useEffect(() => {
     fetchMeta().then(res => {
       if (res.success && res.seasons) setAllSeasons(res.seasons);
+      if (res.nations) setAllNations(res.nations);
+      if (res.leagues) setAllLeagues(res.leagues);
     });
   }, []);
+
+  useEffect(() => {
+    if (shouldLoadClubsForLeague(league)) {
+      fetchClubsByLeague(league).then(setAllTopClubs);
+    } else {
+      setAllTopClubs([]);
+    }
+    if (shouldClearCareerClubForLeagueChange(previousLeagueRef.current, league)) {
+      setCareerClub('');
+      setPage(1);
+    }
+    previousLeagueRef.current = league;
+  }, [league]);
 
   // Sync filter state → URL query string (replaceState = no history spam)
   useEffect(() => {
     writeQS(filtersToQS({
       search, posGroups, seasons, ovr, salaryMax, priceMax,
-      league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+      league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
       weightMin, weightMax, reputation, statFilter, statMin, statMax,
       sort, page, pageSize,
     }));
   }, [search, posGroups, seasons, ovr, salaryMax, priceMax,
-      league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+      league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
       weightMin, weightMax, reputation, statFilter, statMin, statMax,
       sort, page, pageSize]);
@@ -211,7 +231,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     try {
       const res = await fetchPlayers({
         search, posGroups, seasons, ovr, salaryMax, priceMax,
-        league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+        league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
         workRateAttack, workRateDefense, heightMin, heightMax,
         weightMin, weightMax, reputation, statFilter, statMin, statMax,
         sort, page, pageSize,
@@ -225,7 +245,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
       setLoading(false);
     }
   }, [search, posGroups, seasons, ovr, salaryMax, priceMax,
-      league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+      league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
       weightMin, weightMax, reputation, statFilter, statMin, statMax,
       sort, page, pageSize]);
@@ -248,7 +268,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     setPriceMax(DEFAULT_PRICE);
     setLeague('');
     setNation('');
-    setClubSearch('');
+    setCareerClub('');
     setPreferredFoot('');
     setWeakFoot('');
     setSkillMoves('');
@@ -312,10 +332,13 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
         setSalaryMax={val => { setSalaryMax(val); setPage(1); }}
         league={league}
         setLeague={val => { setLeague(val); setPage(1); }}
+        leagueOptions={allLeagues}
         nation={nation}
         setNation={val => { setNation(val); setPage(1); }}
-        clubSearch={clubSearch}
-        setClubSearch={val => { setClubSearch(val); setPage(1); }}
+        nationOptions={allNations}
+        careerClub={careerClub}
+        clubOptions={allTopClubs}
+        setCareerClub={val => { setCareerClub(val); setPage(1); }}
         preferredFoot={preferredFoot}
         setPreferredFoot={val => { setPreferredFoot(val); setPage(1); }}
         weakFoot={weakFoot}
@@ -552,12 +575,18 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
 // ── Player row ────────────────────────────────────────────────────────────────
 function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
   if (!p || !p.name) return null; // Safety check for malformed data
-  return (
-    <div className="fco-row" tabIndex={0} role="button"
-      onClick={onClick}
-      onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onClick()}>
+  const href = `/players/${encodeURIComponent(p.id)}`;
 
-      <PlayerAvatar player={p} size={40} />
+  function handleClick(e) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    onClick();
+  }
+
+  return (
+    <div className="fco-row">
+      <a className="fco-row-link" href={href} onClick={handleClick}>
+        <PlayerAvatar player={p} size={40} />
 
       <div className="fco-row-player">
         <div className="fco-row-name">
@@ -622,14 +651,15 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
         {p.salary ? `${p.salary}` : '—'}
       </div>
 
+        <I.ChevronRight size={16} style={{ color: 'var(--text-faint)', flex: '0 0 16px' }} />
+      </a>
+
       <button
         className={`fco-star${watched ? ' on' : ''}`}
         onClick={e => { e.stopPropagation(); onToggleWatch(); }}
         title={watched ? 'Bỏ theo dõi' : 'Theo dõi'}>
         {watched ? <I.StarFill size={14} /> : <I.Star size={14} />}
       </button>
-
-      <I.ChevronRight size={16} style={{ color: 'var(--text-faint)', flex: '0 0 16px' }} />
     </div>
   );
 }

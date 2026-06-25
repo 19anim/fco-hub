@@ -61,9 +61,9 @@ export function PosPill({ pos, faded }) {
   const c = getPos(pos).color;
   return (
     <span style={{
-      fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: c,
+      fontFamily: 'var(--mono)', fontSize: 10.5, fontWeight: 700, color: c,
       background: c + '1a', border: '1px solid ' + c + '33',
-      borderRadius: 6, padding: '2px 6px', letterSpacing: '.02em',
+      borderRadius: 5, padding: '2px 5px', letterSpacing: '.02em',
       opacity: faded ? .55 : 1,
     }}>{pos}</span>
   );

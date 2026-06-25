@@ -63,6 +63,41 @@ function normalizeText(value = '') {
   return String(value).replace(/\s+/g, ' ').trim();
 }
 
+const FIFAADDICT_LEAGUE_SLUGS = new Map([
+  ['England Premier League', 'england-premier-league'],
+  ['England Championship', 'england-championship'],
+  ['Spain Primera Division', 'spain-la-liga'],
+  ['LaLiga', 'spain-la-liga'],
+  ['France Ligue 1', 'france-ligue-1'],
+  ['France Ligue 2', 'france-ligue-2'],
+  ['Germany Bundesliga', 'germany-bundesliga'],
+  ['Germany 2. Bundesliga', 'germany-2-bundesliga'],
+  ['Italy Serie A', 'italy-serie-a'],
+  ['Italy Serie B', 'italy-serie-b'],
+  ['Netherlands Eredivisie', 'netherlands-eredivisie'],
+  ['Portugal Primeira Liga', 'portugal-primeira-liga'],
+  ['United States Major League Soccer', 'united-states-major-league-soccer'],
+  ['Korea Republic K League 1', 'korea-republic-k-league-1'],
+  ['China PR Super League', 'china-pr-super-league'],
+  ['National Team', 'national-team'],
+  ['Rest of World', 'rest-of-world'],
+]);
+
+function slugifyFifaAddictLeague(value) {
+  return normalizeText(value)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function getFifaAddictLeagueSlug(league) {
+  const normalized = normalizeText(league);
+  return FIFAADDICT_LEAGUE_SLUGS.get(normalized) || slugifyFifaAddictLeague(normalized);
+}
+
 function toNumber(value) {
   const parsed = Number(String(value ?? '').replace(/[^\d.-]/g, ''));
   return Number.isFinite(parsed) ? parsed : null;
@@ -378,6 +413,50 @@ async function getAraiwaToken(force = false) {
   return araiwaToken;
 }
 
+async function fetchProtectedApi2(params, referer = `${BASE_URL}/fo4db`, retry = 0) {
+  const token = await getAraiwaToken(retry > 0);
+  if (!token) throw new Error('Could not obtain X-ARAIWA token');
+
+  try {
+    const headers = {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-ARAIWA': token,
+      Referer: referer,
+      'User-Agent': UA,
+    };
+    if (araiwaCookie) headers.Cookie = araiwaCookie;
+
+    const resp = await axios.get(`${BASE_URL}/api2`, {
+      params,
+      timeout: 30000,
+      withCredentials: true,
+      headers,
+    });
+    return resp.data;
+  } catch (error) {
+    const status = error.response?.status;
+    if ((status === 401 || status === 403) && retry < 2) {
+      await sleep(2000);
+      return fetchProtectedApi2(params, referer, retry + 1);
+    }
+    throw error;
+  }
+}
+
+function parseFifaAddictTeamInfo(data) {
+  if (!data || typeof data !== 'object') return [];
+  return Object.values(data)
+    .map((team) => normalizeText(team?.text || team?.name || ''))
+    .filter((team) => team && team !== '▾ Đội');
+}
+
+export async function fetchFifaAddictTeamsByLeague(league) {
+  const slug = getFifaAddictLeagueSlug(league);
+  if (!slug) return [];
+  const data = await fetchProtectedApi2({ q: 'fo4info', league: slug, locale: 'vn' });
+  return [...new Set(parseFifaAddictTeamInfo(data))];
+}
+
 // Fetch player detail JSON via the protected fo4pid endpoint
 async function fetchPlayerJson(sourceUid, retry = 0) {
   const token = await getAraiwaToken(retry > 0);
@@ -594,12 +673,32 @@ function extractPositionRatings(postlist) {
     .filter((p) => p.value > 0);
 }
 
-// Parse lịch sử CLB từ db.clubcareer (chỉ khi là mảng).
-function extractClubCareer(clubcareer) {
-  if (!Array.isArray(clubcareer)) return [];
-  return clubcareer
+export function getDetailDb(payload) {
+  return { ...(payload?.db || {}), ...(payload?.pre || {}) };
+}
+
+function isClubCareerCollection(value) {
+  return Array.isArray(value) || (value && typeof value === 'object');
+}
+
+export function getClubCareerSource(payload) {
+  const preCareer = payload?.pre?.clubcareer;
+  const dbCareer = payload?.db?.clubcareer;
+  if (isClubCareerCollection(preCareer)) return preCareer;
+  if (isClubCareerCollection(dbCareer)) return dbCareer;
+  return [];
+}
+
+export function extractClubCareer(clubcareer) {
+  const entries = Array.isArray(clubcareer)
+    ? clubcareer
+    : clubcareer && typeof clubcareer === 'object'
+      ? Object.values(clubcareer)
+      : [];
+
+  return entries
     .map((c) => ({
-      team: normalizeText(c.team_name || c.team || c.name || ''),
+      team: normalizeText(c.team_name || c.team || c.name || c.teamname || ''),
       teamId: String(c.team_id || c.teamId || ''),
       season: normalizeText(c.season || c.year || ''),
     }))
@@ -666,7 +765,7 @@ function apiRowToEnrichment(row) {
 }
 
 function detailPayloadToEnrichment(payload, sourceUid) {
-  const db = payload.pre || payload.db || {};
+  const db = getDetailDb(payload);
   const row = {
     ...db,
     uid: db.uid || sourceUid,
@@ -691,7 +790,7 @@ function detailPayloadToEnrichment(payload, sourceUid) {
     hiddenTraits: traits.hiddenTraits,
     traitsDescription: traits.traitsDescription,
     positionRatings: extractPositionRatings(db.postlist),
-    clubCareer: extractClubCareer(db.clubcareer),
+    clubCareer: extractClubCareer(getClubCareerSource(payload)),
     rawDescription: normalizeText(meta.desc || db.desc || ''),
     lastDetailSyncedAt: new Date(),
     syncedAt: new Date(),
@@ -911,6 +1010,10 @@ export async function syncFifaAddictAll({
   };
 }
 
+export async function debugFetchPlayerJson(sourceUid) {
+  return fetchPlayerJson(sourceUid);
+}
+
 export async function ensureEnrichmentDetail(enrichmentDoc, { force = false } = {}) {
   if (!enrichmentDoc?.sourceUid) return enrichmentDoc;
 
@@ -920,7 +1023,7 @@ export async function ensureEnrichmentDetail(enrichmentDoc, { force = false } = 
 
   // Fetch via protected JSON API (real stats live here, HTML only has zeros)
   const payload = await fetchPlayerJson(enrichmentDoc.sourceUid);
-  const db = payload.pre || payload.db || {};
+  const db = getDetailDb(payload);
   if (!db || typeof db !== 'object') throw new Error('No player db in JSON response');
 
   // Extract boost (usually 3) to match displayed stats on website
@@ -939,7 +1042,7 @@ export async function ensureEnrichmentDetail(enrichmentDoc, { force = false } = 
     hiddenTraits: traits.hiddenTraits,
     traitsDescription: traits.traitsDescription,
     positionRatings: extractPositionRatings(db.postlist),
-    clubCareer: extractClubCareer(db.clubcareer),
+    clubCareer: extractClubCareer(getClubCareerSource(payload)),
     rawDescription: normalizeText(meta.desc || db.desc || ''),
     parseWarnings: [],
     lastDetailSyncedAt: new Date(),
@@ -1316,6 +1419,34 @@ export async function resyncFifaAddictRecord({ enrichmentId, playerId, force = t
 }
 
 let bulkDetailRunning = false;
+let clubCareerBackfillRunning = false;
+
+export function isClubCareerBackfillRunning() {
+  return clubCareerBackfillRunning;
+}
+
+export function buildClubCareerBackfillQuery({ onlyMissing = true } = {}) {
+  const query = {
+    source: 'fifaaddict-vn',
+    sourceUid: { $exists: true, $ne: '' },
+  };
+
+  if (onlyMissing) {
+    query.$or = [
+      { clubCareer: { $exists: false } },
+      { clubCareer: { $size: 0 } },
+    ];
+  }
+
+  return query;
+}
+
+export function resolveClubCareerBackfillCap({ limit = 500, total = 0 } = {}) {
+  const numericLimit = Number(limit);
+  if (numericLimit === 0) return total;
+  const safeLimit = numericLimit > 0 ? numericLimit : 500;
+  return Math.min(safeLimit, total);
+}
 
 export function isBulkDetailRunning() {
   return bulkDetailRunning;
@@ -1450,6 +1581,94 @@ async function getSearchSeedsFromNexonNames({ limit = 200, delayMs = DEFAULT_API
   }
 
   return [...new Set(seeds)];
+}
+
+export async function backfillClubCareer({
+  batchSize = 50,
+  delayMs = DEFAULT_DELAY_MS,
+  limit = 500,
+  onlyMissing = true,
+} = {}) {
+  if (clubCareerBackfillRunning) throw new Error('Club career backfill is already running.');
+
+  const query = buildClubCareerBackfillQuery({ onlyMissing });
+  const total = await PlayerEnrichment.countDocuments(query);
+  const cap = resolveClubCareerBackfillCap({ limit, total });
+
+  const run = await SyncRun.create({
+    source: 'fifaaddict-vn',
+    status: 'running',
+    requested: cap,
+    message: `Club career backfill: ${cap}/${total} records queued`,
+  });
+
+  clubCareerBackfillRunning = true;
+
+  const job = (async () => {
+    let processed = 0;
+    let updated = 0;
+    let failed = 0;
+    const errors = [];
+
+    try {
+      while (processed + failed < cap) {
+        const batch = await PlayerEnrichment.find(query).limit(batchSize).lean();
+        if (!batch.length) break;
+
+        for (const doc of batch) {
+          if (processed + failed >= cap) break;
+          try {
+            const refreshed = await ensureEnrichmentDetail(doc, { force: true });
+            const careerCount = refreshed?.clubCareer?.length || 0;
+            if (careerCount > 0) {
+              const careerText = refreshed.clubCareer
+                .map((career) => `${career.team}${career.season ? ` (${career.season})` : ''}`)
+                .join(' → ');
+              console.log(`[CLUB CAREER] ${refreshed.displayNameVi} [${refreshed.sourceUid}] ${careerCount} clubs: ${careerText} -> ${refreshed.sourceUrl}`);
+            }
+            updated += careerCount > 0 ? 1 : 0;
+            processed += 1;
+          } catch (err) {
+            failed += 1;
+            if (errors.length < 50) errors.push(`${doc.displayNameVi}: ${err.message}`);
+          }
+          if (delayMs > 0) await sleep(delayMs);
+        }
+
+        await SyncRun.findByIdAndUpdate(run._id, {
+          $set: {
+            processed,
+            updated,
+            failed,
+            errors,
+            message: `Club career backfill: ${processed + failed}/${cap} done (${updated} updated, ${failed} failed)`,
+          },
+        }).catch(() => {});
+      }
+
+      await SyncRun.findByIdAndUpdate(run._id, {
+        $set: {
+          status: failed === cap && cap > 0 ? 'failed' : 'success',
+          finishedAt: new Date(),
+          processed,
+          updated,
+          failed,
+          errors,
+          message: `Club career backfill done: ${updated} updated, ${processed} processed, ${failed} failed`,
+        },
+      });
+    } catch (err) {
+      await SyncRun.findByIdAndUpdate(run._id, {
+        $set: { status: 'failed', finishedAt: new Date(), message: err.message, errors: [err.message] },
+      }).catch(() => {});
+    } finally {
+      clubCareerBackfillRunning = false;
+    }
+  })();
+
+  job.catch(() => {});
+
+  return { runId: run._id, queued: cap, total, message: 'Club career backfill started in background.' };
 }
 
 export async function discoverFifaAddictByPidGraph({

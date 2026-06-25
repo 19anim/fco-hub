@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { DollarSign, Plus, Copy, Archive, Eye, EyeOff, Pencil } from 'lucide-react';
 import { adminMonetizationService } from '../../services/adminMonetization';
 
@@ -37,7 +37,6 @@ function FilterSelect({ label, value, onChange, options }) {
 }
 
 export default function MonetizationListPage() {
-  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -103,13 +102,13 @@ export default function MonetizationListPage() {
             <p className="text-sm text-ink-muted">{total} items total</p>
           </div>
         </div>
-        <button
-          onClick={() => navigate('/admin/monetization/new')}
+        <Link
+          to="/admin/monetization/new"
           className="btn-primary flex items-center gap-2 px-4 py-2 text-sm"
         >
           <Plus className="h-4 w-4" />
           New Item
-        </button>
+        </Link>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -171,13 +170,13 @@ export default function MonetizationListPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => navigate(`/admin/monetization/${item._id}`)}
+                      <Link
+                        to={`/admin/monetization/${item._id}`}
                         className="rounded-lg p-1.5 text-ink-muted hover:bg-surface-3 hover:text-ink transition-colors"
                         title="Edit"
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                      </button>
+                      </Link>
                       <button
                         onClick={() => handleAction('duplicate', item)}
                         disabled={!!actionLoading}

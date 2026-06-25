@@ -21,10 +21,10 @@ function EventCard({ ev, warn }) {
       <div className="fco-ev-card-meta"><I.Calendar size={13} /> {ev.dateLabel}</div>
       <Countdown endDate={ev.endDate} />
       <div className="fco-ev-card-foot">
-        <Button variant="default" size="sm" iconRight={I.External}
-          onClick={() => window.open(ev.launchUrl, '_blank', 'noopener')}>
+        <a className="fco-btn fco-btn-default fco-btn-sm" href={ev.launchUrl} target="_blank" rel="noopener noreferrer">
           Mở
-        </Button>
+          <I.External size={14} />
+        </a>
       </div>
     </div>
   );

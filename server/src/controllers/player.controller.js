@@ -4,7 +4,7 @@ import PlayerEnrichment from '../models/PlayerEnrichment.js';
 import PlayerUsageAggregate from '../models/PlayerUsageAggregate.js';
 import FifaAddictSeason from '../models/FifaAddictSeason.js';
 import { getNexonMetadata, syncNexonPlayers } from '../services/nexonMetadata.js';
-import { enrichSinglePlayer, ensureEnrichmentDetail } from '../services/fifaAddictSource.js';
+import { enrichSinglePlayer, ensureEnrichmentDetail, fetchFifaAddictTeamsByLeague } from '../services/fifaAddictSource.js';
 
 async function attachEnrichment(players) {
   const list = players.map((player) => (typeof player.toObject === 'function' ? player.toObject() : player));
@@ -55,7 +55,7 @@ function getFifaAddictSeasonClassId(season) {
   return String(season?.className || '').match(/(?:^|\s)y(\d+)(?:\s|$)/)?.[1] || '';
 }
 
-function buildEnrichmentSearchQuery(search, seasonId, filters = {}) {
+export function buildEnrichmentSearchQuery(search, seasonId, filters = {}) {
   const query = { source: 'fifaaddict-vn' };
 
   if (search) {
@@ -93,9 +93,22 @@ function buildEnrichmentSearchQuery(search, seasonId, filters = {}) {
     }
   }
   if (filters.trait) query.hiddenTraits = { $regex: filters.trait, $options: 'i' };
-  if (filters.league) query.league = { $regex: filters.league, $options: 'i' };
+  if (filters.league && !filters.careerClub) query.league = { $regex: filters.league, $options: 'i' };
   if (filters.nation) query.nation = { $regex: filters.nation, $options: 'i' };
-  if (filters.club) query.club = { $regex: filters.club, $options: 'i' };
+  if (filters.club) {
+    const clubRegex = { $regex: filters.club, $options: 'i' };
+    const clubConditions = [
+      { club: clubRegex },
+      { teamColor: clubRegex },
+      { 'clubCareer.team': clubRegex },
+    ];
+    if (query.$and) {
+      query.$and.push({ $or: clubConditions });
+    } else {
+      query.$and = [{ $or: clubConditions }];
+    }
+  }
+  if (filters.careerClub) query['clubCareer.team'] = { $regex: filters.careerClub, $options: 'i' };
   if (filters.preferredFoot) query.preferredFoot = filters.preferredFoot;
   if (filters.workRateAttack) query.workRateAttack = filters.workRateAttack;
   if (filters.workRateDefense) query.workRateDefense = filters.workRateDefense;
@@ -202,6 +215,7 @@ export const getPlayers = async (req, res) => {
       workRateAttack,
       workRateDefense,
       club,
+      careerClub,
       reputation,
       minHeight,
       maxHeight,
@@ -233,7 +247,7 @@ export const getPlayers = async (req, res) => {
       position, minOverall, maxOverall,
       minPrice, maxPrice, minSalary, maxSalary,
       trait,
-      league, nation, club, preferredFoot, weakFoot, skillMoves, workRateAttack, workRateDefense,
+      league, nation, club, careerClub, preferredFoot, weakFoot, skillMoves, workRateAttack, workRateDefense,
       reputation, minHeight, maxHeight, minWeight, maxWeight,
       minPace, maxPace, minShooting, maxShooting,
       minPassing, maxPassing, minDribbling, maxDribbling,
@@ -296,11 +310,37 @@ export const getPlayers = async (req, res) => {
   }
 };
 
+// GET /api/players/clubs?league=xxx - Career clubs filtered by league
+export const getClubsByLeague = async (req, res) => {
+  try {
+    const { league } = req.query;
+    if (!String(league || '').trim()) return res.json({ clubs: [] });
+
+    const match = { source: 'fifaaddict-vn', overall: { $gt: 0 }, clubCareer: { $elemMatch: { team: { $nin: ['', null] } } }, league: { $regex: league, $options: 'i' } };
+    const clubs = await PlayerEnrichment.aggregate([
+      { $match: match },
+      { $unwind: '$clubCareer' },
+      { $match: { 'clubCareer.team': { $nin: ['', null] } } },
+      { $group: { _id: '$clubCareer.team', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 200 },
+      { $project: { _id: 0, club: '$_id' } },
+    ]);
+    const dbClubs = clubs.map(r => r.club).filter(Boolean);
+    if (dbClubs.length) return res.json({ clubs: dbClubs });
+
+    const sourceClubs = await fetchFifaAddictTeamsByLeague(league);
+    res.json({ clubs: sourceClubs });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // GET /api/players/meta - Filter metadata
 export const getPlayerMeta = async (req, res) => {
   try {
     const enrichmentMatch = { source: 'fifaaddict-vn', overall: { $gt: 0 } };
-    const [dbSeasons, dbPositions, count, nexonMeta, fifaAddictSeasons] = await Promise.all([
+    const [dbSeasons, dbPositions, count, nexonMeta, fifaAddictSeasons, dbNations, dbLeagues, dbTopClubs] = await Promise.all([
       PlayerEnrichment.aggregate([
         { $match: { ...enrichmentMatch, seasonCode: { $nin: ['', null] } } },
         {
@@ -326,6 +366,15 @@ export const getPlayerMeta = async (req, res) => {
       PlayerEnrichment.countDocuments(enrichmentMatch),
       getNexonMetadata().catch(() => ({ seasons: [] })),
       FifaAddictSeason.find({ isActive: true }).lean().catch(() => []),
+      PlayerEnrichment.distinct('nation', { ...enrichmentMatch, nation: { $nin: ['', null] } }),
+      PlayerEnrichment.distinct('league', { ...enrichmentMatch, league: { $nin: ['', null] } }),
+      PlayerEnrichment.aggregate([
+        { $match: { ...enrichmentMatch, club: { $nin: ['', null] } } },
+        { $group: { _id: '$club', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 150 },
+        { $project: { _id: 0, club: '$_id' } },
+      ]),
     ]);
 
     const seasonMetaById = new Map((nexonMeta.seasons || []).map((season) => [String(season.seasonId), season]));
@@ -369,6 +418,9 @@ export const getPlayerMeta = async (req, res) => {
         };
       }),
       availablePositions: dbPositions.sort(),
+      nations: (dbNations || []).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),
+      leagues: (dbLeagues || []).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),
+      topClubs: (dbTopClubs || []).map(r => r.club).filter(Boolean),
     });
   } catch (error) {
     res.status(500).json({

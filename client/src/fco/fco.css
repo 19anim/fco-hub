@@ -261,10 +261,12 @@ button { font-family: inherit; }
 
 .fco-rowhead { display: flex; align-items: center; gap: 14px; padding: 0 14px 9px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-faint); border-bottom: 1px solid var(--border); }
 .fco-rows { display: flex; flex-direction: column; }
-.fco-row { display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-bottom: 1px solid var(--border-soft); cursor: pointer; transition: background .1s; outline: none; }
+.fco-row { display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-bottom: 1px solid var(--border-soft); transition: background .1s; outline: none; }
 .fco-rows.dense .fco-row { padding: 6px 14px; }
 .fco-row:hover { background: var(--surface-2); }
-.fco-row:focus-visible { background: var(--surface-2); box-shadow: inset 2px 0 0 var(--accent); }
+.fco-row:focus-within { background: var(--surface-2); }
+.fco-row-link { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; color: inherit; text-decoration: none; outline: none; }
+.fco-row-link:focus-visible { box-shadow: inset 2px 0 0 var(--accent); }
 .fco-row-player { display: flex; align-items: center; gap: 11px; flex: 1; min-width: 170px; }
 .fco-row-name { font-weight: 600; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 7px; }
 .fco-row-sub { font-size: 12px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
@@ -398,10 +400,10 @@ button { font-family: inherit; }
 /* Season Grid */
 .fco-season-ext-list { display: flex; flex-direction: column; gap: 10px; width: 100%; background: var(--surface); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
 .fco-season-ext-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.fco-seasons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
-.fco-season-opt { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 10px 4px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; transition: all .14s; position: relative; min-height: 52px; }
-.fco-season-opt:hover { background: var(--surface-3); border-color: var(--text-faint); transform: translateY(-1px); }
-.fco-season-opt.on { background: color-mix(in srgb, var(--accent) 8%, var(--surface-3)); border-color: var(--accent); }
+.fco-seasons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; }
+.fco-season-opt { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 2px; background: none; border: 2px solid transparent; border-radius: 6px; cursor: pointer; transition: border-color .14s, opacity .14s; position: relative; }
+.fco-season-opt:hover { opacity: .85; }
+.fco-season-opt.on { border-color: var(--accent); }
 .fco-season-opt-img { height: 22px; width: auto; max-width: 42px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
 .fco-season-opt-sprite { transform: scale(.92); }
 .fco-season-opt-badge { display: flex; align-items: center; justify-content: center; padding: 2px 4px; border-radius: 6px; border: 1px solid var(--border); min-height: 20px; width: 40px; overflow: hidden; }
@@ -834,20 +836,20 @@ button { font-family: inherit; }
 .fa-pos-group-label:hover { color: var(--accent); }
 .fa-pos-subs { display: flex; flex-wrap: wrap; gap: 4px; }
 .fa-pos-btn {
-  padding: 4px 7px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--text-faint);
-  font-size: 11px; font-weight: 700; font-family: var(--mono);
+  font-size: 10px; font-weight: 700; font-family: var(--mono);
   cursor: pointer;
   transition: background .12s, color .12s, border-color .12s;
 }
-.fa-pos-btn:hover { color: var(--text); border-color: var(--text-faint); }
+.fa-pos-btn:hover { color: var(--text); background: var(--surface-2); border-color: var(--border-soft); }
 .fa-pos-btn.on {
   background: var(--accent);
   color: #04130d;
-  border-color: var(--accent);
+  border-color: transparent;
 }
 
 /* Expanded filters section */

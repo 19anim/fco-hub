@@ -2,6 +2,7 @@ import {
   getFifaAddictStatus,
   isBulkSyncRunning,
   isBulkDetailRunning,
+  isClubCareerBackfillRunning,
   isDiscoverRunning,
   discoverAllPlayers,
   isDiscoverV2Running,
@@ -13,6 +14,7 @@ import {
   isSyncFullRunning,
   syncFullPipeline,
   bulkScrapeDetails,
+  backfillClubCareer,
   resyncFifaAddictRecord,
   syncFifaAddict,
   syncFifaAddictAll,
@@ -110,7 +112,7 @@ export const syncAllFifaAddictEnrichment = async (req, res) => {
 export const getEnrichmentStatus = async (req, res) => {
   try {
     const status = await getFifaAddictStatus();
-    res.json({ success: true, data: { ...status, scrapeSeasonsRunning: isScrapeSeasonsRunning() } });
+    res.json({ success: true, data: { ...status, scrapeSeasonsRunning: isScrapeSeasonsRunning(), clubCareerBackfillRunning: isClubCareerBackfillRunning() } });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -147,6 +149,36 @@ export const bulkScrapeDetailEnrichment = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error starting bulk detail scrape',
+      error: error.message,
+    });
+  }
+};
+
+export const backfillFifaAddictClubCareer = async (req, res) => {
+  try {
+    if (isBulkDetailRunning()) {
+      return res.status(409).json({
+        success: false,
+        message: 'Bulk detail scrape đang chạy. Hãy đợi xong rồi backfill club career.',
+      });
+    }
+
+    const result = await backfillClubCareer({
+      batchSize: req.body?.batchSize ?? 50,
+      delayMs: req.body?.delayMs ?? 600,
+      limit: req.body?.limit ?? 500,
+      onlyMissing: req.body?.onlyMissing !== false,
+    });
+
+    res.status(202).json({
+      success: true,
+      message: 'Club career backfill started in background',
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error starting club career backfill',
       error: error.message,
     });
   }

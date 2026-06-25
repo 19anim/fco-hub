@@ -5,6 +5,7 @@ import {
   getPlayerDetail,
   getPlayerBySlug,
   getPlayerMeta,
+  getClubsByLeague,
   syncPlayersFromNexon,
   createPlayer,
   updatePlayer,
@@ -18,10 +19,11 @@ const router = express.Router();
 
 router.get('/',           getPlayers);
 router.get('/meta',       getPlayerMeta);
+router.get('/clubs',      getClubsByLeague);
 router.post('/sync-nexon', ...dataOps, syncPlayersFromNexon);
 router.get('/slug/:slug', getPlayerBySlug);
 router.get('/:id/detail', getPlayerDetail);
-router.get('/:id',        getPlayerById);
+router.get('/:id([0-9a-fA-F]{24})', getPlayerById);
 router.post('/',          createPlayer);
 router.put('/:id',        updatePlayer);
 router.post('/cleanup',   ...dataOps, cleanupData);

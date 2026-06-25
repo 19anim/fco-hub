@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {
   ArrowDown,
@@ -87,7 +87,6 @@ export default function PlayerTable({
   limit = 20,
   compact = false,
 }) {
-  const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -214,8 +213,7 @@ export default function PlayerTable({
               return (
                 <tr
                   key={player._id}
-                  className="group cursor-pointer transition odd:bg-surface-1 even:bg-canvas-dark hover:bg-surface-2"
-                  onClick={() => navigate(`/player/${player._id}`)}
+                  className="group transition odd:bg-surface-1 even:bg-canvas-dark hover:bg-surface-2"
                 >
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-3">
@@ -227,7 +225,9 @@ export default function PlayerTable({
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="truncate text-[15px] font-semibold text-ink transition group-hover:text-brand-blue">{display.name}</p>
+                        <Link to={`/player/${player._id}`} className="block truncate text-[15px] font-semibold text-ink transition hover:text-brand-blue">
+                          {display.name}
+                        </Link>
                         <p className="truncate text-xs text-ink-muted">{display.club || display.nation || display.fullName}</p>
                       </div>
                     </div>
@@ -252,10 +252,10 @@ export default function PlayerTable({
                   </td>
                   {!compact && (
                     <td className="px-4 py-3.5 text-right">
-                      <span className="inline-flex h-10 items-center gap-1 rounded-lg border border-hairline bg-canvas-dark px-3 text-xs font-semibold text-ink-muted transition group-hover:border-brand-blue/60 group-hover:text-brand-blue">
+                      <Link to={`/player/${player._id}`} className="inline-flex h-10 items-center gap-1 rounded-lg border border-hairline bg-canvas-dark px-3 text-xs font-semibold text-ink-muted transition hover:border-brand-blue/60 hover:text-brand-blue">
                         Chi tiết
                         <ChevronRightSmall className="h-4 w-4" />
-                      </span>
+                      </Link>
                     </td>
                   )}
                 </tr>

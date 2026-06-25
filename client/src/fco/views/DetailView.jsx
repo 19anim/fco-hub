@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchPlayerDetail } from '../api.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpers.js';
-import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
+import { PlayerAvatar, OvrBox, PosPill, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
 import { getOvrIncreaseForLevel } from '../upgradeHelpers.js';
 import * as I from '../Icons.jsx';
 
@@ -138,7 +138,6 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
     ? [...selectedPositions, ...(p.positions || []).filter((pos) => !selectedPositions.includes(pos))]
     : p.positions;
   const statOrder = getStatOrderForPosition(selectedPosition);
-  const summaryGroups = getSummaryGroups(p, statOrder, selectedPosition);
   const bioItems = [
     p.nation,
     p.club,
@@ -205,15 +204,30 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
           </div>
         </div>
 
-        <SummaryStats groups={summaryGroups} />
-
-        {positionRatings.length > 1 && (
-          <PositionRatingsRow
-            ratings={positionRatings}
-            selectedPosition={selectedPosition}
-            onSelect={setActivePosition}
-          />
-        )}
+        <div className="fco-detail-stats">
+          <div className="fco-detail-ovr">
+            <div style={{ fontFamily: 'var(--mono)', fontWeight: 800, fontSize: 46, lineHeight: 1, color: statColor(displayedOvr) }}>{displayedOvr}</div>
+            <div className="fco-detail-ovr-lab">{selectedPosition || 'OVERALL'}{p.ovrBoost > 0 ? ` (+${p.ovrBoost})` : ''}</div>
+          </div>
+          <GradeSelector grade={grade} onChange={setGrade} />
+          <div className="fco-detail-posrow">
+            {displayedPositions?.map((pos, i) => <PosPill key={pos} pos={pos} faded={i > 0} />)}
+          </div>
+          <div className="fco-detail-money">
+            {p.price > 0 && (
+              <div className="fco-money-cell">
+                <div className="fco-money-lab"><I.Coins size={12} />Giá</div>
+                <div className="fco-money-val" style={{ color: 'var(--accent)' }}>{formatCoins(p.price)}</div>
+              </div>
+            )}
+            {p.salary > 0 && (
+              <div className="fco-money-cell">
+                <div className="fco-money-lab"><I.Wallet size={12} />Lương</div>
+                <div className="fco-money-val">{p.salary}</div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Korean banner */}
@@ -378,70 +392,34 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
 
       {/* Related seasons */}
       {related?.length > 0 && (
-        <div className="fco-related">
-          <div className="fco-section-title">
-            <I.Layers size={16} />
-            Các phiên bản khác
-            <span className="fco-section-sub">{related.length} thẻ</span>
+        <div className="fco-panel">
+          <div className="fco-panel-head">
+            <div className="fco-panel-title">
+              <I.Layers size={15} />
+              Các phiên bản khác
+              <span className="fco-panel-title-sub">{related.length} thẻ</span>
+            </div>
           </div>
-          <div className="fco-relgrid">
-            {related.map(r => (
-              <div key={r.id} className="fco-relcard" onClick={() => onSelect(r.id)}>
-                <PlayerAvatar player={r} size={40} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {cleanName(r.name)}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
-                    <SeasonChip code={r.season} name={r.seasonName} img={r.seasonImg} />
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: statColor(r.ovr), fontWeight: 700 }}>{r.ovr}</span>
+          <div className="fco-panel-body">
+            <div className="fco-relgrid">
+              {related.map(r => (
+                <div key={r.id} className="fco-relcard" onClick={() => onSelect(r.id)}>
+                  <PlayerAvatar player={r} size={40} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {cleanName(r.name)}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
+                      <SeasonChip code={r.season} name={r.seasonName} img={r.seasonImg} />
+                      <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: statColor(r.ovr), fontWeight: 700 }}>{r.ovr}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function SummaryStats({ groups }) {
-  return (
-    <div className="fa-summary-strip">
-      {groups.slice(0, 6).map((group) => (
-        <div key={group.key} className="fa-summary-cell">
-          <div className="fa-summary-value" style={{ color: group.value != null ? statColor(group.value) : 'var(--text-faint)' }}>
-            {group.value ?? '—'}
-          </div>
-          <div className="fa-summary-label">{group.label}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function PositionRatingsRow({ ratings, selectedPosition, onSelect }) {
-  return (
-    <div className="fa-position-row" aria-label="Chỉ số theo vị trí">
-      {ratings.map((rating, i) => {
-        const isActive = rating.label === selectedPosition;
-        return (
-          <button
-            key={`${rating.label}-${i}`}
-            type="button"
-            className={`fa-position-rating${rating.recommended ? ' rec' : ''}${isActive ? ' on' : ''}`}
-            onClick={() => onSelect(rating.label)}
-            aria-pressed={isActive}
-          >
-            <span>
-              {rating.label}
-              {rating.recommended && <I.StarFill size={8} />}
-            </span>
-            <strong style={{ color: rating.value != null ? statColor(rating.value) : 'var(--text-faint)' }}>{rating.value ?? '—'}</strong>
-          </button>
-        );
-      })}
     </div>
   );
 }
@@ -524,15 +502,6 @@ function MainOnlyStats({ p, order }) {
       </div>
     </div>
   );
-}
-
-function getSummaryGroups(p, order, selectedPosition) {
-  if ((selectedPosition === GK_POSITION || p.primaryPos === GK_POSITION) && p.detailed?.gk) {
-    const gkGroups = GK_STAT_GROUPS.map((group) => ({ ...group, value: p.detailed.gk[group.key] ?? null }));
-    if (gkGroups.some((group) => group.value != null)) return gkGroups;
-  }
-
-  return buildStatGroups(p, order).filter((group) => group.key !== 'gk' && group.value != null);
 }
 
 function buildStatGroups(p, order) {

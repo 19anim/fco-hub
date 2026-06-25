@@ -5,25 +5,34 @@ import StatRangeFilter from './filter/StatRangeFilter.jsx';
 import FootWorkFilter from './filter/FootWorkFilter.jsx';
 import BodyFilter from './filter/BodyFilter.jsx';
 
-const LEAGUE_OPTIONS = [
-  { value: '', label: '▾ Giải đấu' },
-  { value: 'England Premier League', label: 'England Premier League' },
-  { value: 'England Championship', label: '+ England Championship' },
-  { value: 'France Ligue 1', label: 'France Ligue 1' },
-  { value: 'France Ligue 2', label: '+ France Ligue 2' },
-  { value: 'Germany Bundesliga', label: 'Germany Bundesliga' },
-  { value: 'Germany 2. Bundesliga', label: '+ Germany 2. Bundesliga' },
-  { value: 'Italy Serie A', label: 'Italy Serie A' },
-  { value: 'Italy Serie B', label: '+ Italy Serie B' },
-  { value: 'Spain Primera Division', label: 'Spain Primera Division' },
-  { value: 'Netherlands Eredivisie', label: 'Netherlands Eredivisie' },
-  { value: 'Portugal Primeira Liga', label: 'Portugal Primeira Liga' },
-  { value: 'United States Major League Soccer', label: 'MLS' },
-  { value: 'Korea Republic K League 1', label: 'Korea K League 1' },
-  { value: 'China PR Super League', label: 'China Super League' },
-  { value: 'National Team', label: 'National Team' },
-  { value: 'Rest of World', label: 'Rest of World' },
+const FALLBACK_LEAGUES = [
+  'England Premier League',
+  'England Championship',
+  'Spain Primera Division',
+  'France Ligue 1',
+  'France Ligue 2',
+  'Germany Bundesliga',
+  'Germany 2. Bundesliga',
+  'Italy Serie A',
+  'Italy Serie B',
+  'Netherlands Eredivisie',
+  'Portugal Primeira Liga',
+  'United States Major League Soccer',
+  'Korea Republic K League 1',
+  'China PR Super League',
+  'National Team',
+  'Rest of World',
 ];
+
+function formatLeagueLabel(league) {
+  const labels = {
+    'Spain Primera Division': 'LaLiga',
+    'United States Major League Soccer': 'MLS',
+    'Korea Republic K League 1': 'Korea K League 1',
+    'China PR Super League': 'China Super League',
+  };
+  return labels[league] || league;
+}
 
 export default function PlayerSearchForm({
   search = '', setSearch,
@@ -31,8 +40,11 @@ export default function PlayerSearchForm({
   ovr = [50, 150], setOvr,
   salaryMax = 999999, setSalaryMax,
   league = '', setLeague,
+  leagueOptions = [],
   nation = '', setNation,
-  clubSearch = '', setClubSearch,
+  nationOptions = [],
+  careerClub = '', setCareerClub,
+  clubOptions = [],
   preferredFoot = '', setPreferredFoot,
   weakFoot = '', setWeakFoot,
   skillMoves = '', setSkillMoves,
@@ -50,6 +62,7 @@ export default function PlayerSearchForm({
   onSearch,
 }) {
   const [expanded, setExpanded] = useState(false);
+  const leagues = leagueOptions.length ? leagueOptions : FALLBACK_LEAGUES;
 
   return (
     <div className="fa-form-panel">
@@ -94,30 +107,36 @@ export default function PlayerSearchForm({
             <div className="fa-filter-group">
               <label className="fa-filter-label">Giải đấu</label>
               <select className="fa-select" value={league} onChange={e => setLeague(e.target.value)}>
-                {LEAGUE_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                <option value="">▾ Giải đấu</option>
+                {leagues.map(l => (
+                  <option key={l} value={l}>{formatLeagueLabel(l)}</option>
                 ))}
               </select>
             </div>
             <div className="fa-filter-group">
               <label className="fa-filter-label">Quốc gia</label>
-              <input
-                type="text"
-                className="fa-text-input"
-                placeholder="england, spain..."
+              <select
+                className="fa-select"
                 value={nation}
                 onChange={e => setNation(e.target.value)}
-              />
+              >
+                <option value="">▾ Quốc gia</option>
+                {nationOptions.map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
             </div>
             <div className="fa-filter-group">
               <label className="fa-filter-label">Câu lạc bộ</label>
-              <input
-                type="text"
-                className="fa-text-input"
-                placeholder="manchester, real..."
-                value={clubSearch}
-                onChange={e => setClubSearch(e.target.value)}
-              />
+              <select
+                className="fa-select"
+                value={careerClub}
+                onChange={e => setCareerClub(e.target.value)}
+                disabled={!league}
+              >
+                <option value="">{league ? '▾ Chọn CLB' : 'Chọn giải đấu trước'}</option>
+                {clubOptions.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
             </div>
           </div>
 

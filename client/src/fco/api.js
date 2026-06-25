@@ -8,7 +8,7 @@ const BASE = API_BASE;
 export async function fetchPlayers(params = {}) {
   const {
     search, posGroups, seasons, ovr, salaryMax, priceMax,
-    league, nation, clubSearch, preferredFoot, weakFoot, skillMoves,
+    league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
     workRateAttack, workRateDefense, heightMin, heightMax,
     weightMin, weightMax, reputation, statFilter, statMin, statMax,
     traits, sort, page, pageSize,
@@ -27,9 +27,9 @@ export async function fetchPlayers(params = {}) {
   if (salaryMax != null && salaryMax < 999999) q.maxSalary = salaryMax;
   if (priceMax != null && priceMax < 999999) q.maxPrice = priceMax;
   if (traits?.length) q.trait = traits[0];
-  if (league) q.league = league;
+  if (league && !careerClub) q.league = league;
   if (nation) q.nation = nation;
-  if (clubSearch) q.club = clubSearch;
+  if (careerClub) q.careerClub = careerClub;
   if (preferredFoot) q.preferredFoot = preferredFoot;
   if (weakFoot) q.weakFoot = weakFoot;
   if (skillMoves) q.skillMoves = skillMoves;
@@ -82,6 +82,12 @@ export async function fetchMeta() {
   const res = await axios.get(`${BASE}/players/meta`);
   registerSeasonSprites(res.data?.seasons || []);
   return res.data;
+}
+
+export async function fetchClubsByLeague(league = '') {
+  if (!String(league || '').trim()) return [];
+  const res = await axios.get(`${BASE}/players/clubs`, { params: { league } });
+  return res.data?.clubs || [];
 }
 
 export async function fetchEvents() {

@@ -149,6 +149,12 @@ export default function FcoApp() {
     setRoute(parsePath());
   }
 
+  function handleNavClick(e, view) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    navigate(view);
+  }
+
   function toggleWatch(id) {
     setWatch(prev => {
       if (prev.includes(id)) {
@@ -188,9 +194,10 @@ export default function FcoApp() {
 
         <div className="fco-navitems">
           {navItems.map(item => (
-            <button key={item.id}
+            <a key={item.id}
+              href={routeUrl(item.id)}
               className={`fco-navitem${activeView === item.id ? ' active' : ''}`}
-              onClick={() => navigate(item.id)}>
+              onClick={e => handleNavClick(e, item.id)}>
               <item.icon size={16} />
               <span>{item.label}</span>
               {item.id === 'watchlist' && watch.length > 0 && (
@@ -199,7 +206,7 @@ export default function FcoApp() {
               {item.id === 'compare' && compareIds.length > 0 && (
                 <span className="fco-navcount">{compareIds.length}</span>
               )}
-            </button>
+            </a>
           ))}
         </div>
 

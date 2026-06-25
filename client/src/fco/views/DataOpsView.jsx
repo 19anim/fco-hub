@@ -171,6 +171,46 @@ export default function DataOpsView() {
               </Button>
             }
           />
+
+          <OpCard
+            icon={I.Refresh} iconColor="#37a0ff"
+            title="4. Backfill Club Career 500 — cập nhật lịch sử CLB"
+            sub="Force fetch lại detail cho 500 record đang thiếu clubCareer để lấy lịch sử khoác áo CLB từ FIFAAddict API."
+            meta="Delay 600ms/request để giảm rủi ro bị rate-limit. Có thể bấm lại nhiều đợt."
+            action={
+              <Button variant="secondary" size="lg" icon={I.Refresh}
+                loading={busy.clubCareer500 || status?.clubCareerBackfillRunning}
+                disabled={status?.bulkDetailRunning || status?.discoverBySeasonRunning || status?.scrapeSeasonsRunning}
+                onClick={() => run('clubCareer500', '/enrichment/fifaaddict/backfill-club-career', {
+                  batchSize: 50,
+                  delayMs: 600,
+                  limit: 500,
+                  onlyMissing: true,
+                })}>
+                Backfill 500
+              </Button>
+            }
+          />
+
+          <OpCard
+            icon={I.Refresh} iconColor="#37a0ff"
+            title="5. Backfill Club Career All Missing — cập nhật toàn bộ lịch sử CLB còn thiếu"
+            sub="Force fetch lại detail cho toàn bộ record đang thiếu clubCareer. Job này có thể chạy rất lâu nếu còn nhiều record."
+            meta="Chỉ dùng khi muốn để job chạy dài. Vẫn delay 600ms/request để giảm rủi ro bị rate-limit."
+            action={
+              <Button variant="secondary" size="lg" icon={I.Refresh}
+                loading={busy.clubCareerAll || status?.clubCareerBackfillRunning}
+                disabled={status?.bulkDetailRunning || status?.discoverBySeasonRunning || status?.scrapeSeasonsRunning}
+                onClick={() => run('clubCareerAll', '/enrichment/fifaaddict/backfill-club-career', {
+                  batchSize: 50,
+                  delayMs: 600,
+                  limit: 0,
+                  onlyMissing: true,
+                })}>
+                Backfill All Missing
+              </Button>
+            }
+          />
         </div>
 
         <div className="fco-ops-col">

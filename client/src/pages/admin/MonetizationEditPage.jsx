@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { adminMonetizationService } from '../../services/adminMonetization';
 import ItemForm from '../../components/admin/monetization/ItemForm';
@@ -94,12 +94,12 @@ export default function MonetizationEditPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/admin/monetization')}
+        <Link
+          to="/admin/monetization"
           className="rounded-lg p-2 text-ink-muted hover:bg-surface-2 hover:text-ink transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
+        </Link>
         <div className="flex-1">
           <h1 className="text-xl font-semibold text-ink">
             {isNew ? 'New Monetization Item' : `Edit: ${data.title}`}
