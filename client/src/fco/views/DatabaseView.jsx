@@ -303,13 +303,45 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     <div className="fco-db">
       <PlayerSearchForm
         search={search}
-        setSearch={(val) => { setSearch(val); setPage(1); }}
+        setSearch={val => { setSearch(val); setPage(1); }}
         positions={posGroups}
-        setPositions={(val) => { setPosGroups(val); setPage(1); }}
+        setPositions={val => { setPosGroups(val); setPage(1); }}
         ovr={ovr}
-        setOvr={(val) => { setOvr(val); setPage(1); }}
+        setOvr={val => { setOvr(val); setPage(1); }}
         salaryMax={salaryMax}
-        setSalaryMax={(val) => { setSalaryMax(val); setPage(1); }}
+        setSalaryMax={val => { setSalaryMax(val); setPage(1); }}
+        league={league}
+        setLeague={val => { setLeague(val); setPage(1); }}
+        nation={nation}
+        setNation={val => { setNation(val); setPage(1); }}
+        clubSearch={clubSearch}
+        setClubSearch={val => { setClubSearch(val); setPage(1); }}
+        preferredFoot={preferredFoot}
+        setPreferredFoot={val => { setPreferredFoot(val); setPage(1); }}
+        weakFoot={weakFoot}
+        setWeakFoot={val => { setWeakFoot(val); setPage(1); }}
+        skillMoves={skillMoves}
+        setSkillMoves={val => { setSkillMoves(val); setPage(1); }}
+        workRateAttack={workRateAttack}
+        setWorkRateAttack={val => { setWorkRateAttack(val); setPage(1); }}
+        workRateDefense={workRateDefense}
+        setWorkRateDefense={val => { setWorkRateDefense(val); setPage(1); }}
+        heightMin={heightMin}
+        setHeightMin={val => { setHeightMin(val); setPage(1); }}
+        heightMax={heightMax}
+        setHeightMax={val => { setHeightMax(val); setPage(1); }}
+        weightMin={weightMin}
+        setWeightMin={val => { setWeightMin(val); setPage(1); }}
+        weightMax={weightMax}
+        setWeightMax={val => { setWeightMax(val); setPage(1); }}
+        reputation={reputation}
+        setReputation={val => { setReputation(val); setPage(1); }}
+        statFilter={statFilter}
+        setStatFilter={val => { setStatFilter(val); setPage(1); }}
+        statMin={statMin}
+        setStatMin={val => { setStatMin(val); setPage(1); }}
+        statMax={statMax}
+        setStatMax={val => { setStatMax(val); setPage(1); }}
         onReset={resetFilters}
         onSearch={load}
       />
