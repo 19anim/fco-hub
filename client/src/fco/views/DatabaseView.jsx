@@ -349,53 +349,6 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
 
       {/* Filter bar */}
       <div className="fco-filterbar" style={{ gap: 12 }}>
-        {/* Position container - Structured Grid */}
-        <div className="fco-pos-container">
-          <div className="fco-pos-subs">
-            {Object.keys(POSITION_GROUPS).map(g => (
-              <div key={g} className="fco-pos-subgroup">
-                <div className="fco-pos-subgroup-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span className="fco-pos-subgroup-title">{g}</span>
-                  <button
-                    className="fco-posgroup-select-all"
-                    style={{ fontSize: 9, background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 700 }}
-                    onClick={() => {
-                      const subs = POSITION_GROUPS[g];
-                      const allSelected = subs.every(p => posGroups.includes(p));
-                      if (allSelected) {
-                        setPosGroups(prev => prev.filter(x => !subs.includes(x)));
-                      } else {
-                        setPosGroups(prev => [...new Set([...prev.filter(x => !subs.includes(x)), ...subs])]);
-                      }
-                      setPage(1);
-                    }}
-                  >
-                    {POSITION_GROUPS[g].every(p => posGroups.includes(p)) ? 'Bỏ chọn' : 'Tất cả'}
-                  </button>
-                </div>
-                <div className="fco-pos-subgroup-items">
-                  {POSITION_GROUPS[g].map(p => {
-                    const isSelected = posGroups.includes(p);
-                    const color = POSITIONS_META[p]?.color || 'var(--accent)';
-                    return (
-                      <button key={p}
-                        className={`fco-subpos-btn${isSelected ? ' on' : ''}`}
-                        style={isSelected ? { '--pos-color': color } : {}}
-                        onClick={() => {
-                          setPosGroups(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
-                          setPage(1);
-                        }}>
-                        {p}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="fco-filter-divider" />
 
         {/* Season selector - Display all seasons in a grid with images/fallback badges */}
         <div className="fco-season-ext-list">
