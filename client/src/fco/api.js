@@ -73,7 +73,6 @@ export async function fetchPlayerDetail(id) {
   const normalized = normalizePlayer({ ...player, enrichment });
   const related = (relatedSeasons || [])
     .filter(r => String(r._id) !== String(player._id))
-    .slice(0, 8)
     .map(normalizePlayer);
   return { player: normalized, related };
 }

@@ -5,8 +5,28 @@ import { getSeasonSprite } from './seasonSprites.js';
 import * as I from './Icons.jsx';
 
 // ── Player Avatar ──────────────────────────────────────────────────────────────
-export function PlayerAvatar({ player, size = 40 }) {
+export function PlayerAvatar({ player, size = 40, bare = false }) {
   const s = getSeason(player.season);
+  if (bare) {
+    if (player.imageUrl) {
+      return (
+        <img src={player.imageUrl} alt={player.name}
+          style={{ height: size, width: 'auto', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
+          onError={e => { e.target.style.display = 'none'; }} />
+      );
+    }
+    return (
+      <div style={{
+        width: size * 0.75, height: size, flex: `0 0 ${size * 0.75}px`,
+        borderRadius: 10, background: s.bg, color: s.fg,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5,
+      }}>
+        <span style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: size * 0.28, letterSpacing: '-.02em' }}>
+          {initials(player.name)}
+        </span>
+      </div>
+    );
+  }
   if (player.imageUrl) {
     return (
       <div style={{

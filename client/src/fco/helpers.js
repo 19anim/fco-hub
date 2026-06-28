@@ -15,6 +15,9 @@ export function formatCoins(n) {
 export function statColor(v) {
   const value = Number(v);
   if (!Number.isFinite(value)) return '#6b6e76';
+  if (value >= 160) return '#11caaa';
+  if (value >= 150) return '#ffa800';
+  if (value >= 140) return '#c99b00';
   if (value >= 130) return '#dc0000';
   if (value >= 120) return '#cf13c0';
   if (value >= 110) return '#b33bff';
@@ -101,11 +104,24 @@ export function normalizePlayer(raw) {
 
   const trust = deriveTrust(raw);
 
+  const positionOverallByPos = new Map((e.positions || []).map((p) => [p.position, p.overall]));
+  const positionRatingBoost = Math.max(
+    0,
+    ...(e.positionRatings || []).map((rating) => {
+      const positionOverall = positionOverallByPos.get(rating.label);
+      return Number.isFinite(positionOverall) ? positionOverall - rating.value : 0;
+    })
+  );
+  const positionRatings = (e.positionRatings || []).map((rating) => ({
+    ...rating,
+    value: rating.value + positionRatingBoost,
+  }));
+
   // Detailed stats from merged stat map
   const detailed = buildDetailed(statMap);
 
   return {
-    id: String(raw._id),
+    id: String(raw._id).replace(/^enrichment-/, ''),
     spid: raw.spid,
     name: e.displayNameVi || e.fullNameVi || raw.name || '',
     nameEn: e.displayNameEn || '',
@@ -129,7 +145,7 @@ export function normalizePlayer(raw) {
     foot: e.preferredFoot || 'right',
     traits: e.hiddenTraits || [],
     traitsDescription: e.traitsDescription || [],
-    positionRatings: e.positionRatings || [],
+    positionRatings,
     clubCareer: e.clubCareer || [],
     workRateAttack: e.workRateAttack || '2',
     workRateDefense: e.workRateDefense || '2',
@@ -262,30 +278,29 @@ function buildDetailed(statMap) {
       { label: 'Lực sút', value: v.shotPower ?? null },
       { label: 'Sút xa', value: v.longShots ?? null },
       { label: 'Vô-lê', value: v.volleys ?? null },
-      { label: 'Penalty', value: v.penalties ?? null },
       { label: 'Chọn vị trí', value: v.positioning ?? null },
+      { label: 'Penalty', value: v.penalties ?? null },
     ],
     passing: [
+      { label: 'Ch.ngắn', value: v.shortPassing ?? null },
       { label: 'Tầm nhìn', value: v.vision ?? null },
       { label: 'Tạt bóng', value: v.crossing ?? null },
-      { label: 'Chuyền ngắn', value: v.shortPassing ?? null },
-      { label: 'Chuyền dài', value: v.longPassing ?? null },
-      { label: 'Sút xoáy', value: v.curve ?? null },
+      { label: 'Ch.dài', value: v.longPassing ?? null },
       { label: 'Đá phạt', value: v.fkAccuracy ?? null },
+      { label: 'Sút xoáy', value: v.curve ?? null },
     ],
     dribbling: [
+      { label: 'Rê bóng', value: v.dribbling ?? null },
+      { label: 'Giữ bóng', value: v.ballControl ?? null },
       { label: 'Khéo léo', value: v.agility ?? null },
       { label: 'Thăng bằng', value: v.balance ?? null },
       { label: 'Phản ứng', value: v.reactions ?? null },
-      { label: 'Giữ bóng', value: v.ballControl ?? null },
-      { label: 'Rê bóng', value: v.dribbling ?? null },
-      { label: 'Bình tĩnh', value: v.composure ?? null },
+      { label: 'Binh tĩnh', value: v.composure ?? null },
     ],
     defending: [
-      { label: 'Cắt bóng', value: v.interceptions ?? null },
-      { label: 'Đánh đầu', value: v.heading ?? null },
       { label: 'Kèm người', value: v.defAwareness ?? null },
-      { label: 'Lấy bóng', value: v.standingTackle ?? null },
+      { label: 'Lắy bóng', value: v.standingTackle ?? null },
+      { label: 'Cắt bóng', value: v.interceptions ?? null },
       { label: 'Xoạc bóng', value: v.slidingTackle ?? null },
     ],
     physical: [
@@ -293,6 +308,7 @@ function buildDetailed(statMap) {
       { label: 'Thể lực', value: v.stamina ?? null },
       { label: 'Quyết đoán', value: v.aggression ?? null },
       { label: 'Nhảy', value: v.jumping ?? null },
+      { label: 'Đánh đầu', value: v.heading ?? null },
     ],
   };
 }

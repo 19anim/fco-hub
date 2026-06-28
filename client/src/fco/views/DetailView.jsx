@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { fetchPlayerDetail } from '../api.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpers.js';
-import { PlayerAvatar, OvrBox, PosPill, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
-import { getOvrIncreaseForLevel } from '../upgradeHelpers.js';
+import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
 import * as I from '../Icons.jsx';
+import { applyDetailBonuses, getDetailBonusModel } from './detailBonus.js';
 
 const STAT_GROUPS = [
   { key: 'pace',      label: 'Tốc độ',     en: 'Pace' },
@@ -25,6 +25,136 @@ const GK_STAT_GROUPS = [
 ];
 
 const GK_GROUP = { key: 'gk', label: 'Thủ môn', en: 'Goalkeeper' };
+const FLAT_SUB_STAT_ORDER = [
+  { group: 'physical', label: 'Sức mạnh' },
+  { group: 'pace', label: 'Tăng tốc' },
+  { group: 'pace', label: 'Tốc độ' },
+  { group: 'dribbling', label: 'Rê bóng' },
+  { group: 'dribbling', label: 'Giữ bóng' },
+  { group: 'passing', label: 'Ch.ngắn' },
+  { group: 'shooting', label: 'Dứt điểm' },
+  { group: 'shooting', label: 'Lực sút' },
+  { group: 'physical', label: 'Đánh đầu' },
+  { group: 'shooting', label: 'Sút xa' },
+  { group: 'shooting', label: 'Vô-lê' },
+  { group: 'shooting', label: 'Chọn vị trí' },
+  { group: 'dribbling', label: 'Phản ứng' },
+  { group: 'shooting', label: 'Penalty' },
+  { group: 'passing', label: 'Tầm nhìn' },
+  { group: 'passing', label: 'Tạt bóng' },
+  { group: 'passing', label: 'Ch.dài' },
+  { group: 'passing', label: 'Đá phạt' },
+  { group: 'passing', label: 'Sút xoáy' },
+  { group: 'dribbling', label: 'Khéo léo' },
+  { group: 'dribbling', label: 'Thăng bằng' },
+  { group: 'defending', label: 'Kèm người' },
+  { group: 'defending', label: 'Lắy bóng' },
+  { group: 'defending', label: 'Cắt bóng' },
+  { group: 'defending', label: 'Xoạc bóng' },
+  { group: 'physical', label: 'Thể lực' },
+  { group: 'physical', label: 'Quyết đoán' },
+  { group: 'physical', label: 'Nhảy' },
+  { group: 'dribbling', label: 'Binh tĩnh' },
+];
+const DEFAULT_SUB_STAT_ORDER = [
+  'Sức mạnh', 'Tăng tốc', 'Tốc độ', 'Rê bóng', 'Giữ bóng', 'Ch.ngắn', 'Dứt điểm', 'Lực sút', 'Đánh đầu', 'Sút xa',
+  'Vô-lê', 'Chọn vị trí', 'Phản ứng', 'Penalty', 'Tầm nhìn', 'Tạt bóng', 'Ch.dài', 'Đá phạt', 'Sút xoáy', 'Khéo léo',
+  'Thăng bằng', 'Kèm người', 'Lắy bóng', 'Cắt bóng', 'Xoạc bóng', 'Thể lực', 'Quyết đoán', 'Nhảy', 'Binh tĩnh',
+  'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+];
+const POSITION_SUB_STAT_ORDER = {
+  OVR: [
+    'Tốc độ', 'Tăng tốc', 'Dứt điểm', 'Lực sút', 'Sút xa', 'Chọn vị trí', 'Vô-lê', 'Penalty', 'Ch.ngắn', 'Tầm nhìn',
+    'Tạt bóng', 'Ch.dài', 'Đá phạt', 'Sút xoáy', 'Rê bóng', 'Giữ bóng', 'Khéo léo', 'Thăng bằng', 'Phản ứng',
+    'Kèm người', 'Lắy bóng', 'Cắt bóng', 'Đánh đầu', 'Xoạc bóng', 'Sức mạnh', 'Thể lực', 'Quyết đoán', 'Nhảy',
+    'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  ST: DEFAULT_SUB_STAT_ORDER,
+  RW: [
+    'Tăng tốc', 'Tốc độ', 'Khéo léo', 'Rê bóng', 'Giữ bóng', 'Tạt bóng', 'Ch.ngắn', 'Dứt điểm', 'Sút xa',
+    'Chọn vị trí', 'Tầm nhìn', 'Phản ứng', 'Lực sút', 'Vô-lê', 'Penalty', 'Ch.dài', 'Đá phạt', 'Sút xoáy',
+    'Thăng bằng', 'Kèm người', 'Lắy bóng', 'Cắt bóng', 'Đánh đầu', 'Xoạc bóng', 'Sức mạnh', 'Thể lực', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  LW: [
+    'Tăng tốc', 'Tốc độ', 'Khéo léo', 'Rê bóng', 'Giữ bóng', 'Tạt bóng', 'Ch.ngắn', 'Dứt điểm', 'Sút xa',
+    'Chọn vị trí', 'Tầm nhìn', 'Phản ứng', 'Lực sút', 'Vô-lê', 'Penalty', 'Ch.dài', 'Đá phạt', 'Sút xoáy',
+    'Thăng bằng', 'Kèm người', 'Lắy bóng', 'Cắt bóng', 'Đánh đầu', 'Xoạc bóng', 'Sức mạnh', 'Thể lực', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  CF: [
+    'Tăng tốc', 'Tốc độ', 'Rê bóng', 'Giữ bóng', 'Ch.ngắn', 'Dứt điểm', 'Lực sút', 'Đánh đầu', 'Sút xa',
+    'Chọn vị trí', 'Tầm nhìn', 'Phản ứng', 'Vô-lê', 'Penalty', 'Tạt bóng', 'Ch.dài', 'Đá phạt', 'Sút xoáy',
+    'Khéo léo', 'Thăng bằng', 'Kèm người', 'Lắy bóng', 'Cắt bóng', 'Xoạc bóng', 'Sức mạnh', 'Thể lực', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  CAM: [
+    'Tăng tốc', 'Tốc độ', 'Khéo léo', 'Rê bóng', 'Giữ bóng', 'Ch.ngắn', 'Dứt điểm', 'Ch.dài', 'Sút xa',
+    'Chọn vị trí', 'Tầm nhìn', 'Phản ứng', 'Lực sút', 'Vô-lê', 'Penalty', 'Tạt bóng', 'Đá phạt', 'Sút xoáy',
+    'Thăng bằng', 'Kèm người', 'Lắy bóng', 'Cắt bóng', 'Đánh đầu', 'Xoạc bóng', 'Sức mạnh', 'Thể lực', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  RM: [
+    'Thể lực', 'Tăng tốc', 'Tốc độ', 'Rê bóng', 'Giữ bóng', 'Tạt bóng', 'Ch.ngắn', 'Dứt điểm', 'Ch.dài',
+    'Chọn vị trí', 'Tầm nhìn', 'Phản ứng', 'Lực sút', 'Sút xa', 'Vô-lê', 'Penalty', 'Đá phạt', 'Sút xoáy',
+    'Khéo léo', 'Thăng bằng', 'Kèm người', 'Lắy bóng', 'Cắt bóng', 'Đánh đầu', 'Xoạc bóng', 'Sức mạnh', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  LM: [
+    'Thể lực', 'Tăng tốc', 'Tốc độ', 'Rê bóng', 'Giữ bóng', 'Tạt bóng', 'Ch.ngắn', 'Dứt điểm', 'Ch.dài',
+    'Chọn vị trí', 'Tầm nhìn', 'Phản ứng', 'Lực sút', 'Sút xa', 'Vô-lê', 'Penalty', 'Đá phạt', 'Sút xoáy',
+    'Khéo léo', 'Thăng bằng', 'Kèm người', 'Lắy bóng', 'Cắt bóng', 'Đánh đầu', 'Xoạc bóng', 'Sức mạnh', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  CM: [
+    'Thể lực', 'Rê bóng', 'Giữ bóng', 'Lắy bóng', 'Ch.ngắn', 'Dứt điểm', 'Ch.dài', 'Sút xa', 'Cắt bóng',
+    'Chọn vị trí', 'Tầm nhìn', 'Phản ứng', 'Tốc độ', 'Tăng tốc', 'Lực sút', 'Vô-lê', 'Penalty', 'Tạt bóng',
+    'Đá phạt', 'Sút xoáy', 'Khéo léo', 'Thăng bằng', 'Kèm người', 'Đánh đầu', 'Xoạc bóng', 'Sức mạnh', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  CDM: [
+    'Sức mạnh', 'Thể lực', 'Xoạc bóng', 'Giữ bóng', 'Kèm người', 'Lắy bóng', 'Ch.ngắn', 'Ch.dài', 'Cắt bóng',
+    'Tầm nhìn', 'Phản ứng', 'Quyết đoán', 'Tốc độ', 'Tăng tốc', 'Dứt điểm', 'Lực sút', 'Sút xa', 'Chọn vị trí',
+    'Vô-lê', 'Penalty', 'Tạt bóng', 'Đá phạt', 'Sút xoáy', 'Rê bóng', 'Khéo léo', 'Thăng bằng', 'Đánh đầu', 'Nhảy',
+    'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  RWB: [
+    'Thể lực', 'Tăng tốc', 'Tốc độ', 'Xoạc bóng', 'Rê bóng', 'Giữ bóng', 'Kèm người', 'Lắy bóng', 'Tạt bóng',
+    'Ch.ngắn', 'Cắt bóng', 'Phản ứng', 'Dứt điểm', 'Lực sút', 'Sút xa', 'Chọn vị trí', 'Vô-lê', 'Penalty',
+    'Tầm nhìn', 'Ch.dài', 'Đá phạt', 'Sút xoáy', 'Khéo léo', 'Thăng bằng', 'Đánh đầu', 'Sức mạnh', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  LWB: [
+    'Thể lực', 'Tăng tốc', 'Tốc độ', 'Xoạc bóng', 'Rê bóng', 'Giữ bóng', 'Kèm người', 'Lắy bóng', 'Tạt bóng',
+    'Ch.ngắn', 'Cắt bóng', 'Phản ứng', 'Dứt điểm', 'Lực sút', 'Sút xa', 'Chọn vị trí', 'Vô-lê', 'Penalty',
+    'Tầm nhìn', 'Ch.dài', 'Đá phạt', 'Sút xoáy', 'Khéo léo', 'Thăng bằng', 'Đánh đầu', 'Sức mạnh', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  RB: [
+    'Thể lực', 'Tăng tốc', 'Tốc độ', 'Xoạc bóng', 'Giữ bóng', 'Kèm người', 'Lắy bóng', 'Tạt bóng', 'Ch.ngắn',
+    'Đánh đầu', 'Cắt bóng', 'Phản ứng', 'Dứt điểm', 'Lực sút', 'Sút xa', 'Chọn vị trí', 'Vô-lê', 'Penalty',
+    'Tầm nhìn', 'Ch.dài', 'Đá phạt', 'Sút xoáy', 'Rê bóng', 'Khéo léo', 'Thăng bằng', 'Sức mạnh', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  LB: [
+    'Thể lực', 'Tăng tốc', 'Tốc độ', 'Xoạc bóng', 'Giữ bóng', 'Kèm người', 'Lắy bóng', 'Tạt bóng', 'Ch.ngắn',
+    'Đánh đầu', 'Cắt bóng', 'Phản ứng', 'Dứt điểm', 'Lực sút', 'Sút xa', 'Chọn vị trí', 'Vô-lê', 'Penalty',
+    'Tầm nhìn', 'Ch.dài', 'Đá phạt', 'Sút xoáy', 'Rê bóng', 'Khéo léo', 'Thăng bằng', 'Sức mạnh', 'Quyết đoán',
+    'Nhảy', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  CB: [
+    'Sức mạnh', 'Tốc độ', 'Nhảy', 'Xoạc bóng', 'Giữ bóng', 'Kèm người', 'Lắy bóng', 'Ch.ngắn', 'Đánh đầu',
+    'Cắt bóng', 'Phản ứng', 'Quyết đoán', 'Tăng tốc', 'Dứt điểm', 'Lực sút', 'Sút xa', 'Chọn vị trí', 'Vô-lê',
+    'Penalty', 'Tầm nhìn', 'Tạt bóng', 'Ch.dài', 'Đá phạt', 'Sút xoáy', 'Rê bóng', 'Khéo léo', 'Thăng bằng',
+    'Thể lực', 'Binh tĩnh', 'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Phản xạ', 'gk:Chọn vị trí',
+  ],
+  GK: [
+    'gk:Đổ người', 'gk:Bắt bóng', 'gk:Phát bóng', 'gk:Chọn vị trí', 'gk:Phản xạ', 'Phản ứng', 'Tốc độ', 'Tăng tốc',
+    'Dứt điểm', 'Lực sút', 'Sút xa', 'Chọn vị trí', 'Vô-lê', 'Penalty', 'Ch.ngắn', 'Tầm nhìn', 'Tạt bóng', 'Ch.dài',
+    'Đá phạt', 'Sút xoáy', 'Rê bóng', 'Giữ bóng', 'Khéo léo', 'Thăng bằng', 'Kèm người', 'Lắy bóng', 'Cắt bóng',
+    'Đánh đầu', 'Xoạc bóng', 'Sức mạnh', 'Thể lực', 'Quyết đoán', 'Nhảy', 'Binh tĩnh',
+  ],
+};
 const DEFAULT_STAT_ORDER = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical', 'gk'];
 const POSITION_STAT_ORDER = {
   ST: ['shooting', 'pace', 'dribbling', 'physical', 'passing', 'defending', 'gk'],
@@ -44,25 +174,14 @@ const POSITION_STAT_ORDER = {
   GK: ['gk', 'pace', 'passing', 'physical', 'defending', 'dribbling', 'shooting'],
 };
 
-const GRADE_OPTIONS = Array.from({ length: 14 }, (_, value) => value);
+const GRADE_OPTIONS = Array.from({ length: 13 }, (_, index) => index + 1);
+const LEVEL_OPTIONS = Array.from({ length: 5 }, (_, index) => index + 1);
+const BONUS_OPTIONS = Array.from({ length: 11 }, (_, index) => index);
 const OVR_POSITION = 'OVR';
 const GK_POSITION = 'GK';
-const OVR_STAT_KEY = 'ovr';
-const GRADE_STAT_KEYS = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical'];
-
-function getOvrBonusForGrade(grade) {
-  return grade === 0 ? -3 : getOvrIncreaseForLevel(grade);
-}
-
-function getStatBonusForGrade(grade) {
-  return Math.max(0, Number(grade) - 1);
-}
-
-function addGrade(value, grade) {
-  if (value == null) return value;
-  const number = Number(value);
-  return Number.isFinite(number) ? number + grade : value;
-}
+const FW_POSITIONS = new Set(['ST', 'CF', 'LW', 'RW', 'LF', 'RF']);
+const MF_POSITIONS = new Set(['CAM', 'CM', 'CDM', 'LM', 'RM']);
+const DF_POSITIONS = new Set(['CB', 'LB', 'RB', 'LWB', 'RWB']);
 
 function expandPositionLabel(label) {
   if (!label || label === OVR_POSITION) return [];
@@ -75,29 +194,63 @@ function getStatOrderForPosition(label) {
   return POSITION_STAT_ORDER[positions[0]] || DEFAULT_STAT_ORDER;
 }
 
-function applyGradeBonus(player, grade) {
-  if (grade == null) return player;
+function getSubStatOrderForPosition(label) {
+  const positions = label === OVR_POSITION ? [OVR_POSITION] : expandPositionLabel(label);
+  return POSITION_SUB_STAT_ORDER[positions[0]] || DEFAULT_SUB_STAT_ORDER;
+}
 
-  const ovrBonus = getOvrBonusForGrade(grade);
-  const statBonus = getStatBonusForGrade(grade);
-  const detailed = player.detailed
-    ? Object.fromEntries(Object.entries(player.detailed).map(([group, value]) => [
-        group,
-        Array.isArray(value)
-          ? value.map((stat) => ({ ...stat, value: addGrade(stat.value, statBonus) }))
-          : Object.fromEntries(Object.entries(value).map(([key, statValue]) => [key, addGrade(statValue, statBonus)])),
-      ]))
-    : player.detailed;
+function getSubStatOrderKey(stat) {
+  return stat.group === 'gk' ? `gk:${stat.label}` : stat.label;
+}
 
-  return {
-    ...player,
-    [OVR_STAT_KEY]: addGrade(player[OVR_STAT_KEY], ovrBonus),
-    ...Object.fromEntries(GRADE_STAT_KEYS.map((key) => [key, addGrade(player[key], statBonus)])),
-    positionRatings: player.positionRatings?.map((rating) => ({ ...rating, value: addGrade(rating.value, ovrBonus) })) || [],
-    detailed,
-    boost: grade,
-    ovrBoost: ovrBonus,
-  };
+function getPositionTone(label) {
+  const positions = expandPositionLabel(label);
+  if (positions.some((pos) => pos === GK_POSITION)) return 'gk';
+  if (positions.some((pos) => FW_POSITIONS.has(pos))) return 'fw';
+  if (positions.some((pos) => MF_POSITIONS.has(pos))) return 'mf';
+  if (positions.some((pos) => DF_POSITIONS.has(pos))) return 'df';
+  return 'muted';
+}
+
+function Panel({ title, sub, children, className }) {
+  return (
+    <div className={`fco-panel${className ? ' ' + className : ''}`}>
+      <div className="fco-panel-head">
+        <div className="fco-panel-title">
+          {title}
+          {sub && <span className="fco-panel-title-sub">{sub}</span>}
+        </div>
+      </div>
+      <div className="fco-panel-body">{children}</div>
+    </div>
+  );
+}
+
+function TabbedPanel({ tabs, className }) {
+  const visible = tabs.filter(t => t.show);
+  const [active, setActive] = useState(() => visible[0]?.key);
+  const tab = visible.find(t => t.key === active) ?? visible[0];
+  if (!visible.length) return null;
+  return (
+    <div className={`fco-panel${className ? ' ' + className : ''}`}>
+      <div className="fco-panel-head">
+        <div className="fco-panel-tabs">
+          {visible.map(t => (
+            <button
+              key={t.key}
+              type="button"
+              className={`fco-panel-tab${tab?.key === t.key ? ' on' : ''}`}
+              onClick={() => setActive(t.key)}
+            >
+              {t.label}
+              {t.count != null && <span className="fco-panel-tab-count">{t.count}</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="fco-panel-body">{tab?.content}</div>
+    </div>
+  );
 }
 
 export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, onSelect, onCompare }) {
@@ -105,12 +258,18 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [grade, setGrade] = useState(1);
+  const [level, setLevel] = useState(1);
+  const [teamColorBonus, setTeamColorBonus] = useState(0);
+  const [isUpgradePanelOpen, setIsUpgradePanelOpen] = useState(false);
   const [activePosition, setActivePosition] = useState('');
 
   useEffect(() => {
     setLoading(true);
     setError(null);
     setGrade(1);
+    setLevel(1);
+    setTeamColorBonus(0);
+    setIsUpgradePanelOpen(false);
     setActivePosition('');
     fetchPlayerDetail(id)
       .then(res => { setData(res); setLoading(false); })
@@ -125,19 +284,24 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   );
 
   const { player, related } = data;
-  const p = applyGradeBonus(player, grade);
+  const bonuses = getDetailBonusModel({ grade, level, teamColorBonus });
+  const p = applyDetailBonuses(player, bonuses);
   const s = getSeason(p.season);
   const trust = getTrust(p.trust);
   const positionRatings = [{ code: OVR_POSITION, label: OVR_POSITION, value: p.ovr }, ...(p.positionRatings || [])];
   const defaultPosition = p.positionRatings?.find((rating) => rating.recommended)?.label || OVR_POSITION;
-  const selectedPosition = activePosition || defaultPosition;
-  const activeRating = positionRatings.find((rating) => rating.label === selectedPosition);
-  const displayedOvr = activeRating?.value ?? p.ovr;
-  const selectedPositions = expandPositionLabel(selectedPosition);
-  const displayedPositions = selectedPositions.length
-    ? [...selectedPositions, ...(p.positions || []).filter((pos) => !selectedPositions.includes(pos))]
+  const selectedStatPosition = activePosition || defaultPosition;
+  const headerRating = positionRatings.find((rating) => rating.label === defaultPosition);
+  const displayedOvr = headerRating?.value ?? p.ovr;
+  const headerPositions = expandPositionLabel(defaultPosition);
+  const ratingByLabel = new Map((p.positionRatings || []).map((rating) => [rating.label, rating]));
+  const displayedPositions = headerPositions.length
+    ? [...headerPositions, ...(p.positions || []).filter((pos) => !headerPositions.includes(pos))]
     : p.positions;
-  const statOrder = getStatOrderForPosition(selectedPosition);
+  const displayedPositionRatings = displayedPositions
+    ?.map((pos) => ratingByLabel.get(pos) || { label: pos, value: null })
+    .filter((rating) => rating.label !== OVR_POSITION);
+  const statOrder = getStatOrderForPosition(selectedStatPosition);
   const bioItems = [
     p.nation,
     p.club,
@@ -145,8 +309,6 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
     p.age ? `${p.age} tuổi` : '',
     p.birthDate,
     p.height ? `${p.height}cm / ${p.weight || '—'}kg` : '',
-    p.foot === 'right' ? 'Chân phải' : p.foot === 'left' ? 'Chân trái' : '',
-    p.workRateAttack ? `Xu hướng ${p.workRateAttack}/${p.workRateDefense}` : '',
   ].filter(Boolean);
   const watched = watch.includes(p.id);
 
@@ -169,100 +331,140 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
         </div>
       </div>
 
-      <div className="fa-detail-sheet" style={{ '--season-ring': s.ring }}>
-        <div className="fa-detail-hero">
-          <div className="fa-detail-main">
-            <div className="fa-title-row">
-              <SeasonChip code={p.season} name={p.seasonName} img={p.seasonImg} full />
-              {isAdmin && trust && <TrustBadge id={p.trust} size="sm" />}
-              <span className="fa-primary-pos">{selectedPosition || p.primaryPos}</span>
-              <span className="fa-hero-ovr" style={{ color: statColor(displayedOvr) }}>{displayedOvr}</span>
-            </div>
-            <h1 className="fa-player-name">{cleanName(p.name)}</h1>
-            <div className="fa-bio-grid">
-              {bioItems.map((item) => <span key={item}>{item}</span>)}
-            </div>
-            <div className="fa-position-pills">
-              {displayedPositions?.map((pos, i) => (
-                <span key={pos} className={i > 0 ? 'muted' : ''}>{pos}</span>
-              ))}
-            </div>
-            <div className="fa-economy-row">
-              {p.price > 0 && <span><I.Coins size={12} />Giá <b>{formatCoins(p.price)}</b></span>}
-              {p.salary > 0 && <span><I.Wallet size={12} />Lương <b>{p.salary}</b></span>}
-              {p.ovrBoost > 0 && <span>OVR boost <b>+{p.ovrBoost}</b></span>}
-            </div>
-          </div>
-
-          <div className="fa-upgrade-panel">
-            <div className="fa-upgrade-label">UPGRADE</div>
-            <GradeSelector grade={grade} onChange={setGrade} />
-          </div>
-
-          <div className="fa-player-art">
-            <PlayerAvatar player={p} size={132} />
-          </div>
-        </div>
-
-        <div className="fco-detail-stats">
-          <div className="fco-detail-ovr">
-            <div style={{ fontFamily: 'var(--mono)', fontWeight: 800, fontSize: 46, lineHeight: 1, color: statColor(displayedOvr) }}>{displayedOvr}</div>
-            <div className="fco-detail-ovr-lab">{selectedPosition || 'OVERALL'}{p.ovrBoost > 0 ? ` (+${p.ovrBoost})` : ''}</div>
-          </div>
-          <GradeSelector grade={grade} onChange={setGrade} />
-          <div className="fco-detail-posrow">
-            {displayedPositions?.map((pos, i) => <PosPill key={pos} pos={pos} faded={i > 0} />)}
-          </div>
-          <div className="fco-detail-money">
-            {p.price > 0 && (
-              <div className="fco-money-cell">
-                <div className="fco-money-lab"><I.Coins size={12} />Giá</div>
-                <div className="fco-money-val" style={{ color: 'var(--accent)' }}>{formatCoins(p.price)}</div>
-              </div>
-            )}
-            {p.salary > 0 && (
-              <div className="fco-money-cell">
-                <div className="fco-money-lab"><I.Wallet size={12} />Lương</div>
-                <div className="fco-money-val">{p.salary}</div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Korean banner */}
-      {isAdmin && p.koreanRaw && (
-        <div className="fco-banner kr">
-          <I.Languages size={18} style={{ flex: '0 0 18px', marginTop: 2 }} />
-          <div>
-            <b>Metadata tiếng Hàn</b> — Tên gốc: <code style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{p.koreanRaw}</code>
-            <br /><span style={{ fontSize: 12.5 }}>Cầu thủ chưa được dịch tên / đối chiếu sang tiếng Việt.</span>
-          </div>
-        </div>
-      )}
-
       {/* Main grid */}
       <div className="fco-detail-grid">
         <div className="fco-detail-left">
-          {/* Stats panel */}
-          <div className="fco-panel">
-            <div className="fco-panel-head">
-              <div className="fco-panel-title">Chỉ số {selectedPosition && <span className="fco-panel-title-sub">{selectedPosition}</span>}</div>
+          <div className="fa-detail-sheet" style={{ '--season-ring': s.ring }}>
+            <div className="fa-detail-hero">
+              <div className="fa-detail-main">
+                <div className="fa-title-row">
+                  <SeasonChip code={p.season} name={p.seasonName} img={p.seasonImg} full />
+                  {isAdmin && trust && <TrustBadge id={p.trust} size="sm" />}
+                </div>
+
+                <div className="fa-name-block">
+                  <div className="fa-rating-lockup">
+                    <span className="fa-hero-ovr" style={{ color: statColor(displayedOvr) }}>{displayedOvr}</span>
+                  </div>
+                  <h1 className="fa-player-name">{cleanName(p.name)}</h1>
+                </div>
+
+                <div className="fa-position-pills">
+                  {displayedPositionRatings?.map((rating, i) => (
+                    <span key={rating.label} className={`${getPositionTone(rating.label)} ${i > 0 ? 'muted' : ''}`}>
+                      <b>{rating.label}</b>
+                      {rating.value != null && <strong>{rating.value}</strong>}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="fa-bio-grid">
+                  {bioItems.map((item) => <span key={item}>{item}</span>)}
+                  {(p.foot || p.weakFoot) && (
+                    <span className="fa-bio-foot">
+                      <FootStars label="L" n={p.foot === 'left' ? 5 : p.weakFoot} dim={p.foot !== 'left'} />
+                      <FootStars label="R" n={p.foot === 'right' ? 5 : p.weakFoot} dim={p.foot !== 'right'} />
+                    </span>
+                  )}
+                  {p.skillMoves > 0 && (
+                    <span className="fa-bio-skill">
+                      <BioStars n={p.skillMoves} label="SKL" />
+                    </span>
+                  )}
+                  {p.workRateAttack && (
+                    <span className="fa-bio-workrate">
+                      <WorkrateBadge attack={p.workRateAttack} defense={p.workRateDefense} />
+                    </span>
+                  )}
+                  {p.reputation && (
+                    <span className="fa-bio-reputation">
+                      <FpBadge value={p.reputation} />
+                    </span>
+                  )}
+                </div>
+
+                <div className="fa-economy-row">
+                  {p.price > 0 && <span><I.Coins size={12} />Giá <b>{formatCoins(p.price)}</b></span>}
+                  {p.salary > 0 && <span><I.Wallet size={12} />Lương <b>{p.salary}</b></span>}
+                  {p.ovrBoost > 0 && <span>OVR boost <b>+{p.ovrBoost}</b></span>}
+                </div>
+              </div>
+
+              <div className="fa-player-art">
+                <PlayerAvatar player={p} size={188} bare />
+              </div>
             </div>
-            <div className="fco-panel-body">
-              {p.detailed
-                ? <AllStats p={p} order={statOrder} />
-                : <MainOnlyStats p={p} order={statOrder} />
-              }
+
+            <div className={`fa-upgrade-panel${isUpgradePanelOpen ? ' open' : ''}`}>
+              <button
+                type="button"
+                className="fa-upgrade-summary"
+                onClick={() => setIsUpgradePanelOpen((open) => !open)}
+                aria-expanded={isUpgradePanelOpen}
+              >
+                <span className="fa-upgrade-label">UPGRADE</span>
+                <span className="fa-upgrade-summary-text">
+                  Grade +{grade} · Lvl {level} · Bonus +{teamColorBonus}
+                </span>
+                <I.ChevronDown size={16} className="fa-upgrade-chevron" />
+              </button>
+              {isUpgradePanelOpen && (
+                <div className="fa-upgrade-controls">
+                  <GradeSelector grade={grade} onChange={setGrade} />
+                  <FlatBonusSelector title="Lvl" value={level} options={LEVEL_OPTIONS} onChange={setLevel} />
+                  <FlatBonusSelector title="Bonus" value={teamColorBonus} options={BONUS_OPTIONS} onChange={setTeamColorBonus} />
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Korean banner */}
+          {isAdmin && p.koreanRaw && (
+            <div className="fco-banner kr">
+              <I.Languages size={18} className="fco-banner-icon" />
+              <div>
+                <b>Metadata tiếng Hàn</b> — Tên gốc: <code className="fco-code">{p.koreanRaw}</code>
+                <span className="fco-banner-sub">Cầu thủ chưa được dịch tên / đối chiếu sang tiếng Việt.</span>
+              </div>
+            </div>
+          )}
 
-          {/* Traits */}
-          {p.traitsDescription?.length > 0 ? (
-            <div className="fco-panel">
-              <div className="fco-panel-head"><div className="fco-panel-title">Kỹ năng ẩn</div></div>
-              <div className="fco-panel-body">
+          {/* Vị trí + Chỉ số */}
+          <Panel title="Chỉ số" sub={selectedStatPosition} className="fa-position-panel">
+            <section className="perform">
+              <PerformStats p={p} />
+            </section>
+            <section className="postlist">
+              <div className="fa-position-row">
+                {positionRatings.map((rating) => (
+                  <button
+                    key={rating.label}
+                    type="button"
+                    className={`fa-position-rating ${selectedStatPosition === rating.label ? 'on' : ''} ${rating.recommended ? 'rec' : ''}`}
+                    onClick={() => setActivePosition(rating.label)}
+                  >
+                    <span>{rating.recommended && <I.Star size={10} fill="currentColor" />}{rating.label}</span>
+                    <strong style={{ color: statColor(rating.value) }}>{rating.value}</strong>
+                  </button>
+                ))}
+              </div>
+            </section>
+            <section className="attrwrap fa-detail-attrwrap">
+              {p.detailed
+                ? <AllStats p={p} position={selectedStatPosition} />
+                : <MainOnlyStats p={p} order={statOrder} />
+              }
+            </section>
+          </Panel>
+
+          {/* Kỹ năng ẩn + Lịch sử CLB (tabbed) */}
+          <TabbedPanel tabs={[
+            {
+              key: 'traits',
+              label: 'Kỹ năng ẩn',
+              count: (p.traitsDescription?.length || p.traits?.length) || null,
+              show: p.traitsDescription?.length > 0 || p.traits?.length > 0,
+              content: p.traitsDescription?.length > 0 ? (
                 <div className="fco-traits-detail">
                   {p.traitsDescription.map((td, i) => (
                     <div key={i} className="fco-trait-desc-item">
@@ -276,85 +478,42 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          ) : p.traits?.length > 0 ? (
-            <div className="fco-panel">
-              <div className="fco-panel-head"><div className="fco-panel-title">Kỹ năng ẩn</div></div>
-              <div className="fco-panel-body">
+              ) : (
                 <div className="fco-traits">
                   {p.traits.map((t, i) => (
                     <span key={i} className="fco-trait"><I.Zap size={12} />{t}</span>
                   ))}
                 </div>
-              </div>
-            </div>
-          ) : null}
-
-          {/* Team Colors */}
-          {p.teamColor?.length > 0 && (
-            <div className="fco-panel">
-              <div className="fco-panel-head"><div className="fco-panel-title">Team Color (CLB từng khoác áo)</div></div>
-              <div className="fco-panel-body">
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {p.teamColor.map((tc, i) => (
-                    <span key={i} style={{ fontSize: 12.5, fontWeight: 550, padding: '4px 10px', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-dim)' }}>{tc}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Lịch sử thi đấu CLB */}
-          {p.clubCareer?.length > 0 && (
-            <div className="fco-panel">
-              <div className="fco-panel-head"><div className="fco-panel-title">Lịch sử thi đấu</div></div>
-              <div className="fco-panel-body">
-                <div className="fco-club-history">
-                  {p.clubCareer.map((c, i) => (
-                    <div key={i} className="fco-club-history-row">
-                      <span className="fco-club-history-team">{c.team}</span>
-                      {c.season && <span className="fco-club-history-season">{c.season}</span>}
+              ),
+            },
+            {
+              key: 'clubs',
+              label: 'Lịch sử CLB',
+              show: p.teamColor?.length > 0 || p.clubCareer?.length > 0,
+              content: (
+                <>
+                  {p.teamColor?.length > 0 && (
+                    <div className="fco-tags">
+                      {p.teamColor.map((tc, i) => <span key={i} className="fco-tag">{tc}</span>)}
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+                  )}
+                  {p.clubCareer?.length > 0 && (
+                    <div className={`fco-club-history${p.teamColor?.length > 0 ? ' mt' : ''}`}>
+                      {p.clubCareer.map((c, i) => (
+                        <div key={i} className="fco-club-history-row">
+                          <span className="fco-club-history-team">{c.team}</span>
+                          {c.season && <span className="fco-club-history-season">{c.season}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ),
+            },
+          ]} />
         </div>
 
         <div className="fco-detail-right">
-          {/* Profile */}
-          <div className="fco-panel">
-            <div className="fco-panel-head"><div className="fco-panel-title">Thông tin cầu thủ</div></div>
-            <div className="fco-panel-body">
-              <div className="fco-skillrow">
-                <div className="fco-kv">
-                  <div className="fco-kv-k">Kỹ thuật</div>
-                  <Stars n={p.skillMoves} />
-                </div>
-                <div className="fco-kv">
-                  <div className="fco-kv-k">Chân yếu</div>
-                  <Stars n={p.weakFoot} />
-                </div>
-                <div className="fco-kv">
-                  <div className="fco-kv-k">Thuận chân</div>
-                  <div className="fco-kv-v">{p.foot === 'right' ? 'Phải' : p.foot === 'left' ? 'Trái' : '—'}</div>
-                </div>
-              </div>
-              <div className="fco-kvgrid">
-                <div className="fco-kv"><div className="fco-kv-k">Quốc tịch</div><div className="fco-kv-v">{p.nation || '—'}</div></div>
-                <div className="fco-kv"><div className="fco-kv-k">CLB hiện tại</div><div className="fco-kv-v">{p.club || '—'}</div></div>
-                <div className="fco-kv"><div className="fco-kv-k">Giải đấu</div><div className="fco-kv-v">{p.league || '—'}</div></div>
-                <div className="fco-kv"><div className="fco-kv-k">Ngày sinh</div><div className="fco-kv-v">{p.birthDate || '—'}</div></div>
-                <div className="fco-kv"><div className="fco-kv-k">Thể hình</div><div className="fco-kv-v">{p.height ? `${p.height}cm / ${p.weight}kg` : '—'}</div></div>
-                <div className="fco-kv"><div className="fco-kv-k">Tuổi</div><div className="fco-kv-v">{p.age ? `${p.age} tuổi` : '—'}</div></div>
-                <div className="fco-kv"><div className="fco-kv-k">Xu hướng</div><div className="fco-kv-v">{p.workRateAttack ? `${p.workRateAttack} / ${p.workRateDefense}` : '—'}</div></div>
-                <div className="fco-kv"><div className="fco-kv-k">Danh tiếng</div><div className="fco-kv-v">{p.reputation || '—'}</div></div>
-              </div>
-            </div>
-          </div>
-
           <MonetizationSlot
             placement="player_detail_sidebar"
             entity={p.id ? { type: 'player', id: String(p.id) } : null}
@@ -402,7 +561,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
           </div>
           <div className="fco-panel-body">
             <div className="fco-relgrid">
-              {related.map(r => (
+              {[...related].sort((a, b) => (b.ovr ?? 0) - (a.ovr ?? 0)).map(r => (
                 <div key={r.id} className="fco-relcard" onClick={() => onSelect(r.id)}>
                   <PlayerAvatar player={r} size={40} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -421,6 +580,64 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
         </div>
       )}
     </div>
+  );
+}
+
+const WR_LABEL = { high: 'H', medium: 'M', low: 'L' };
+const WR_COLOR = { high: '#f97316', medium: '#facc15', low: '#60a5fa' };
+
+function FootStars({ label, n, dim }) {
+  return (
+    <span className={`fa-foot-col${dim ? ' dim' : ''}`}>
+      <span className="fa-foot-label">{label}</span>
+      {Array.from({ length: 5 }, (_, i) => (
+        <svg key={i} width="10" height="10" viewBox="0 0 24 24" className={`fa-star${i < n ? ' on' : ''}`} fill="inherit">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+function BioStars({ n, label }) {
+  return (
+    <span className="fa-bio-stars-wrap">
+      <span className="fa-bio-stars-label">{label}</span>
+      {Array.from({ length: 5 }, (_, i) => (
+        <svg key={i} width="10" height="10" viewBox="0 0 24 24" className={`fa-star${i < n ? ' on' : ''}`} fill="inherit">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+function WorkrateBadge({ attack, defense }) {
+  const a = (attack || '').toLowerCase();
+  const d = (defense || '').toLowerCase();
+  return (
+    <span className="fa-workrate-badge">
+      <span className="fa-wr-label">WR</span>
+      <span style={{ color: WR_COLOR[a] || '#aab0ba' }}>{WR_LABEL[a] || a}</span>
+      <span className="fa-wr-sep">/</span>
+      <span style={{ color: WR_COLOR[d] || '#aab0ba' }}>{WR_LABEL[d] || d}</span>
+    </span>
+  );
+}
+
+const FP_COLOR = { legendary: '#f59e0b', gold: '#eab308', silver: '#94a3b8', bronze: '#b45309' };
+
+function FpBadge({ value }) {
+  const key = (value || '').toLowerCase();
+  const color = FP_COLOR[key] || '#94a3b8';
+  return (
+    <span className="fa-fp-badge" style={{ borderColor: color, color }}>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="12" cy="12" r="10" />
+        <text x="12" y="16" textAnchor="middle" fontSize="11" fill="#0d1015" fontWeight="bold">FP</text>
+      </svg>
+      {value}
+    </span>
   );
 }
 
@@ -449,58 +666,120 @@ function GradeSelector({ grade, onChange }) {
   );
 }
 
-// Một dòng chỉ số thành phần: tên bên trái, số bên phải (màu theo statColor).
-// Không dùng progress bar — màu text đã thể hiện mạnh/yếu.
-function AttrLine({ label, value }) {
+function FlatBonusSelector({ title, value, options, onChange }) {
   return (
-    <div className="fco-attr-line">
-      <span className="fco-attr-line-lab">{label}</span>
-      <span className="fco-attr-line-val" style={{ color: value != null ? statColor(value) : 'var(--text-faint)' }}>
-        {value != null ? value : '—'}
-      </span>
+    <div className="fco-flat-bonus-selector" aria-label={title}>
+      <div className="fco-grade-title">
+        <span>{title}</span>
+        <strong>{title === 'Lvl' ? value : `+${value}`}</strong>
+      </div>
+      <div className="fco-flat-bonus-grid">
+        {options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={`fco-flat-bonus-btn${option === value ? ' on' : ''}`}
+            onClick={() => onChange(option)}
+            aria-pressed={option === value}
+            title={`${title} ${title === 'Lvl' ? option : `+${option}`}`}
+          >
+            {title === 'Lvl' ? option : `+${option}`}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
-function AllStats({ p, order }) {
-  const groups = buildStatGroups(p, order).filter((group) => group.subs.some((stat) => stat.value != null));
+function AttrLine({ label, value }) {
+  return (
+    <li className="foflex attr fco-attr-line">
+      <span className="fco-attr-line-lab">{label}</span>
+      <span className="fco-attr-line-val" style={{ color: value != null ? statColor(value) : 'var(--text-faint)' }}>
+        {value != null ? value : '—'}
+      </span>
+    </li>
+  );
+}
+
+function PerformStats({ p }) {
+  const groups = Object.fromEntries(buildStatGroups(p, DEFAULT_STAT_ORDER).map((group) => [group.key, group]));
+  const mainStats = [
+    { key: 'pace', label: 'Tốc độ', value: groups.pace?.value },
+    { key: 'shooting', label: 'Sút', value: groups.shooting?.value },
+    { key: 'passing', label: 'Chuyền', value: groups.passing?.value },
+    { key: 'dribbling', label: 'Rê bóng', value: groups.dribbling?.value },
+    { key: 'defending', label: 'Phòng thủ', value: groups.defending?.value },
+    { key: 'physical', label: 'Thể lực', value: groups.physical?.value },
+  ];
 
   return (
-    <div className="fa-attribute-grid">
-      {groups.map((group) => (
-        <section key={group.key} className={`fa-attribute-group${group.key === 'gk' ? ' gk' : ''}`}>
-          <header className="fa-attribute-group-head">
-            <span>{group.label}</span>
-            <strong style={{ color: group.value != null ? statColor(group.value) : 'var(--text-faint)' }}>{group.value ?? '—'}</strong>
-          </header>
-          <div className="fco-attr-lines">
-            {group.subs.filter((stat) => stat.value != null).map((stat) => (
-              <AttrLine key={stat.label} label={stat.label} value={stat.value} />
-            ))}
-          </div>
-        </section>
+    <ul className="foflex fa-perform-list">
+      {mainStats.map((stat) => (
+        <li key={stat.key}>
+          <span className="name">{stat.label}</span>
+          <b className="value" style={{ color: stat.value != null ? statColor(stat.value) : 'var(--text-faint)' }}>
+            {stat.value ?? '—'}
+          </b>
+        </li>
       ))}
-    </div>
+    </ul>
+  );
+}
+
+function AllStats({ p, position }) {
+  const subOrder = getSubStatOrderForPosition(position);
+  const subRank = new Map(subOrder.map((key, index) => [key, index]));
+  const byKey = new Map();
+
+  FLAT_SUB_STAT_ORDER.forEach(({ group, label }, index) => {
+    const stat = (p.detailed?.[group] || []).find((item) => item.label === label);
+    if (stat?.value != null) byKey.set(label, { ...stat, label, group, index });
+  });
+
+  GK_STAT_GROUPS.forEach((group, index) => {
+    const value = p.detailed?.gk?.[group.key] ?? null;
+    if (value != null) {
+      byKey.set(`gk:${group.label}`, {
+        label: group.label,
+        value,
+        group: 'gk',
+        index: FLAT_SUB_STAT_ORDER.length + index,
+      });
+    }
+  });
+
+  const flatStats = [...byKey.values()].sort((a, b) => {
+    const aRank = subRank.get(getSubStatOrderKey(a));
+    const bRank = subRank.get(getSubStatOrderKey(b));
+    const safeARank = aRank ?? subOrder.length + a.index;
+    const safeBRank = bRank ?? subOrder.length + b.index;
+    return safeARank - safeBRank || a.index - b.index;
+  });
+
+  return (
+    <ul className="fa-attribute-grid">
+      {flatStats.map((stat) => (
+        <AttrLine key={getSubStatOrderKey(stat)} label={stat.label} value={stat.value} />
+      ))}
+    </ul>
   );
 }
 
 function MainOnlyStats({ p, order }) {
   const vals = buildStatGroups(p, order).filter((group) => group.value != null);
   return (
-    <div>
-      <div className="fco-mainonly">
+    <>
+      <ul className="fa-attribute-grid fa-mainonly-attrgrid">
         {vals.map((group) => (
-          <div key={group.key} className="fco-mainonly-cell">
-            <div style={{ fontFamily: 'var(--mono)', fontWeight: 800, fontSize: 22, color: statColor(group.value) }}>{group.value}</div>
-            <div className="fco-mainonly-lab">{group.label}</div>
-          </div>
+          <AttrLine key={group.key} label={group.label} value={group.value} />
         ))}
-      </div>
+      </ul>
       <div className="fco-locked-note">
         <I.Lock size={14} />
         Chưa có chỉ số chi tiết — cần đồng bộ FIFAAddict
       </div>
-    </div>
+    </>
   );
 }
 

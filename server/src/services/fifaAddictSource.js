@@ -660,14 +660,15 @@ function extractTraitsFromJson(payload) {
 }
 
 // Parse OVR cho từng vị trí từ db.postlist (object keyed 1..N).
-function extractPositionRatings(postlist) {
+function extractPositionRatings(postlist, boost = 0) {
   if (!postlist || typeof postlist !== 'object') return [];
+  const ratingBoost = Math.max(0, Number(boost) || 0);
   return Object.values(postlist)
     .filter((p) => p && p.name && p.name !== 'ovr')
     .map((p) => ({
       code: String(p.text || p.name || '').toUpperCase(),
       label: String(p.text || p.name || ''),
-      value: Number(p.value) || 0,
+      value: (Number(p.value) || 0) + ratingBoost,
       recommended: Boolean(p.rec_direction),
     }))
     .filter((p) => p.value > 0);
@@ -789,7 +790,7 @@ function detailPayloadToEnrichment(payload, sourceUid) {
     keyStats: detailedStats.length ? detailedStats.slice(0, 16) : enrichment.keyStats,
     hiddenTraits: traits.hiddenTraits,
     traitsDescription: traits.traitsDescription,
-    positionRatings: extractPositionRatings(db.postlist),
+    positionRatings: extractPositionRatings(db.postlist, boost),
     clubCareer: extractClubCareer(getClubCareerSource(payload)),
     rawDescription: normalizeText(meta.desc || db.desc || ''),
     lastDetailSyncedAt: new Date(),
@@ -1041,7 +1042,7 @@ export async function ensureEnrichmentDetail(enrichmentDoc, { force = false } = 
     keyStats: detailedStats.slice(0, 16),
     hiddenTraits: traits.hiddenTraits,
     traitsDescription: traits.traitsDescription,
-    positionRatings: extractPositionRatings(db.postlist),
+    positionRatings: extractPositionRatings(db.postlist, boost),
     clubCareer: extractClubCareer(getClubCareerSource(payload)),
     rawDescription: normalizeText(meta.desc || db.desc || ''),
     parseWarnings: [],
@@ -1448,6 +1449,57 @@ export function resolveClubCareerBackfillCap({ limit = 500, total = 0 } = {}) {
   return Math.min(safeLimit, total);
 }
 
+export function getClubCareerPlayerKey(doc = {}) {
+  return normalizeText(doc.displayNameEn || doc.displayNameVi || doc.fullNameVi || '').toLowerCase();
+}
+
+function normalizedOptionalIdentityValue(value) {
+  return normalizeText(value || '').toLowerCase();
+}
+
+function optionalIdentityMatches(left, right) {
+  const normalizedLeft = normalizedOptionalIdentityValue(left);
+  const normalizedRight = normalizedOptionalIdentityValue(right);
+  return !normalizedLeft || !normalizedRight || normalizedLeft === normalizedRight;
+}
+
+export function hasCompatibleClubCareerIdentity(reference = {}, candidate = {}) {
+  const referenceKey = getClubCareerPlayerKey(reference);
+  if (!referenceKey || referenceKey !== getClubCareerPlayerKey(candidate)) return false;
+
+  return optionalIdentityMatches(reference.nation, candidate.nation)
+    && optionalIdentityMatches(reference.birthDateText, candidate.birthDateText);
+}
+
+export function buildClubCareerBackfillGroups(records = []) {
+  const groupsByKey = new Map();
+
+  for (const record of records) {
+    const key = getClubCareerPlayerKey(record);
+    if (!key) continue;
+    if (!groupsByKey.has(key)) groupsByKey.set(key, []);
+    groupsByKey.get(key).push(record);
+  }
+
+  return [...groupsByKey.entries()].map(([key, recordsForKey]) => ({
+    key,
+    records: recordsForKey,
+  }));
+}
+
+export function buildClubCareerFanoutOperations(reference, records = [], clubCareer = []) {
+  if (!Array.isArray(clubCareer) || !clubCareer.length) return [];
+
+  return records
+    .filter((record) => hasCompatibleClubCareerIdentity(reference, record))
+    .map((record) => ({
+      updateOne: {
+        filter: { _id: record._id },
+        update: { $set: { clubCareer } },
+      },
+    }));
+}
+
 export function isBulkDetailRunning() {
   return bulkDetailRunning;
 }
@@ -1594,12 +1646,19 @@ export async function backfillClubCareer({
   const query = buildClubCareerBackfillQuery({ onlyMissing });
   const total = await PlayerEnrichment.countDocuments(query);
   const cap = resolveClubCareerBackfillCap({ limit, total });
+  const snapshot = cap > 0
+    ? await PlayerEnrichment.find(query)
+      .select('sourceUid sourceUrl displayNameVi displayNameEn fullNameVi nation birthDateText club league clubCareer')
+      .limit(cap)
+      .lean()
+    : [];
+  const groups = buildClubCareerBackfillGroups(snapshot);
 
   const run = await SyncRun.create({
     source: 'fifaaddict-vn',
     status: 'running',
-    requested: cap,
-    message: `Club career backfill: ${cap}/${total} records queued`,
+    requested: snapshot.length,
+    message: `Club career backfill: ${groups.length} player groups queued (${snapshot.length}/${total} records)`,
   });
 
   clubCareerBackfillRunning = true;
@@ -1611,26 +1670,28 @@ export async function backfillClubCareer({
     const errors = [];
 
     try {
-      while (processed + failed < cap) {
-        const batch = await PlayerEnrichment.find(query).limit(batchSize).lean();
+      for (let offset = 0; offset < groups.length; offset += batchSize) {
+        const batch = groups.slice(offset, offset + batchSize);
         if (!batch.length) break;
 
-        for (const doc of batch) {
-          if (processed + failed >= cap) break;
+        for (const group of batch) {
+          const doc = group.records[0];
           try {
             const refreshed = await ensureEnrichmentDetail(doc, { force: true });
-            const careerCount = refreshed?.clubCareer?.length || 0;
-            if (careerCount > 0) {
-              const careerText = refreshed.clubCareer
-                .map((career) => `${career.team}${career.season ? ` (${career.season})` : ''}`)
-                .join(' → ');
-              console.log(`[CLUB CAREER] ${refreshed.displayNameVi} [${refreshed.sourceUid}] ${careerCount} clubs: ${careerText} -> ${refreshed.sourceUrl}`);
+            const clubCareer = refreshed?.clubCareer || [];
+            const operations = buildClubCareerFanoutOperations(refreshed || doc, group.records, clubCareer);
+
+            if (operations.length) {
+              await PlayerEnrichment.bulkWrite(operations, { ordered: false });
+              updated += operations.length;
             }
-            updated += careerCount > 0 ? 1 : 0;
+
             processed += 1;
+            console.log(`[OK] clubCareer ${group.key} fetched ${clubCareer.length}, applied ${operations.length}`);
           } catch (err) {
             failed += 1;
-            if (errors.length < 50) errors.push(`${doc.displayNameVi}: ${err.message}`);
+            console.error(`[FAIL] clubCareer ${group.key} -> ${doc.sourceUrl} : ${err.message}`);
+            if (errors.length < 50) errors.push(`${group.key}: ${err.message}`);
           }
           if (delayMs > 0) await sleep(delayMs);
         }
@@ -1641,20 +1702,20 @@ export async function backfillClubCareer({
             updated,
             failed,
             errors,
-            message: `Club career backfill: ${processed + failed}/${cap} done (${updated} updated, ${failed} failed)`,
+            message: `Club career backfill: ${processed + failed}/${groups.length} groups done (${updated} records updated, ${failed} failed)`,
           },
         }).catch(() => {});
       }
 
       await SyncRun.findByIdAndUpdate(run._id, {
         $set: {
-          status: failed === cap && cap > 0 ? 'failed' : 'success',
+          status: failed === groups.length && groups.length > 0 ? 'failed' : 'success',
           finishedAt: new Date(),
           processed,
           updated,
           failed,
           errors,
-          message: `Club career backfill done: ${updated} updated, ${processed} processed, ${failed} failed`,
+          message: `Club career backfill done: ${updated} records updated, ${processed} groups processed, ${failed} failed`,
         },
       });
     } catch (err) {

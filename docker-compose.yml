@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  headroom:
+    image: ghcr.io/chopratejas/headroom:latest
+    container_name: headroom-service
+    ports:
+      - "127.0.0.1:8787:8787" # Chỉ mở local để bảo mật
+    restart: unless-stopped
+
+  9router:
+    image: decolua/9router:latest
+    container_name: 9router-service
+    ports:
+      - "127.0.0.1:20128:20128" # Ép cổng 20128 lắng nghe chính xác trên 127.0.0.1 của máy host
+    volumes:
+      - ./9router_data:/app/data
+    environment:
+      - DATA_DIR=/app/data
+    depends_on:
+      - headroom
+    restart: unless-stopped
