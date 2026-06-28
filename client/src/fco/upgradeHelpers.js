@@ -111,6 +111,18 @@ export function calculateUpgradeGauge({ targetOvr, currentLevel, fodderOvrs = []
   };
 }
 
+export function normalizeMaterialOvr(value) {
+  if (value === '') return null;
+  const materialOvr = Math.trunc(Number(value));
+  if (!Number.isFinite(materialOvr) || materialOvr <= 0) return null;
+  return materialOvr;
+}
+
+export function calculateEffectGaugeBonus(effectPercent) {
+  const percent = Math.max(0, Number(effectPercent) || 0);
+  return round4(MAX_GAUGE * (percent / 100));
+}
+
 export function pickQuickAddFodders({
   candidates = [],
   existingFodders = [],
