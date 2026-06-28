@@ -52,6 +52,7 @@ export default function MonetizationListPage() {
   const [playerQuery, setPlayerQuery] = useState('');
   const [playerSuggestions, setPlayerSuggestions] = useState([]);
   const [playerFilterLabel, setPlayerFilterLabel] = useState('');
+  const [playerRawName, setPlayerRawName] = useState('');
   const [playerSeasonFilter, setPlayerSeasonFilter] = useState('');
   const [seasons, setSeasons] = useState([]);
   const playerDebounceRef = useRef(null);
@@ -196,9 +197,11 @@ export default function MonetizationListPage() {
               placeholder="Filter by player..."
               value={playerFilterLabel || playerQuery}
               onChange={(e) => {
+                const next = playerFilterLabel ? playerRawName : e.target.value;
                 setPlayerFilterLabel('');
+                setPlayerRawName('');
                 setFilters((f) => ({ ...f, linkedPlayerId: '' }));
-                setPlayerQuery(e.target.value);
+                setPlayerQuery(next);
               }}
               className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-subtle"
             />
@@ -207,6 +210,7 @@ export default function MonetizationListPage() {
                 onClick={() => {
                   setPlayerQuery('');
                   setPlayerFilterLabel('');
+                  setPlayerRawName('');
                   setPlayerSuggestions([]);
                   setPlayerSeasonFilter('');
                   setFilters((f) => ({ ...f, linkedPlayerId: '' }));
@@ -240,6 +244,7 @@ export default function MonetizationListPage() {
                   onClick={() => {
                     const seasonSuffix = p.seasonName ? ` (${p.seasonName})` : '';
                     setPlayerFilterLabel(`${p.name}${seasonSuffix}`);
+                    setPlayerRawName(p.name);
                     setPlayerQuery('');
                     setPlayerSuggestions([]);
                     setFilters((f) => ({ ...f, linkedPlayerId: p.entityId }));
