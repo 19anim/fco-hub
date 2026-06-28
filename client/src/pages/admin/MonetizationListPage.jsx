@@ -52,6 +52,8 @@ export default function MonetizationListPage() {
   const [playerQuery, setPlayerQuery] = useState('');
   const [playerSuggestions, setPlayerSuggestions] = useState([]);
   const [playerFilterLabel, setPlayerFilterLabel] = useState('');
+  const [playerSeasonFilter, setPlayerSeasonFilter] = useState('');
+  const [seasons, setSeasons] = useState([]);
   const playerDebounceRef = useRef(null);
 
   // Delete modal
@@ -77,6 +79,12 @@ export default function MonetizationListPage() {
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
   useEffect(() => {
+    axios.get(`${API_BASE}/enrichment/fifaaddict/seasons`, { withCredentials: true })
+      .then(r => setSeasons(r.data.data ?? []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (!playerQuery || playerFilterLabel) {
       setPlayerSuggestions([]);
       return;
@@ -84,8 +92,10 @@ export default function MonetizationListPage() {
     clearTimeout(playerDebounceRef.current);
     playerDebounceRef.current = setTimeout(async () => {
       try {
+        const params = { q: playerQuery, limit: 20 };
+        if (playerSeasonFilter) params.season = playerSeasonFilter;
         const res = await axios.get(`${API_BASE}/admin/search/players`, {
-          params: { q: playerQuery, limit: 10 },
+          params,
           withCredentials: true,
         });
         setPlayerSuggestions(res.data.data.players ?? []);
@@ -94,7 +104,7 @@ export default function MonetizationListPage() {
       }
     }, 300);
     return () => clearTimeout(playerDebounceRef.current);
-  }, [playerQuery, playerFilterLabel]);
+  }, [playerQuery, playerFilterLabel, playerSeasonFilter]);
 
   const setFilter = (key) => (val) => setFilters((f) => ({ ...f, [key]: val }));
 
@@ -198,6 +208,7 @@ export default function MonetizationListPage() {
                   setPlayerQuery('');
                   setPlayerFilterLabel('');
                   setPlayerSuggestions([]);
+                  setPlayerSeasonFilter('');
                   setFilters((f) => ({ ...f, linkedPlayerId: '' }));
                 }}
                 className="text-ink-muted hover:text-ink transition-colors"
@@ -206,22 +217,37 @@ export default function MonetizationListPage() {
               </button>
             )}
           </div>
-          {playerSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 z-20 mt-1 w-64 rounded-xl border border-hairline bg-surface-1 shadow-lg overflow-hidden">
+          {(playerQuery && !playerFilterLabel) && (
+            <div className="absolute top-full left-0 z-20 mt-1 w-72 rounded-xl border border-hairline bg-surface-1 shadow-lg overflow-hidden">
+              <div className="px-3 py-2 border-b border-hairline">
+                <select
+                  value={playerSeasonFilter}
+                  onChange={(e) => setPlayerSeasonFilter(e.target.value)}
+                  className="w-full h-7 rounded-md border border-hairline bg-surface-2 px-2 text-xs text-ink outline-none focus:border-brand-blue"
+                >
+                  <option value="">Tất cả mùa</option>
+                  {seasons.map((s) => (
+                    <option key={s.value} value={s.value}>{s.title || s.value}</option>
+                  ))}
+                </select>
+              </div>
+              {playerSuggestions.length === 0 && (
+                <p className="px-3 py-2 text-xs text-ink-muted">Không tìm thấy</p>
+              )}
               {playerSuggestions.map((p) => (
                 <button
-                  key={p.spid ?? p._id}
+                  key={p.entityId}
                   onClick={() => {
-                    const label = p.name || String(p.spid);
-                    setPlayerFilterLabel(label);
+                    const seasonSuffix = p.seasonName ? ` (${p.seasonName})` : '';
+                    setPlayerFilterLabel(`${p.name}${seasonSuffix}`);
                     setPlayerQuery('');
                     setPlayerSuggestions([]);
-                    setFilters((f) => ({ ...f, linkedPlayerId: String(p.spid ?? p._id) }));
+                    setFilters((f) => ({ ...f, linkedPlayerId: p.entityId }));
                   }}
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-surface-2 transition-colors text-left"
                 >
                   <span className="font-medium truncate">{p.name}</span>
-                  {p.spid && <span className="text-xs text-ink-muted shrink-0">#{p.spid}</span>}
+                  {p.seasonName && <span className="text-xs text-ink-muted shrink-0 truncate">{p.seasonName}</span>}
                 </button>
               ))}
             </div>
