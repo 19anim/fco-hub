@@ -5,13 +5,14 @@ import { normalizeYoutubeContent } from '../services/youtubeContent.js';
 
 export const listItems = async (req, res) => {
   try {
-    const { status, type, platform, placementId, search, sort = 'newest', page = 1, limit = 20 } = req.query;
+    const { status, type, platform, placementId, linkedPlayerId, search, sort = 'newest', page = 1, limit = 20 } = req.query;
 
     const filter = {};
     if (status) filter.status = status;
     if (type) filter.type = type;
     if (platform) filter.platform = platform;
     if (placementId) filter.placementIds = placementId;
+    if (linkedPlayerId) filter['linkedEntities.entityId'] = linkedPlayerId;
     if (search) filter.title = { $regex: search, $options: 'i' };
 
     const sortMap = {
