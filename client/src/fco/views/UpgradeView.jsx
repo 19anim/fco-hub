@@ -22,6 +22,20 @@ import { Button, PlayerAvatar, SeasonChip, OvrBox } from '../ui.jsx';
 import { cleanName } from '../helpers.js';
 import * as I from '../Icons.jsx';
 
+const BURST_BEAMS = [-82, -48, -18, 0, 31, 58, 86];
+const BURST_PARTICLES = [
+  { x: -92, y: -120, delay: 0.02, duration: 0.9, size: 3 },
+  { x: -58, y: -154, delay: 0.12, duration: 1.1, size: 2 },
+  { x: -24, y: -132, delay: 0.2, duration: 0.95, size: 4 },
+  { x: 16, y: -168, delay: 0.04, duration: 1.2, size: 2 },
+  { x: 46, y: -124, delay: 0.16, duration: 0.88, size: 3 },
+  { x: 86, y: -148, delay: 0.26, duration: 1.05, size: 2 },
+  { x: -76, y: 74, delay: 0.08, duration: 1.12, size: 3 },
+  { x: -38, y: 104, delay: 0.18, duration: 0.96, size: 2 },
+  { x: 34, y: 92, delay: 0.1, duration: 1.08, size: 4 },
+  { x: 78, y: 68, delay: 0.22, duration: 0.98, size: 2 },
+];
+
 export default function UpgradeView() {
   const [mainPlayer, setMainPlayer] = useState(null);
   const [level, setLevel] = useState(MIN_UPGRADE_LEVEL);
@@ -115,8 +129,8 @@ export default function UpgradeView() {
       cancelRef.current = setTimeout(() => {
         setAnimStatus('idle');
         setSequenceLevel(null);
-      }, 1700);
-    }, 1000);
+      }, 2400);
+    }, 1500);
   }
 
   return (
@@ -145,7 +159,30 @@ export default function UpgradeView() {
 
       {mainPlayer && isSequenceActive ? (
         <div className={`fco-up-sequence-screen ${animStatus}`}>
-          <div className="fco-up-sequence-backdrop" />
+          <div className="fco-up-sequence-backdrop" aria-hidden="true" />
+          <div className="fco-up-burst-bg" aria-hidden="true" />
+          <div className="fco-up-burst-spotlight" aria-hidden="true" />
+          <div className="fco-up-burst-beams" aria-hidden="true">
+            {BURST_BEAMS.map((offset, index) => (
+              <i key={offset} className="fco-up-burst-beam" style={{ '--beam-x': `${offset}px`, '--beam-delay': `${index * 0.07}s` }} />
+            ))}
+          </div>
+          <div className="fco-up-particles" aria-hidden="true">
+            {BURST_PARTICLES.map((particle, index) => (
+              <i
+                key={`${particle.x}-${particle.y}`}
+                className="fco-up-particle"
+                style={{
+                  '--particle-x': `${particle.x}px`,
+                  '--particle-y': `${particle.y}px`,
+                  '--particle-delay': `${particle.delay}s`,
+                  '--particle-duration': `${particle.duration}s`,
+                  '--particle-size': `${particle.size}px`,
+                }}
+              />
+            ))}
+          </div>
+          {animStatus === 'fail' && <div className="fco-up-shatter-effect" aria-hidden="true" />}
           <div className="fco-up-sequence-card">
             <div className="fco-up-sequence-player">
               <div className={`fco-up-card fco-up-${animStatus}`}>
