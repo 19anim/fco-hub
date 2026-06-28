@@ -1,7 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { DollarSign, Plus, Copy, Archive, Eye, EyeOff, Pencil } from 'lucide-react';
+import { DollarSign, Plus, Copy, Archive, Eye, EyeOff, Pencil, X, Trash2 } from 'lucide-react';
 import { adminMonetizationService } from '../../services/adminMonetization';
+import { API_BASE } from '../../config/api';
+import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 const TYPE_LABEL = {
   youtube_video: 'YouTube',
@@ -40,8 +43,21 @@ export default function MonetizationListPage() {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ search: '', type: '', status: '', platform: '', sort: 'newest' });
+  const [filters, setFilters] = useState({ search: '', type: '', status: '', platform: '', sort: 'newest', linkedPlayerId: '' });
   const [actionLoading, setActionLoading] = useState(null);
+
+  const { user } = useAdminAuth();
+
+  // Player filter
+  const [playerQuery, setPlayerQuery] = useState('');
+  const [playerSuggestions, setPlayerSuggestions] = useState([]);
+  const [playerFilterLabel, setPlayerFilterLabel] = useState('');
+  const playerDebounceRef = useRef(null);
+
+  // Delete modal
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -59,6 +75,26 @@ export default function MonetizationListPage() {
   }, [filters]);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
+
+  useEffect(() => {
+    if (!playerQuery || playerFilterLabel) {
+      setPlayerSuggestions([]);
+      return;
+    }
+    clearTimeout(playerDebounceRef.current);
+    playerDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/admin/search/players`, {
+          params: { q: playerQuery, limit: 10 },
+          withCredentials: true,
+        });
+        setPlayerSuggestions(res.data.data.players ?? []);
+      } catch {
+        setPlayerSuggestions([]);
+      }
+    }, 300);
+    return () => clearTimeout(playerDebounceRef.current);
+  }, [playerQuery, playerFilterLabel]);
 
   const setFilter = (key) => (val) => setFilters((f) => ({ ...f, [key]: val }));
 
@@ -81,6 +117,22 @@ export default function MonetizationListPage() {
       alert(err.response?.data?.message || 'Action failed');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      await adminMonetizationService.delete(deleteTarget._id);
+      setItems((prev) => prev.filter((i) => i._id !== deleteTarget._id));
+      setTotal((t) => t - 1);
+      setDeleteTarget(null);
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || 'Xoá thất bại');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -127,6 +179,54 @@ export default function MonetizationListPage() {
           options={['youtube', 'shopee', 'tiktok_shop', 'google_ads', 'custom'].map((s) => ({ value: s, label: s }))} />
         <FilterSelect label="Sort" value={filters.sort} onChange={setFilter('sort')}
           options={[{ value: 'newest', label: 'Newest' }, { value: 'priority', label: 'Priority' }, { value: 'ctr', label: 'CTR' }]} />
+        <div className="relative">
+          <div className="flex items-center h-9 rounded-lg border border-hairline bg-surface-1 px-3 gap-1.5 min-w-[200px]">
+            <input
+              type="text"
+              placeholder="Filter by player..."
+              value={playerFilterLabel || playerQuery}
+              onChange={(e) => {
+                setPlayerFilterLabel('');
+                setFilters((f) => ({ ...f, linkedPlayerId: '' }));
+                setPlayerQuery(e.target.value);
+              }}
+              className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-subtle"
+            />
+            {(playerFilterLabel || playerQuery) && (
+              <button
+                onClick={() => {
+                  setPlayerQuery('');
+                  setPlayerFilterLabel('');
+                  setPlayerSuggestions([]);
+                  setFilters((f) => ({ ...f, linkedPlayerId: '' }));
+                }}
+                className="text-ink-muted hover:text-ink transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          {playerSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 z-20 mt-1 w-64 rounded-xl border border-hairline bg-surface-1 shadow-lg overflow-hidden">
+              {playerSuggestions.map((p) => (
+                <button
+                  key={p.spid ?? p._id}
+                  onClick={() => {
+                    const label = p.name || String(p.spid);
+                    setPlayerFilterLabel(label);
+                    setPlayerQuery('');
+                    setPlayerSuggestions([]);
+                    setFilters((f) => ({ ...f, linkedPlayerId: String(p.spid ?? p._id) }));
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-surface-2 transition-colors text-left"
+                >
+                  <span className="font-medium truncate">{p.name}</span>
+                  {p.spid && <span className="text-xs text-ink-muted shrink-0">#{p.spid}</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="rounded-xl border border-hairline bg-surface-1 overflow-hidden">
@@ -214,6 +314,16 @@ export default function MonetizationListPage() {
                           <Archive className="h-3.5 w-3.5" />
                         </button>
                       )}
+                      {user?.role === 'owner' && (
+                        <button
+                          onClick={() => { setDeleteError(''); setDeleteTarget(item); }}
+                          disabled={!!actionLoading || item.status === 'published'}
+                          className="rounded-lg p-1.5 text-ink-muted hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title={item.status === 'published' ? 'Unpublish trước khi xoá' : 'Xoá'}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -222,6 +332,39 @@ export default function MonetizationListPage() {
           </table>
         </div>
       </div>
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-sm rounded-2xl border border-hairline bg-surface-1 p-6 shadow-xl mx-4">
+            <h2 className="text-base font-semibold text-ink mb-1">Xoá item này?</h2>
+            <p className="text-sm text-ink-muted mb-1">
+              <span className="font-medium text-ink">{deleteTarget.title}</span>
+            </p>
+            <p className="text-xs text-ink-subtle mb-4">
+              Status: {deleteTarget.status} · Thao tác này không thể hoàn tác.
+            </p>
+            {deleteError && (
+              <p className="mb-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{deleteError}</p>
+            )}
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setDeleteTarget(null); setDeleteError(''); }}
+                disabled={deleteLoading}
+                className="rounded-lg border border-hairline bg-surface-2 px-4 py-2 text-sm text-ink hover:bg-surface-3 transition-colors disabled:opacity-50"
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteLoading}
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-wait"
+              >
+                {deleteLoading ? 'Đang xoá...' : 'Xoá'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
