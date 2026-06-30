@@ -1,5 +1,7 @@
-import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, normalizeBackendSearch } from '../utils/backendSearch';
 import {
   ArrowDownAZ,
   Banknote,
@@ -68,7 +70,8 @@ export default function DatabasePage() {
   const [enrichmentStatus, setEnrichmentStatus] = useState(null);
   const [filters, setFilters] = useState(emptyFilters);
   const [status, setStatus] = useState('');
-  const deferredSearch = useDeferredValue(searchQuery);
+  const debouncedSearch = useDebouncedValue(searchQuery, BACKEND_SEARCH_DEBOUNCE_MS);
+  const backendSearch = normalizeBackendSearch(debouncedSearch);
   const seasonIdParam = selectedSeasonIds.join(',');
 
   useEffect(() => {
@@ -166,6 +169,7 @@ export default function DatabasePage() {
               type="search"
               placeholder="Tìm tên cầu thủ, mùa thẻ, vị trí, CLB, quốc tịch, chỉ số ẩn..."
               value={searchQuery}
+              maxLength={BACKEND_SEARCH_MAX_LENGTH}
               onChange={(event) => setSearchQuery(event.target.value)}
               className="h-12 w-full rounded-lg border border-hairline bg-canvas-dark pl-12 pr-4 text-ink placeholder:text-ink-subtle outline-none transition focus:border-brand-blue"
             />
@@ -315,7 +319,7 @@ export default function DatabasePage() {
 
       <section className="surface-panel overflow-hidden">
         <PlayerTable
-          searchQuery={deferredSearch}
+          searchQuery={backendSearch}
           positionFilter={filters.position}
           seasonId={seasonIdParam}
           sortBy={sortBy}

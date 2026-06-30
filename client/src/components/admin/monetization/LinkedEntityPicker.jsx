@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue.js';
+import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, canRunBackendSearch, normalizeBackendSearch } from '../../../utils/backendSearch.js';
 import { Search, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { API_BASE } from '../../../config/api';
 
@@ -102,21 +104,28 @@ export default function LinkedEntityPicker({ linkedEntities = [], onChange }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const debounceRef = useRef(null);
+  const debouncedQuery = useDebouncedValue(query, BACKEND_SEARCH_DEBOUNCE_MS);
 
   useEffect(() => {
-    if (!query.trim()) { setResults([]); return; }
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const players = await searchPlayers(query.trim());
-        setResults(players);
-      } catch { setResults([]); }
-      finally { setSearching(false); }
-    }, 300);
-    return () => clearTimeout(debounceRef.current);
-  }, [query]);
+    const normalizedQuery = normalizeBackendSearch(debouncedQuery);
+    if (!normalizedQuery || !canRunBackendSearch(debouncedQuery)) return;
+
+    let ignore = false;
+    searchPlayers(normalizedQuery)
+      .then((players) => {
+        if (!ignore) setResults(players);
+      })
+      .catch(() => {
+        if (!ignore) setResults([]);
+      })
+      .finally(() => {
+        if (!ignore) setSearching(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [debouncedQuery]);
 
   const addPlayer = (player) => {
     const entityId = String(player.entityId || player._id);
@@ -152,7 +161,17 @@ export default function LinkedEntityPicker({ linkedEntities = [], onChange }) {
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          maxLength={BACKEND_SEARCH_MAX_LENGTH}
+          onChange={(e) => {
+            const nextQuery = e.target.value;
+            setQuery(nextQuery);
+            if (!normalizeBackendSearch(nextQuery) || !canRunBackendSearch(nextQuery)) {
+              setResults([]);
+              setSearching(false);
+            } else {
+              setSearching(true);
+            }
+          }}
           placeholder="Search players by name..."
           className="h-10 w-full rounded-lg border border-hairline bg-canvas-dark pl-9 pr-3 text-sm text-ink outline-none focus:border-brand-blue"
         />
@@ -160,6 +179,9 @@ export default function LinkedEntityPicker({ linkedEntities = [], onChange }) {
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-muted">Searching...</span>
         )}
       </div>
+      {normalizeBackendSearch(query).length === 1 && (
+        <p className="text-xs text-ink-muted mt-1">Nhập ít nhất 2 ký tự để tìm kiếm</p>
+      )}
 
       {results.length > 0 && (
         <div className="rounded-lg border border-hairline bg-canvas-dark divide-y divide-hairline overflow-hidden max-h-56 overflow-y-auto">

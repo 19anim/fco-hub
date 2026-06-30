@@ -1018,9 +1018,10 @@ export async function debugFetchPlayerJson(sourceUid) {
 export async function ensureEnrichmentDetail(enrichmentDoc, { force = false } = {}) {
   if (!enrichmentDoc?.sourceUid) return enrichmentDoc;
 
-  // Already has valid (non-zero) detailed stats?
+  // Already has valid stats AND has traits data?
   const hasValidStats = (enrichmentDoc.detailedStats || []).some((s) => s.value > 0);
-  if (hasValidStats && !force) return enrichmentDoc;
+  const hasTraits = Array.isArray(enrichmentDoc.hiddenTraits) && enrichmentDoc.hiddenTraits.length > 0;
+  if (hasValidStats && hasTraits && !force) return enrichmentDoc;
 
   // Fetch via protected JSON API (real stats live here, HTML only has zeros)
   const payload = await fetchPlayerJson(enrichmentDoc.sourceUid);
@@ -1512,7 +1513,7 @@ export async function bulkScrapeDetails({
 } = {}) {
   if (bulkDetailRunning) throw new Error('Bulk detail scrape already running.');
 
-  // Target records that don't yet have valid (non-zero) detailed stats.
+  // Target records missing valid detailed stats OR missing hiddenTraits.
   const query = {
     source: 'fifaaddict-vn',
     sourceUid: { $exists: true, $ne: '' },
@@ -1520,6 +1521,8 @@ export async function bulkScrapeDetails({
       { detailedStats: { $size: 0 } },
       { detailedStats: { $exists: false } },
       { 'detailedStats.value': { $not: { $gt: 0 } } },
+      { hiddenTraits: { $size: 0 } },
+      { hiddenTraits: { $exists: false } },
     ],
   };
   const total = await PlayerEnrichment.countDocuments(query);

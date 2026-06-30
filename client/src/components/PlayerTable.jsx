@@ -19,6 +19,7 @@ import {
   getValue,
 } from '../utils/playerDisplay';
 import { API_BASE } from '../config/api';
+import { canRunBackendSearch } from '../utils/backendSearch';
 
 const API_URL = `${API_BASE}/players`;
 
@@ -99,6 +100,7 @@ export default function PlayerTable({
 
     async function fetchPlayers() {
       try {
+        if (!canRunBackendSearch(searchQuery)) return;
         setLoading(true);
         const params = new URLSearchParams({
           search: searchQuery,

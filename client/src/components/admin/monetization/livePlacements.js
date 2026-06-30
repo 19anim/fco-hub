@@ -1,6 +1,8 @@
 const LIVE_PLACEMENT_KEYS = new Set([
   'videos_top',
   'videos_inline',
+  'videos_aff',
+  'videos_bottom',
   'player_detail_sidebar',
 ]);
 

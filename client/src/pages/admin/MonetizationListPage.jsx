@@ -1,5 +1,7 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
+import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
 import { Link } from 'react-router-dom';
 import { DollarSign, Plus, Copy, Archive, Eye, EyeOff, Pencil, X, Trash2 } from 'lucide-react';
 import { adminMonetizationService } from '../../services/adminMonetization';
@@ -44,6 +46,9 @@ export default function MonetizationListPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ search: '', type: '', status: '', platform: '', sort: 'newest', linkedPlayerId: '' });
+  const [titleSearch, setTitleSearch] = useState(filters.search);
+  const debouncedTitleSearch = useDebouncedValue(titleSearch, BACKEND_SEARCH_DEBOUNCE_MS);
+  const normalizedTitleSearch = normalizeBackendSearch(debouncedTitleSearch);
   const [actionLoading, setActionLoading] = useState(null);
 
   const { user } = useAdminAuth();
@@ -55,7 +60,7 @@ export default function MonetizationListPage() {
   const [playerRawName, setPlayerRawName] = useState('');
   const [playerSeasonFilter, setPlayerSeasonFilter] = useState('');
   const [seasons, setSeasons] = useState([]);
-  const playerDebounceRef = useRef(null);
+  const debouncedPlayerQuery = useDebouncedValue(playerQuery, BACKEND_SEARCH_DEBOUNCE_MS);
 
   // Delete modal
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -86,28 +91,38 @@ export default function MonetizationListPage() {
   }, []);
 
   useEffect(() => {
-    if (!playerQuery || playerFilterLabel) {
-      setPlayerSuggestions([]);
-      return;
-    }
-    clearTimeout(playerDebounceRef.current);
-    playerDebounceRef.current = setTimeout(async () => {
-      try {
-        const params = { q: playerQuery, limit: 20 };
-        if (playerSeasonFilter) params.season = playerSeasonFilter;
-        const res = await axios.get(`${API_BASE}/admin/search/players`, {
-          params,
-          withCredentials: true,
-        });
-        setPlayerSuggestions(res.data.data.players ?? []);
-      } catch {
-        setPlayerSuggestions([]);
-      }
-    }, 300);
-    return () => clearTimeout(playerDebounceRef.current);
-  }, [playerQuery, playerFilterLabel, playerSeasonFilter]);
+    const normalizedQuery = normalizeBackendSearch(debouncedPlayerQuery);
+    if (!normalizedQuery || playerFilterLabel || !canRunBackendSearch(debouncedPlayerQuery)) return;
+
+    let ignore = false;
+    const params = { q: normalizedQuery, limit: 20 };
+    if (playerSeasonFilter) params.season = playerSeasonFilter;
+
+    axios.get(`${API_BASE}/admin/search/players`, {
+      params,
+      withCredentials: true,
+    })
+      .then((res) => {
+        if (!ignore) setPlayerSuggestions(res.data.data.players ?? []);
+      })
+      .catch(() => {
+        if (!ignore) setPlayerSuggestions([]);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [debouncedPlayerQuery, playerFilterLabel, playerSeasonFilter]);
 
   const setFilter = (key) => (val) => setFilters((f) => ({ ...f, [key]: val }));
+
+  useEffect(() => {
+    if (!canRunBackendSearch(debouncedTitleSearch)) return;
+    setFilters((current) => {
+      if (current.search === normalizedTitleSearch) return current;
+      return { ...current, search: normalizedTitleSearch };
+    });
+  }, [debouncedTitleSearch, normalizedTitleSearch]);
 
   const handleAction = async (action, item) => {
     setActionLoading(item._id + action);
@@ -178,8 +193,9 @@ export default function MonetizationListPage() {
         <input
           type="text"
           placeholder="Search title..."
-          value={filters.search}
-          onChange={(e) => setFilter('search')(e.target.value)}
+          value={titleSearch}
+          maxLength={BACKEND_SEARCH_MAX_LENGTH}
+          onChange={(e) => setTitleSearch(e.target.value)}
           className="h-9 rounded-lg border border-hairline bg-surface-1 px-3 text-sm text-ink outline-none focus:border-brand-blue min-w-[200px]"
         />
         <FilterSelect label="All Types" value={filters.type} onChange={setFilter('type')}
@@ -196,12 +212,16 @@ export default function MonetizationListPage() {
               type="text"
               placeholder="Filter by player..."
               value={playerFilterLabel || playerQuery}
+              maxLength={BACKEND_SEARCH_MAX_LENGTH}
               onChange={(e) => {
                 const next = playerFilterLabel ? playerRawName : e.target.value;
                 setPlayerFilterLabel('');
                 setPlayerRawName('');
                 setFilters((f) => ({ ...f, linkedPlayerId: '' }));
                 setPlayerQuery(next);
+                if (!normalizeBackendSearch(next) || !canRunBackendSearch(next)) {
+                  setPlayerSuggestions([]);
+                }
               }}
               className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-subtle"
             />

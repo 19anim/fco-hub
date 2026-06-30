@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
+import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
 import { fetchPlayers } from '../api.js';
 import { cleanName, statColor } from '../helpers.js';
 import { getPlayerCardKey, isSamePlayerCard, normalizeUpgradeLevel } from '../upgradeHelpers.js';
@@ -88,33 +90,36 @@ export default function PlayerPicker({
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [levelById, setLevelById] = useState({});
-  const timer = useRef(null);
+  const debouncedQ = useDebouncedValue(q, q.trim() ? BACKEND_SEARCH_DEBOUNCE_MS : 0);
 
   useEffect(() => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(async () => {
-      const search = q.trim();
+    const search = normalizeBackendSearch(debouncedQ);
 
-      if (!search && !showTopPlayers) {
-        setResults([]);
-        return;
-      }
+    if (!canRunBackendSearch(debouncedQ)) return;
 
-      setLoading(true);
-      try {
-        const res = await fetchPlayers({
-          search,
-          sort: 'ovr_desc',
-          pageSize: search ? 20 : 10,
-        });
-        setResults(res.players);
-      } finally {
-        setLoading(false);
-      }
-    }, q.trim() ? 300 : 0);
+    if (!search && !showTopPlayers) {
+      setResults([]);
+      return;
+    }
 
-    return () => clearTimeout(timer.current);
-  }, [q, showTopPlayers]);
+    let ignore = false;
+    setLoading(true);
+    fetchPlayers({
+      search,
+      sort: 'ovr_desc',
+      pageSize: search ? 20 : 10,
+    })
+      .then((res) => {
+        if (!ignore) setResults(res.players);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [debouncedQ, showTopPlayers]);
 
   function getLevel(playerId) {
     return normalizeUpgradeLevel(levelById[playerId] ?? defaultLevel);
@@ -143,7 +148,20 @@ export default function PlayerPicker({
         </div>
         <div className="fco-modal-search">
           <I.Search size={15} style={{ color: 'var(--text-faint)' }} />
-          <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm cầu thủ…" />
+          <input
+            autoFocus
+            maxLength={BACKEND_SEARCH_MAX_LENGTH}
+            value={q}
+            onChange={e => {
+              const nextQuery = e.target.value;
+              setQ(nextQuery);
+              if (!canRunBackendSearch(nextQuery)) {
+                setResults([]);
+                setLoading(false);
+              }
+            }}
+            placeholder="Tìm cầu thủ…"
+          />
         </div>
         <div className="fco-modal-list">
           {loading && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-faint)' }}><I.Spinner size={20} className="fco-spin" /></div>}

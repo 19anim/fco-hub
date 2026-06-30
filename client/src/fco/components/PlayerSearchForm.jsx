@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BACKEND_SEARCH_MAX_LENGTH, normalizeBackendSearch } from '../../utils/backendSearch.js';
 import * as I from '../Icons.jsx';
 import PositionGrid from './filter/PositionGrid.jsx';
 import StatRangeFilter from './filter/StatRangeFilter.jsx';
@@ -58,6 +59,8 @@ export default function PlayerSearchForm({
   statFilter = '', setStatFilter,
   statMin = '', setStatMin,
   statMax = '', setStatMax,
+  trait = '', setTrait,
+  traitOptions = [],
   onReset,
   onSearch,
 }) {
@@ -69,9 +72,9 @@ export default function PlayerSearchForm({
       <div className="fa-search-row">
         <div className="fa-search-input-wrap">
           <input
-            type="search"
+            type="text"
             placeholder="Messi, Ronaldo"
-            maxLength="50"
+            maxLength={BACKEND_SEARCH_MAX_LENGTH}
             value={search}
             className="fa-search-input"
             onChange={e => setSearch(e.target.value)}
@@ -83,6 +86,9 @@ export default function PlayerSearchForm({
             </button>
           )}
         </div>
+        {normalizeBackendSearch(search).length === 1 && (
+          <span className="fa-search-hint">Nhập ít nhất 2 ký tự</span>
+        )}
         <button type="button" className="fa-btn fa-btn-primary" onClick={onSearch}>
           Tìm
         </button>
@@ -136,6 +142,19 @@ export default function PlayerSearchForm({
               >
                 <option value="">{league ? '▾ Chọn CLB' : 'Chọn giải đấu trước'}</option>
                 {clubOptions.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="fa-filter-group">
+              <label className="fa-filter-label">Chỉ số ẩn</label>
+              <select
+                className="fa-select"
+                value={trait}
+                onChange={e => setTrait(e.target.value)}
+              >
+                <option value="">▾ Chỉ số ẩn</option>
+                {traitOptions.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
               </select>
             </div>
           </div>

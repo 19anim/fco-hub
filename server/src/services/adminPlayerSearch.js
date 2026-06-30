@@ -1,12 +1,18 @@
+import { hasSearchText, normalizeSearchText, toSearchRegex } from './searchText.js';
+
 export function buildAdminPlayerSearchQuery({ q, season, position } = {}) {
   const filter = { source: 'fifaaddict-vn', overall: { $gt: 0 } };
 
-  if (q) {
+  const normalizedQ = normalizeSearchText(q);
+  if (normalizedQ.length === 1) {
+    filter._id = null;
+  } else if (hasSearchText(normalizedQ)) {
+    const searchRegex = toSearchRegex(normalizedQ);
     filter.$or = [
-      { displayNameVi: { $regex: q, $options: 'i' } },
-      { displayNameEn: { $regex: q, $options: 'i' } },
-      { fullNameVi: { $regex: q, $options: 'i' } },
-      { seasonName: { $regex: q, $options: 'i' } },
+      { displayNameVi: { $regex: searchRegex, $options: 'i' } },
+      { displayNameEn: { $regex: searchRegex, $options: 'i' } },
+      { fullNameVi: { $regex: searchRegex, $options: 'i' } },
+      { seasonName: { $regex: searchRegex, $options: 'i' } },
     ];
   }
 

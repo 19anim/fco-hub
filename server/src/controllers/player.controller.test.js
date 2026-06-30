@@ -21,3 +21,26 @@ test('careerClub filter does not constrain current league', () => {
     }
   );
 });
+
+test('ignores one-character player search text', () => {
+  assert.deepEqual(
+    buildEnrichmentSearchQuery(' m ', '', {}),
+    { source: 'fifaaddict-vn' }
+  );
+});
+
+test('escapes player search regex metacharacters', () => {
+  assert.deepEqual(
+    buildEnrichmentSearchQuery('Ronaldo.*', '', {}),
+    {
+      source: 'fifaaddict-vn',
+      $and: [{
+        $or: [
+          { displayNameVi: { $regex: 'Ronaldo\\.\\*', $options: 'i' } },
+          { displayNameEn: { $regex: 'Ronaldo\\.\\*', $options: 'i' } },
+          { fullNameVi: { $regex: 'Ronaldo\\.\\*', $options: 'i' } },
+        ],
+      }],
+    }
+  );
+});

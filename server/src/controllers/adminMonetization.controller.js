@@ -2,18 +2,24 @@ import MonetizationItem from '../models/MonetizationItem.js';
 import { validateMonetizationItem } from '../services/monetizationValidator.js';
 import { createAuditLog } from '../services/auditLog.js';
 import { normalizeYoutubeContent } from '../services/youtubeContent.js';
+import { hasSearchText, toSearchRegex } from '../services/searchText.js';
+
+export function buildMonetizationListFilter({ status, type, platform, placementId, linkedPlayerId, search } = {}) {
+  const filter = {};
+  if (status) filter.status = status;
+  if (type) filter.type = type;
+  if (platform) filter.platform = platform;
+  if (placementId) filter.placementIds = placementId;
+  if (linkedPlayerId) filter['linkedEntities.entityId'] = linkedPlayerId;
+  if (hasSearchText(search)) filter.title = { $regex: toSearchRegex(search), $options: 'i' };
+  return filter;
+}
 
 export const listItems = async (req, res) => {
   try {
     const { status, type, platform, placementId, linkedPlayerId, search, sort = 'newest', page = 1, limit = 20 } = req.query;
 
-    const filter = {};
-    if (status) filter.status = status;
-    if (type) filter.type = type;
-    if (platform) filter.platform = platform;
-    if (placementId) filter.placementIds = placementId;
-    if (linkedPlayerId) filter['linkedEntities.entityId'] = linkedPlayerId;
-    if (search) filter.title = { $regex: search, $options: 'i' };
+    const filter = buildMonetizationListFilter({ status, type, platform, placementId, linkedPlayerId, search });
 
     const sortMap = {
       newest: { createdAt: -1 },

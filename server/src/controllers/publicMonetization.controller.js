@@ -2,6 +2,7 @@ import MonetizationItem from '../models/MonetizationItem.js';
 import MonetizationPlacement from '../models/MonetizationPlacement.js';
 import MonetizationEvent from '../models/MonetizationEvent.js';
 import { isSafeRedirectUrl, sanitizeAffiliateLinks } from '../services/urlSafety.js';
+import { hasSearchText, toSearchRegex } from '../services/searchText.js';
 
 const PUBLIC_ITEM_FIELDS = 'type title description platform priority isFeatured displayStrategy content affiliateLinks startAt endAt';
 
@@ -71,7 +72,7 @@ function sortItems(items, entityType, entityId) {
 
 export const getFeed = async (req, res) => {
   try {
-    const { placement, entityType, entityId, type, limit } = req.query;
+    const { placement, entityType, entityId, type, limit, search } = req.query;
 
     if (!placement) {
       return res.status(400).json({ success: false, message: 'placement param required' });
@@ -89,6 +90,7 @@ export const getFeed = async (req, res) => {
       placementIds: placementDoc._id,
     };
     if (type) filter.type = type;
+    if (hasSearchText(search)) filter.title = { $regex: toSearchRegex(search), $options: 'i' };
 
     if (entityType && entityId) {
       filter.linkedEntities = { $elemMatch: { entityType, entityId: String(entityId) } };

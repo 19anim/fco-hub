@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { toLinkedPlayerResult } from './adminPlayerSearch.js';
+import { buildAdminPlayerSearchQuery, toLinkedPlayerResult } from './adminPlayerSearch.js';
 
 test('maps PlayerEnrichment rows into linked player picker results', () => {
   const result = toLinkedPlayerResult({
@@ -25,5 +25,26 @@ test('maps PlayerEnrichment rows into linked player picker results', () => {
     seasonName: '24TOTY',
     seasonId: '300',
     imageUrl: 'https://example.test/ronaldo.png',
+  });
+});
+
+test('admin player search returns an impossible query for one-character q', () => {
+  assert.deepEqual(buildAdminPlayerSearchQuery({ q: ' r ' }), {
+    source: 'fifaaddict-vn',
+    overall: { $gt: 0 },
+    _id: null,
+  });
+});
+
+test('admin player search escapes regex metacharacters', () => {
+  assert.deepEqual(buildAdminPlayerSearchQuery({ q: 'Ronaldo.*' }), {
+    source: 'fifaaddict-vn',
+    overall: { $gt: 0 },
+    $or: [
+      { displayNameVi: { $regex: 'Ronaldo\\.\\*', $options: 'i' } },
+      { displayNameEn: { $regex: 'Ronaldo\\.\\*', $options: 'i' } },
+      { fullNameVi: { $regex: 'Ronaldo\\.\\*', $options: 'i' } },
+      { seasonName: { $regex: 'Ronaldo\\.\\*', $options: 'i' } },
+    ],
   });
 });

@@ -1,8 +1,8 @@
 const POSITION_GROUPS = {
-  GK:  ['GK'],
-  DEF: ['CB', 'LB', 'RB', 'LWB', 'RWB'],
-  MID: ['CDM', 'CM', 'CAM', 'LM', 'RM'],
   FWD: ['ST', 'CF', 'LW', 'RW'],
+  MID: ['CDM', 'CM', 'CAM', 'LM', 'RM'],
+  DEF: ['CB', 'LB', 'RB', 'LWB', 'RWB'],
+  GK:  ['GK'],
 };
 
 export default function PositionGrid({ positions = [], setPositions }) {
@@ -26,7 +26,7 @@ export default function PositionGrid({ positions = [], setPositions }) {
   return (
     <div className="fa-pos-grid">
       {Object.entries(POSITION_GROUPS).map(([group, subs]) => (
-        <div key={group} className="fa-pos-group">
+        <div key={group} className="fa-pos-group" data-group={group}>
           <button
             type="button"
             className={`fa-pos-group-label${subs.every(p => positions.includes(p)) ? ' on' : ''}`}

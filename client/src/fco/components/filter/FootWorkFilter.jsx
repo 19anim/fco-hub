@@ -47,13 +47,13 @@ export default function FootWorkFilter({
         </select>
       </div>
       <div className="fa-filter-group">
-        <label className="fa-filter-label">WR Tấn công</label>
+        <label className="fa-filter-label">Workrate Tấn công</label>
         <select className="fa-select" value={workRateAttack} onChange={e => setWorkRateAttack(e.target.value)}>
           {WR_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </div>
       <div className="fa-filter-group">
-        <label className="fa-filter-label">WR Phòng thủ</label>
+        <label className="fa-filter-label">Workrate Phòng thủ</label>
         <select className="fa-select" value={workRateDefense} onChange={e => setWorkRateDefense(e.target.value)}>
           {WR_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>

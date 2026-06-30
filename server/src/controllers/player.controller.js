@@ -5,6 +5,7 @@ import PlayerUsageAggregate from '../models/PlayerUsageAggregate.js';
 import FifaAddictSeason from '../models/FifaAddictSeason.js';
 import { getNexonMetadata, syncNexonPlayers } from '../services/nexonMetadata.js';
 import { enrichSinglePlayer, ensureEnrichmentDetail, fetchFifaAddictTeamsByLeague } from '../services/fifaAddictSource.js';
+import { hasSearchText, toSearchRegex } from '../services/searchText.js';
 
 async function attachEnrichment(players) {
   const list = players.map((player) => (typeof player.toObject === 'function' ? player.toObject() : player));
@@ -58,18 +59,13 @@ function getFifaAddictSeasonClassId(season) {
 export function buildEnrichmentSearchQuery(search, seasonId, filters = {}) {
   const query = { source: 'fifaaddict-vn' };
 
-  if (search) {
+  if (hasSearchText(search)) {
+    const searchRegex = toSearchRegex(search);
     query.$and = query.$and || [];
     query.$and.push({ $or: [
-      { displayNameVi: { $regex: search, $options: 'i' } },
-      { displayNameEn: { $regex: search, $options: 'i' } },
-      { fullNameVi: { $regex: search, $options: 'i' } },
-      { seasonName: { $regex: search, $options: 'i' } },
-      { 'positions.position': { $regex: search, $options: 'i' } },
-      { club: { $regex: search, $options: 'i' } },
-      { league: { $regex: search, $options: 'i' } },
-      { nation: { $regex: search, $options: 'i' } },
-      { hiddenTraits: { $regex: search, $options: 'i' } },
+      { displayNameVi: { $regex: searchRegex, $options: 'i' } },
+      { displayNameEn: { $regex: searchRegex, $options: 'i' } },
+      { fullNameVi: { $regex: searchRegex, $options: 'i' } },
     ] });
   }
 
@@ -340,7 +336,7 @@ export const getClubsByLeague = async (req, res) => {
 export const getPlayerMeta = async (req, res) => {
   try {
     const enrichmentMatch = { source: 'fifaaddict-vn', overall: { $gt: 0 } };
-    const [dbSeasons, dbPositions, count, nexonMeta, fifaAddictSeasons, dbNations, dbLeagues, dbTopClubs] = await Promise.all([
+    const [dbSeasons, dbPositions, count, nexonMeta, fifaAddictSeasons, dbNations, dbLeagues, dbHiddenTraits, dbTopClubs] = await Promise.all([
       PlayerEnrichment.aggregate([
         { $match: { ...enrichmentMatch, seasonCode: { $nin: ['', null] } } },
         {
@@ -368,6 +364,7 @@ export const getPlayerMeta = async (req, res) => {
       FifaAddictSeason.find({ isActive: true }).lean().catch(() => []),
       PlayerEnrichment.distinct('nation', { ...enrichmentMatch, nation: { $nin: ['', null] } }),
       PlayerEnrichment.distinct('league', { ...enrichmentMatch, league: { $nin: ['', null] } }),
+      PlayerEnrichment.distinct('hiddenTraits', { ...enrichmentMatch }),
       PlayerEnrichment.aggregate([
         { $match: { ...enrichmentMatch, club: { $nin: ['', null] } } },
         { $group: { _id: '$club', count: { $sum: 1 } } },
@@ -420,6 +417,7 @@ export const getPlayerMeta = async (req, res) => {
       availablePositions: dbPositions.sort(),
       nations: (dbNations || []).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),
       leagues: (dbLeagues || []).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),
+      hiddenTraits: (dbHiddenTraits || []).filter(Boolean).sort((a, b) => a.localeCompare(b)),
       topClubs: (dbTopClubs || []).map(r => r.club).filter(Boolean),
     });
   } catch (error) {

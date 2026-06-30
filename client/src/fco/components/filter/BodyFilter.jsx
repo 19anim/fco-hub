@@ -49,7 +49,7 @@ export default function BodyFilter({
         </div>
       </div>
       <div className="fa-filter-group">
-        <label className="fa-filter-label">Lương (triệu)</label>
+        <label className="fa-filter-label">Lương</label>
         <div className="fa-range-inputs">
           <input type="number" className="fa-spin" placeholder="Max" min={1} max={50}
             value={salaryMax === 999999 ? '' : salaryMax}
