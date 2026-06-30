@@ -321,7 +321,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
           <I.ChevronRight size={13} />
           <span>{cleanName(p.name)}</span>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+        <div className="fco-detail-actions">
           <Button variant="outline" size="sm" icon={watched ? I.StarFill : I.Star}
             style={watched ? { color: '#f5c84b' } : {}}
             onClick={() => onToggleWatch(p.id)}>
@@ -583,8 +583,8 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   );
 }
 
-const WR_LABEL = { high: 'H', medium: 'M', low: 'L' };
-const WR_COLOR = { high: '#f97316', medium: '#facc15', low: '#60a5fa' };
+const WR_LABEL = { high: 'High', medium: 'Medium', mid: 'Medium', low: 'Low' };
+const WR_COLOR = { high: '#f97316', medium: '#facc15', mid: '#facc15', low: '#60a5fa' };
 
 function FootStars({ label, n, dim }) {
   return (
@@ -617,7 +617,7 @@ function WorkrateBadge({ attack, defense }) {
   const d = (defense || '').toLowerCase();
   return (
     <span className="fa-workrate-badge">
-      <span className="fa-wr-label">WR</span>
+      <span className="fa-wr-label">Workrate</span>
       <span style={{ color: WR_COLOR[a] || '#aab0ba' }}>{WR_LABEL[a] || a}</span>
       <span className="fa-wr-sep">/</span>
       <span style={{ color: WR_COLOR[d] || '#aab0ba' }}>{WR_LABEL[d] || d}</span>

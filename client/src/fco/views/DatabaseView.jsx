@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
+import { BACKEND_SEARCH_DEBOUNCE_MS, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
 import { fetchPlayers, fetchMeta, fetchClubsByLeague } from '../api.js';
 import { formatCoins, statColor, cleanName } from '../helpers.js';
 import { POS_GROUPS, SORTS, POSITIONS_META } from '../constants.js';
@@ -144,6 +146,9 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   // Init from URL query string
   const init = filtersFromQS();
   const [search,    setSearch]    = useState(init.search);
+  const debouncedSearch = useDebouncedValue(search, BACKEND_SEARCH_DEBOUNCE_MS);
+  const normalizedSearch = normalizeBackendSearch(debouncedSearch);
+  const canLoadSearch = canRunBackendSearch(debouncedSearch);
   const [posGroups, setPosGroups] = useState(init.posGroups);
   const [seasons,   setSeasons]   = useState(init.seasons || []);
   const [ovr,       setOvr]       = useState(init.ovr);
@@ -165,6 +170,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const [statFilter,      setStatFilter]      = useState(init.statFilter || '');
   const [statMin,         setStatMin]         = useState(init.statMin || '');
   const [statMax,         setStatMax]         = useState(init.statMax || '');
+  const [trait,           setTrait]           = useState(init.trait || '');
   const [sort,      setSort]      = useState(init.sort);
   const [page,      setPage]      = useState(init.page);
   const [pageSize,  setPageSize]  = useState(init.pageSize);
@@ -174,6 +180,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const [allNations, setAllNations] = useState([]);
   const [allLeagues, setAllLeagues] = useState([]);
   const [allTopClubs, setAllTopClubs] = useState([]);
+  const [allTraits, setAllTraits] = useState([]);
   const [seasonSearch, setSeasonSearch] = useState('');
 
   const [players,    setPlayers]    = useState([]);
@@ -194,6 +201,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
       if (res.success && res.seasons) setAllSeasons(res.seasons);
       if (res.nations) setAllNations(res.nations);
       if (res.leagues) setAllLeagues(res.leagues);
+      if (res.hiddenTraits) setAllTraits(res.hiddenTraits);
     });
   }, []);
 
@@ -222,18 +230,20 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   }, [search, posGroups, seasons, ovr, salaryMax, priceMax,
       league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
-      weightMin, weightMax, reputation, statFilter, statMin, statMax,
+      weightMin, weightMax, reputation, statFilter, statMin, statMax, trait,
       sort, page, pageSize]);
 
   // Fetch data whenever any filter changes
   const load = useCallback(async () => {
+    if (!canLoadSearch) return;
     setLoading(true);
     try {
       const res = await fetchPlayers({
-        search, posGroups, seasons, ovr, salaryMax, priceMax,
+        search: normalizedSearch, posGroups, seasons, ovr, salaryMax, priceMax,
         league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
         workRateAttack, workRateDefense, heightMin, heightMax,
         weightMin, weightMax, reputation, statFilter, statMin, statMax,
+        traits: trait ? [trait] : [],
         sort, page, pageSize,
       });
       setPlayers(res.players);
@@ -244,10 +254,10 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     } finally {
       setLoading(false);
     }
-  }, [search, posGroups, seasons, ovr, salaryMax, priceMax,
+  }, [canLoadSearch, normalizedSearch, posGroups, seasons, ovr, salaryMax, priceMax,
       league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
-      weightMin, weightMax, reputation, statFilter, statMin, statMax,
+      weightMin, weightMax, reputation, statFilter, statMin, statMax, trait,
       sort, page, pageSize]);
 
   useEffect(() => { load(); }, [load]);
@@ -282,6 +292,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     setStatFilter('');
     setStatMin('');
     setStatMax('');
+    setTrait('');
     setSort(DEFAULT_SORT);
     setPage(1);
   }
@@ -365,6 +376,9 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
         setStatMin={val => { setStatMin(val); setPage(1); }}
         statMax={statMax}
         setStatMax={val => { setStatMax(val); setPage(1); }}
+        trait={trait}
+        setTrait={val => { setTrait(val); setPage(1); }}
+        traitOptions={allTraits}
         onReset={resetFilters}
         onSearch={load}
       />
@@ -586,72 +600,82 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
   return (
     <div className="fco-row">
       <a className="fco-row-link" href={href} onClick={handleClick}>
-        <PlayerAvatar player={p} size={40} />
+        <div className="fco-row-core">
+          <PlayerAvatar player={p} size={40} />
 
-      <div className="fco-row-player">
-        <div className="fco-row-name">
-          {cleanName(p.name)}
-          {isAdmin && p.koreanRaw && <span className="fco-kr-flag">KR</span>}
-        </div>
-        <div className="fco-row-sub">
-          <SeasonChip code={p.season} name={p.seasonName} img={p.seasonImg} />
-          <PosPill pos={p.primaryPos} />
-          {p.positions?.slice(1, 3).map(pos => (
-            <PosPill key={pos} pos={pos} faded />
-          ))}
-          {p.club && <span className="fco-row-club">{p.club}</span>}
-        </div>
-        <div className="fco-row-meta-inline">
-          <span className="fco-mini-badge wf">
-            {p.foot === 'left' ? '5' : p._raw?.enrichment?.weakFoot || '?'}/{p.foot === 'right' ? '5' : p._raw?.enrichment?.weakFoot || '?'}
-          </span>
-          <span className="fco-mini-badge sm">
-            {p.skillMoves}★
-          </span>
-          <span className="fco-mini-badge wr">
-            {p.workRateAttack}/{p.workRateDefense}
-          </span>
-        </div>
-      </div>
-
-      <div className="fco-hide-sm" style={{ width: 56 }}>
-        <OvrBox value={p.ovr} pos={p.primaryPos} size="sm" />
-      </div>
-
-      {isAdmin && (
-        <div className="fco-hide-md" style={{ width: 96 }}>
-          <TrustBadge id={p.trust} variant="soft" size="sm" />
-        </div>
-      )}
-
-      {/* Stat strip */}
-      <div className="fco-hide-md fco-statstrip" style={{ width: 220 }}>
-        {MAIN_STATS.map(s => {
-          const v = p[s.key];
-          const c = v != null && v > 0 ? statColor(v) : 'var(--text-faint)';
-          return (
-            <div key={s.key} className="fco-statcell">
-              <div className="fco-statcell-lab">{s.label}</div>
-              <div className="fco-statcell-val" style={{ color: c }}>
-                {v != null && v > 0 ? v : '—'}
+          <div className="fco-row-player">
+            <div className="fco-row-mainline">
+              <div className="fco-row-name">
+                {cleanName(p.name)}
+                {isAdmin && p.koreanRaw && <span className="fco-kr-flag">KR</span>}
               </div>
-              <div className="fco-minibar">
-                {v != null && v > 0 &&
-                  <div style={{ width: `${Math.min(100, v)}%`, height: '100%', background: c, borderRadius: 99 }} />}
+              <div className="fco-row-ovr-mobile">
+                <OvrBox value={p.ovr} pos={p.primaryPos} size="sm" />
               </div>
             </div>
-          );
-        })}
-      </div>
+            <div className="fco-row-sub">
+              <SeasonChip code={p.season} name={p.seasonName} img={p.seasonImg} />
+              <PosPill pos={p.primaryPos} />
+              {p.positions?.slice(1, 3).map(pos => (
+                <PosPill key={pos} pos={pos} faded />
+              ))}
+              {p.club && <span className="fco-row-club">{p.club}</span>}
+            </div>
+            <div className="fco-row-meta-inline">
+              <span className="fco-mini-badge wf">
+                {p.foot === 'left' ? '5' : p._raw?.enrichment?.weakFoot || '?'}/{p.foot === 'right' ? '5' : p._raw?.enrichment?.weakFoot || '?'}
+              </span>
+              <span className="fco-mini-badge sm">
+                {p.skillMoves}★
+              </span>
+              <span className="fco-mini-badge wr">
+                {p.workRateAttack}/{p.workRateDefense}
+              </span>
+            </div>
+            <div className="fco-row-secondary">
+              <span>{p.price ? formatCoins(p.price) : '—'}</span>
+              <span>{p.salary ? `Lương ${p.salary}` : 'Lương —'}</span>
+            </div>
+          </div>
+        </div>
 
-      <div className="fco-hide-sm fco-num" style={{ width: 80, textAlign: 'right', color: p.price ? 'var(--text)' : 'var(--text-faint)' }}>
-        {p.price ? formatCoins(p.price) : '—'}
-      </div>
-      <div className="fco-hide-sm fco-num" style={{ width: 80, textAlign: 'right', color: p.salary ? 'var(--text)' : 'var(--text-faint)' }}>
-        {p.salary ? `${p.salary}` : '—'}
-      </div>
+        <div className="fco-hide-sm" style={{ width: 56 }}>
+          <OvrBox value={p.ovr} pos={p.primaryPos} size="sm" />
+        </div>
 
-        <I.ChevronRight size={16} style={{ color: 'var(--text-faint)', flex: '0 0 16px' }} />
+        {isAdmin && (
+          <div className="fco-hide-md" style={{ width: 96 }}>
+            <TrustBadge id={p.trust} variant="soft" size="sm" />
+          </div>
+        )}
+
+        <div className="fco-hide-md fco-statstrip" style={{ width: 220 }}>
+          {MAIN_STATS.map(s => {
+            const v = p[s.key];
+            const c = v != null && v > 0 ? statColor(v) : 'var(--text-faint)';
+            return (
+              <div key={s.key} className="fco-statcell">
+                <div className="fco-statcell-lab">{s.label}</div>
+                <div className="fco-statcell-val" style={{ color: c }}>
+                  {v != null && v > 0 ? v : '—'}
+                </div>
+                <div className="fco-minibar">
+                  {v != null && v > 0 &&
+                    <div style={{ width: `${Math.min(100, v)}%`, height: '100%', background: c, borderRadius: 99 }} />}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="fco-hide-sm fco-num" style={{ width: 80, textAlign: 'right', color: p.price ? 'var(--text)' : 'var(--text-faint)' }}>
+          {p.price ? formatCoins(p.price) : '—'}
+        </div>
+        <div className="fco-hide-sm fco-num" style={{ width: 80, textAlign: 'right', color: p.salary ? 'var(--text)' : 'var(--text-faint)' }}>
+          {p.salary ? `${p.salary}` : '—'}
+        </div>
+
+        <I.ChevronRight size={16} className="fco-row-chevron" />
       </a>
 
       <button
