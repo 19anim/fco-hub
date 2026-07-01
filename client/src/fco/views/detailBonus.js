@@ -14,7 +14,7 @@ function getOvrBonusForGrade(grade) {
 }
 
 function getStatBonusForGrade(grade) {
-  return Math.max(0, Number(grade) - 1);
+  return getOvrIncreaseForLevel(grade);
 }
 
 function addBonus(value, bonus) {

@@ -49,7 +49,6 @@ export default function EventsView({ showToast }) {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(false);
   const [blocked, setBlocked] = useState(false);
-  const cancelRef = useRef(null);
 
   // Async fetch core — only updates state from promise callbacks, never synchronously.
   function runFetch() {
@@ -69,7 +68,7 @@ export default function EventsView({ showToast }) {
   // On mount `loading` is already true and `error` already false, so no sync setState here.
   useEffect(() => {
     runFetch();
-    return () => cancelRef.current?.();
+    return () => {};
   }, []);
 
   const groups = useMemo(() => groupEvents(events), [events]);
@@ -78,13 +77,18 @@ export default function EventsView({ showToast }) {
     news:   events.filter((e) => e.isNewsPage).length,
   }), [events]);
 
+  const lastOpenRef = useRef(null);
+
   function openMany(list, label) {
     if (!list.length) { showToast?.('Không có mục nào để mở'); return; }
     setBlocked(false);
-    showToast?.(`Đang mở ${list.length} ${label}...`, 'success');
-    cancelRef.current = openSequentially(
+    lastOpenRef.current = { list, label };
+    openSequentially(
       list.map((e) => e.launchUrl),
-      { onBlocked: () => { setBlocked(true); showToast?.('Popup bị chặn'); } }
+      {
+        onBlocked: () => setBlocked(true),
+        onDone: () => showToast?.(`Đã mở ${list.length} ${label}`, 'success'),
+      }
     );
   }
 
@@ -140,10 +144,15 @@ export default function EventsView({ showToast }) {
         </Button>
       </div>
 
+
       {blocked && (
         <div className="fco-ev-banner">
           <I.Alert size={16} style={{ color: '#ff8a3d', flex: '0 0 16px' }} />
-          <span>Trình duyệt đã chặn popup. Hãy cho phép popup cho trang này rồi bấm mở lại.</span>
+          <span>Trình duyệt đang chặn popup. Nhấn vào biểu tượng ở góc phải thanh địa chỉ để cho phép, sau đó nhấn <b>Mở lại</b>.</span>
+          <button className="fco-ev-banner-retry" onClick={() => {
+            const last = lastOpenRef.current;
+            if (last) openMany(last.list, last.label);
+          }}>Mở lại</button>
         </div>
       )}
 

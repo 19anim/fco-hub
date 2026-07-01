@@ -1,30 +1,29 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, it } from 'vitest';
 import { shouldClearCareerClubForLeagueChange, shouldLoadClubsForLeague } from './DatabaseView.filters.js';
 import { canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
 
-test('preserves career club from the initial URL league filter', () => {
-  assert.equal(shouldClearCareerClubForLeagueChange(undefined, 'England Premier League'), false);
+it('preserves career club from the initial URL league filter', () => {
+  expect(shouldClearCareerClubForLeagueChange(undefined, 'England Premier League')).toBe(false);
 });
 
-test('clears career club when the user changes league after initial load', () => {
-  assert.equal(shouldClearCareerClubForLeagueChange('England Premier League', 'Spain Primera Division'), true);
+it('clears career club when the user changes league after initial load', () => {
+  expect(shouldClearCareerClubForLeagueChange('England Premier League', 'Spain Primera Division')).toBe(true);
 });
 
-test('does not load clubs before a league is selected', () => {
-  assert.equal(shouldLoadClubsForLeague(''), false);
+it('does not load clubs before a league is selected', () => {
+  expect(shouldLoadClubsForLeague('')).toBe(false);
 });
 
-test('loads clubs after a league is selected', () => {
-  assert.equal(shouldLoadClubsForLeague('Spain Primera Division'), true);
+it('loads clubs after a league is selected', () => {
+  expect(shouldLoadClubsForLeague('Spain Primera Division')).toBe(true);
 });
 
-test('database backend search policy blocks one-character queries', () => {
-  assert.equal(canRunBackendSearch('m'), false);
-  assert.equal(canRunBackendSearch('me'), true);
-  assert.equal(canRunBackendSearch(''), true);
+it('database backend search policy blocks one-character queries', () => {
+  expect(canRunBackendSearch('m')).toBe(false);
+  expect(canRunBackendSearch('me')).toBe(true);
+  expect(canRunBackendSearch('')).toBe(true);
 });
 
-test('database backend search policy caps query text to 50 characters', () => {
-  assert.equal(normalizeBackendSearch('x'.repeat(60)), 'x'.repeat(50));
+it('database backend search policy caps query text to 50 characters', () => {
+  expect(normalizeBackendSearch('x'.repeat(60))).toBe('x'.repeat(50));
 });

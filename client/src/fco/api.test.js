@@ -11,8 +11,8 @@ vi.mock('axios', () => ({
 describe('fetchPlayerDetail', () => {
   it('preserves every related season returned by the server', async () => {
     const relatedSeasons = Array.from({ length: 12 }, (_, index) => ({
-      _id: \`related-\${index + 1}\`,
-      name: \`Related \${index + 1}\`,
+      _id: `related-${index + 1}`,
+      name: `Related ${index + 1}`,
       seasonId: 2026 - index,
       overall: 100 - index,
     }));

@@ -1,24 +1,23 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, it } from 'vitest';
 import { applyYoutubeUrl } from './youtubeContent.js';
 
-test('applyYoutubeUrl updates video id and default thumbnail when thumbnail is empty', () => {
+it('applyYoutubeUrl updates video id and default thumbnail when thumbnail is empty', () => {
   const content = applyYoutubeUrl(
     { youtubeVideoId: 'dQw4w9WgXcQ', thumbnailUrl: '' },
     'https://www.youtube.com/watch?v=Yhdynz53Spw'
   );
 
-  assert.equal(content.youtubeUrl, 'https://www.youtube.com/watch?v=Yhdynz53Spw');
-  assert.equal(content.youtubeVideoId, 'Yhdynz53Spw');
-  assert.equal(content.thumbnailUrl, 'https://img.youtube.com/vi/Yhdynz53Spw/hqdefault.jpg');
+  expect(content.youtubeUrl).toBe('https://www.youtube.com/watch?v=Yhdynz53Spw');
+  expect(content.youtubeVideoId).toBe('Yhdynz53Spw');
+  expect(content.thumbnailUrl).toBe('https://img.youtube.com/vi/Yhdynz53Spw/hqdefault.jpg');
 });
 
-test('applyYoutubeUrl preserves custom thumbnail', () => {
+it('applyYoutubeUrl preserves custom thumbnail', () => {
   const content = applyYoutubeUrl(
     { youtubeVideoId: 'dQw4w9WgXcQ', thumbnailUrl: 'https://cdn.example.test/custom.jpg' },
     'https://www.youtube.com/watch?v=Yhdynz53Spw'
   );
 
-  assert.equal(content.youtubeVideoId, 'Yhdynz53Spw');
-  assert.equal(content.thumbnailUrl, 'https://cdn.example.test/custom.jpg');
+  expect(content.youtubeVideoId).toBe('Yhdynz53Spw');
+  expect(content.thumbnailUrl).toBe('https://cdn.example.test/custom.jpg');
 });

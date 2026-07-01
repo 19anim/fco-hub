@@ -8,10 +8,10 @@ import PlayerSearchForm from '../components/PlayerSearchForm.jsx';
 import {
   PlayerAvatar, OvrBox, PosPill, SeasonChip, TrustBadge,
   Button, IconButton, FilterChip, EmptyState, SkeletonRow,
-  Popover, FilterButton, RangeControl, MaxControl,
 } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 import { SEASONS_META } from '../constants.js';
+import { getSeasonSprite } from '../seasonSprites.js';
 import { shouldClearCareerClubForLeagueChange, shouldLoadClubsForLeague } from './DatabaseView.filters.js';
 
 const MAIN_STATS = [
@@ -188,12 +188,6 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const [totalPages, setTotalPages] = useState(1);
   const [loading,    setLoading]    = useState(true);
 
-  const [openPop, setOpenPop] = useState(null);
-  const sortRef   = useRef(null);
-  const ovrRef    = useRef(null);
-  const salaryRef = useRef(null);
-  const priceRef  = useRef(null);
-  const seasonRef = useRef(null);
   const previousLeagueRef = useRef(undefined);
 
   useEffect(() => {
@@ -261,13 +255,6 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
       sort, page, pageSize]);
 
   useEffect(() => { load(); }, [load]);
-
-  // Close popovers on popstate (user hit back)
-  useEffect(() => {
-    function onPop() { setOpenPop(null); }
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, []);
 
   function resetFilters() {
     setSearch('');
@@ -397,7 +384,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
               {allSeasons.map(s => {
                 const isSelected = seasons.includes(String(s.seasonId));
                 const seasonCode = String(s.seasonId || '');
-                const seasonSprite = s.seasonSprite;
+                const seasonSprite = getSeasonSprite(seasonCode) || s.seasonSprite;
                 const seasonMeta = s.seasonImg || seasonSprite ? null : (SEASONS_META[seasonCode] || SEASONS_META[seasonCode.toUpperCase()] || SEASONS_META.NG);
                 return (
                   <button key={s.seasonId}
@@ -408,9 +395,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
                       setSeasons(prev => prev.includes(sid) ? prev.filter(x => x !== sid) : [...prev, sid]);
                       setPage(1);
                     }}>
-                    {s.seasonImg ? (
-                      <img src={s.seasonImg} alt="" className="fco-season-opt-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    ) : seasonSprite ? (
+                    {seasonSprite ? (
                       <span
                         className="fco-season-sprite fco-season-opt-sprite"
                         aria-hidden="true"
@@ -422,6 +407,8 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
                           '--season-sprite-height': `${seasonSprite.height || 24}px`,
                         }}
                       />
+                    ) : s.seasonImg ? (
+                      <img src={s.seasonImg} alt="" className="fco-season-opt-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
                     ) : (
                       <div className="fco-season-opt-badge" style={{ background: seasonMeta?.bg, color: seasonMeta?.fg, borderColor: seasonMeta?.ring }}>
                         <span>{seasonMeta?.name || seasonCode}</span>
@@ -439,59 +426,6 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
               })}
            </div>
         </div>
-
-        <div className="fco-filter-divider" />
-
-        {/* OVR range */}
-        <FilterButton
-          anchorRef={ovrRef}
-          label="OVR"
-          icon={I.Activity}
-          count={(ovr[0] > DEFAULT_OVR[0] || ovr[1] < DEFAULT_OVR[1]) ? 1 : 0}
-          active={openPop === 'ovr'}
-          onClick={() => setOpenPop(p => p === 'ovr' ? null : 'ovr')}
-        />
-        <Popover open={openPop === 'ovr'} anchorRef={ovrRef} onClose={() => setOpenPop(null)} width={250}>
-          <div className="fco-pop-title">Overall</div>
-          <RangeControl min={50} max={150} value={ovr} onChange={v => { setOvr(v); setPage(1); }} />
-        </Popover>
-
-        {/* Salary max */}
-        <FilterButton
-          anchorRef={salaryRef}
-          label="Lương"
-          icon={I.Wallet}
-          count={salaryMax < DEFAULT_SALARY ? 1 : 0}
-          active={openPop === 'salary'}
-          onClick={() => setOpenPop(p => p === 'salary' ? null : 'salary')}
-        />
-        <Popover open={openPop === 'salary'} anchorRef={salaryRef} onClose={() => setOpenPop(null)} width={230}>
-          <div className="fco-pop-title">Lương tối đa</div>
-          <MaxControl
-            min={1} max={50} step={1}
-            value={salaryMax < DEFAULT_SALARY ? salaryMax : 50}
-            onChange={v => { setSalaryMax(v); setPage(1); }}
-          />
-        </Popover>
-
-        {/* Price max */}
-        <FilterButton
-          anchorRef={priceRef}
-          label="Giá"
-          icon={I.Coins}
-          count={priceMax < DEFAULT_PRICE ? 1 : 0}
-          active={openPop === 'price'}
-          onClick={() => setOpenPop(p => p === 'price' ? null : 'price')}
-        />
-        <Popover open={openPop === 'price'} anchorRef={priceRef} onClose={() => setOpenPop(null)} width={230}>
-          <div className="fco-pop-title">Giá thị trường ≤</div>
-          <MaxControl
-            min={0} max={200000000} step={1000000}
-            value={priceMax < DEFAULT_PRICE ? priceMax : 200000000}
-            onChange={v => { setPriceMax(v); setPage(1); }}
-            format={formatCoins}
-          />
-        </Popover>
       </div>
 
       {/* Result count + active filter chips */}

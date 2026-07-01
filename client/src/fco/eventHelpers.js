@@ -51,19 +51,17 @@ export function groupEvents(events) {
   return { expiring, ongoing, unknown };
 }
 
-// Open a list of URLs in new tabs, one every `gapMs`, to reduce popup blocking.
-// Calls onBlocked() if the first window.open returns null (browser blocked it).
-// Returns a cancel function.
-export function openSequentially(urls, { gapMs = 300, onBlocked, onDone } = {}) {
-  let i = 0;
-  let cancelled = false;
-  function next() {
-    if (cancelled || i >= urls.length) { if (!cancelled) onDone?.(); return; }
-    const win = window.open(urls[i], '_blank', 'noopener');
-    if (i === 0 && !win) { onBlocked?.(); return; }
-    i += 1;
-    setTimeout(next, gapMs);
+// Open all URLs in new tabs. Requires popup permission to be granted by the user.
+// Chrome allows the first tab per gesture but silently blocks the rest — detect via
+// the second window.open return value and call onBlocked() if popups aren't fully allowed.
+export function openSequentially(urls, { onBlocked, onDone } = {}) {
+  if (!urls.length) { onDone?.(); return () => {}; }
+
+  for (let i = 0; i < urls.length; i++) {
+    const win = window.open(urls[i], '_blank', 'noopener noreferrer');
+    if (win === null) { onBlocked?.(); return () => {}; }
   }
-  next();
-  return () => { cancelled = true; };
+
+  onDone?.();
+  return () => {};
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import './fco.css';
 import { LS_KEY } from './constants.js';
+import { fetchMeta } from './api.js';
 import DatabaseView from './views/DatabaseView.jsx';
 import EventsView from './views/EventsView.jsx';
 import UpgradeView from './views/UpgradeView.jsx';
@@ -130,6 +131,12 @@ export default function FcoApp() {
     }
 
     return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  useEffect(() => {
+    fetchMeta().catch(error => {
+      console.error('fetchMeta error', error);
+    });
   }, []);
 
   // Persist watch/compare

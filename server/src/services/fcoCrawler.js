@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { chromium } from 'playwright';
 
 const OFFICIAL_ROOT = 'fconline.garena.vn';
 
@@ -110,8 +111,12 @@ class FCOCrawler {
           continue;
         }
 
-        const ranges = this.getDateRanges(readable);
-        
+        const articleRanges = this.getDateRanges(this.getArticleTimingText(readable));
+        const launchRanges = await this.getLaunchDateRanges(articleUrl, launchUrl);
+        const ranges = this.isSubdomain(launchUrl) && launchRanges.length > 0
+          ? launchRanges
+          : articleRanges;
+
         if (ranges.length === 0) {
           results.push({
             title,
@@ -254,10 +259,57 @@ class FCOCrawler {
     }
   }
 
+  async getLaunchDateRanges(articleUrl, launchUrl) {
+    if (!launchUrl || launchUrl === articleUrl || !this.isOfficialUrl(launchUrl)) {
+      return [];
+    }
+
+    const html = await this.getString(launchUrl);
+    if (!html) return [];
+
+    const staticRanges = this.getDateRanges(this.getGuidanceModalText(html));
+    if (staticRanges.length > 0) return this.getPreferredEventRanges(staticRanges);
+
+    const renderedText = await this.getRenderedGuidanceText(launchUrl);
+    return this.getPreferredEventRanges(this.getDateRanges(renderedText));
+  }
+
+  getPreferredEventRanges(ranges) {
+    if (ranges.length <= 1) return ranges;
+
+    return [ranges.toSorted((a, b) => {
+      const durationA = new Date(a.end).getTime() - new Date(a.start).getTime();
+      const durationB = new Date(b.end).getTime() - new Date(b.start).getTime();
+      return durationB - durationA;
+    })[0]];
+  }
+
+  async getRenderedGuidanceText(url) {
+    let browser;
+    try {
+      browser = await chromium.launch({ headless: true });
+      const page = await browser.newPage();
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+      await page.waitForTimeout(1000);
+
+      const guidance = page.getByText(/Hướng dẫn|Thể lệ/i).first();
+      if (await guidance.count()) {
+        await guidance.click({ timeout: 3000 }).catch(() => null);
+        await page.waitForTimeout(500);
+      }
+
+      return await page.locator('body').innerText({ timeout: 5000 });
+    } catch {
+      return '';
+    } finally {
+      await browser?.close().catch(() => null);
+    }
+  }
+
   getDateRanges(text) {
     if (!text) return [];
 
-    const normalized = this.removeDiacritics(text);
+    const normalized = this.removeArticleTrailingContent(this.removeDiacritics(text));
     const patterns = [
       /Bat dau\s*:?.{0,60}?(\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?).{0,120}?Ket thuc\s*:?.{0,60}?(\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?)/gi,
       /(?:Tu ngay|Tu|Dien ra tu|Thoi gian(?: dien ra)?\s*:?)\s*(?:\d{1,2}h\d{0,2}\s*ngay\s*)?(\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?)\s*(?:den|toi|[-\u2013\u2014])\s*(?:\d{1,2}h\d{0,2}\s*ngay\s*)?(\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?)/gi,
@@ -325,6 +377,41 @@ class FCOCrawler {
     return match ? parseInt(match[1], 10) : new Date().getFullYear();
   }
 
+  removeArticleTrailingContent(text) {
+    return text.split(/\bCAC TIN LIEN QUAN\b/i)[0];
+  }
+
+  getArticleTimingText(text) {
+    const body = this.removeArticleTrailingContent(text);
+    const normalized = this.removeDiacritics(body).toLowerCase();
+    const headingMarkers = ['thoi gian dien ra', 'thoi gian', 'bat dau', 'ket thuc'];
+    const fallbackMarkers = ['tu ngay', 'dien ra tu'];
+    const headingIndexes = headingMarkers
+      .map((marker) => normalized.indexOf(marker))
+      .filter((index) => index !== -1);
+    const fallbackIndexes = fallbackMarkers
+      .map((marker) => normalized.indexOf(marker))
+      .filter((index) => index !== -1);
+    const indexes = headingIndexes.length ? headingIndexes : fallbackIndexes;
+    const index = indexes.length ? Math.min(...indexes) : -1;
+    return index === -1 ? body : body.slice(index);
+  }
+
+  getGuidanceModalText(html) {
+    const $ = cheerio.load(html);
+    const candidates = [];
+
+    $('[class*="modal"], [class*="popup"], [role="dialog"]').each((_, element) => {
+      const text = this.toReadableText($.html(element));
+      const normalized = this.removeDiacritics(text);
+      if (/\b(Huong dan|The le|Thoi gian|Dien ra tu)\b/i.test(normalized)) {
+        candidates.push(text);
+      }
+    });
+
+    return candidates.join(' ');
+  }
+
   toReadableText(text) {
     if (!text) return '';
 
@@ -338,15 +425,20 @@ class FCOCrawler {
   }
 
   decodeHtml(text) {
-    const entities = {
-      '&': '&',
-      '<': '<',
-      '>': '>',
-      '"': '"',
+    const named = {
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&apos;': "'",
       '&#39;': "'",
       '&nbsp;': ' ',
     };
-    return text.replace(/&[a-z]+;|&#\d+;/gi, (match) => entities[match] || match);
+    return text.replace(/&#x([0-9a-fA-F]+);|&#(\d+);|&[a-z]+;/gi, (match, hex, dec) => {
+      if (hex) return String.fromCharCode(parseInt(hex, 16));
+      if (dec) return String.fromCharCode(parseInt(dec, 10));
+      return named[match] || match;
+    });
   }
 
   getPageTitle(html, fallbackUrl) {

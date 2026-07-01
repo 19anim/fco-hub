@@ -1,8 +1,7 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, it } from 'vitest';
 import { filterLivePlacements } from './livePlacements.js';
 
-test('keeps only placements rendered in the public app', () => {
+it('keeps only placements rendered in the public app', () => {
   const placements = [
     { key: 'dashboard_inline', label: 'Dashboard – Giữa trang' },
     { key: 'market_top', label: 'Market – Trên cùng' },
@@ -14,7 +13,7 @@ test('keeps only placements rendered in the public app', () => {
     { key: 'player_detail_sidebar', label: 'Player Detail – Sidebar' },
   ];
 
-  assert.deepEqual(filterLivePlacements(placements).map((p) => p.key), [
+  expect(filterLivePlacements(placements).map((p) => p.key)).toEqual([
     'videos_top',
     'videos_inline',
     'videos_aff',

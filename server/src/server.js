@@ -18,6 +18,7 @@ import publicMonetizationRoutes from './routes/publicMonetization.routes.js';
 import adminAnalyticsRoutes from './routes/adminAnalytics.routes.js';
 import adminAuditLogRoutes from './routes/adminAuditLog.routes.js';
 import FCOCrawler from './services/fcoCrawler.js';
+import { syncScannedEvents } from './services/eventScanSync.js';
 import { syncFifaAddict } from './services/fifaAddictSource.js';
 import { syncNexonPlayers } from './services/nexonMetadata.js';
 import { bootstrapOwner } from './services/adminBootstrap.js';
@@ -106,19 +107,8 @@ cron.schedule('*/30 * * * *', async () => {
     console.log('[CRON] Starting automatic event scan...');
     
     const scannedEvents = await crawler.getEvents();
-    
-    const bulkOps = scannedEvents.map((event) => ({
-      updateOne: {
-        filter: { launchUrl: event.launchUrl },
-        update: { $set: event },
-        upsert: true,
-      },
-    }));
-    
-    if (bulkOps.length > 0) {
-      await Event.bulkWrite(bulkOps);
-    }
-    
+    const result = await syncScannedEvents(Event, scannedEvents);
+
     // Mark expired events
     const now = new Date();
     await Event.updateMany(
@@ -130,9 +120,8 @@ cron.schedule('*/30 * * * *', async () => {
         $set: { status: 'Expired' },
       }
     );
-    
-    const activeCount = scannedEvents.filter((e) => e.status === 'Active').length;
-    console.log(`[CRON] Scan completed: ${scannedEvents.length} total, ${activeCount} active`);
+
+    console.log(`[CRON] Scan completed: ${result.total} total, ${result.active} active`);
   } catch (error) {
     console.error('[CRON] Error during automatic scan:', error);
   }

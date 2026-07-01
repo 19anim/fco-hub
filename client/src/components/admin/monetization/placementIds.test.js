@@ -1,13 +1,11 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, it } from 'vitest';
 import { normalizePlacementIds } from './placementIds.js';
 
-test('normalizes populated placement objects and raw ids to strings', () => {
-  assert.deepEqual(
+it('normalizes populated placement objects and raw ids to strings', () => {
+  expect(
     normalizePlacementIds([
       { _id: 'placement-a', key: 'player_detail_sidebar' },
       'placement-b',
-    ]),
-    ['placement-a', 'placement-b']
-  );
+    ])
+  ).toEqual(['placement-a', 'placement-b']);
 });

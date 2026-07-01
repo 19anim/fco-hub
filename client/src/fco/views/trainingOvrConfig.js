@@ -185,6 +185,11 @@ const STAT_NAME_TO_LABEL = {
   'Lấy bóng': 'Lắy bóng',
 };
 
+function round2(value) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.round(value * 100) / 100;
+}
+
 export function getTrainingStats(positionCode) {
   const group = POSITION_TO_GROUP[positionCode];
   if (!group) return null;
@@ -194,4 +199,24 @@ export function getTrainingStats(positionCode) {
     const statKey = gk ? `gk:${name}` : rawLabel;
     return { name, coefficient, statKey };
   });
+}
+
+export function calculateTrainingOvr({ position, statValues = {}, training = {} }) {
+  const stats = getTrainingStats(position);
+  if (!stats) return null;
+
+  const calculate = (includeTraining) => stats.reduce((sum, stat) => {
+    const base = Number(statValues[stat.name] ?? statValues[stat.statKey] ?? 0);
+    const points = includeTraining ? Number(training[stat.name] || 0) : 0;
+    return sum + (base + points) * stat.coefficient;
+  }, 0) / 100;
+
+  const before = round2(calculate(false));
+  const after = round2(calculate(true));
+
+  return {
+    before,
+    after,
+    gained: round2(after - before),
+  };
 }

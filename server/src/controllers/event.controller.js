@@ -1,25 +1,32 @@
 import Event from '../models/Event.js';
 import FCOCrawler from '../services/fcoCrawler.js';
+import { syncScannedEvents } from '../services/eventScanSync.js';
 
 const crawler = new FCOCrawler();
+
+export function buildEventsQuery({ status, type }) {
+  const query = {
+    hiddenFromEvents: { $ne: true },
+  };
+
+  if (status) {
+    query.status = status;
+  }
+
+  if (type === 'events') {
+    query.isSubdomain = true;
+  } else if (type === 'news') {
+    query.isNewsPage = true;
+  }
+
+  return query;
+}
 
 // Get all events
 export const getEvents = async (req, res) => {
   try {
-    const { status, type } = req.query;
-    
-    let query = {};
-    
-    if (status) {
-      query.status = status;
-    }
-    
-    if (type === 'events') {
-      query.isSubdomain = true;
-    } else if (type === 'news') {
-      query.isNewsPage = true;
-    }
-    
+    const query = buildEventsQuery(req.query);
+
     const events = await Event.find(query).sort({ status: 1, endDate: -1 });
     
     res.json({
@@ -42,20 +49,8 @@ export const scanEvents = async (req, res) => {
     console.log('Starting event scan...');
     
     const scannedEvents = await crawler.getEvents();
-    
-    // Update database
-    const bulkOps = scannedEvents.map((event) => ({
-      updateOne: {
-        filter: { launchUrl: event.launchUrl },
-        update: { $set: event },
-        upsert: true,
-      },
-    }));
-    
-    if (bulkOps.length > 0) {
-      await Event.bulkWrite(bulkOps);
-    }
-    
+    const result = await syncScannedEvents(Event, scannedEvents);
+
     // Mark old events as expired
     const now = new Date();
     await Event.updateMany(
@@ -67,18 +62,13 @@ export const scanEvents = async (req, res) => {
         $set: { status: 'Expired' },
       }
     );
-    
-    const activeCount = scannedEvents.filter((e) => e.status === 'Active').length;
-    
-    console.log(`Scan completed: ${scannedEvents.length} total, ${activeCount} active`);
+
+    console.log(`Scan completed: ${result.total} total, ${result.active} active`);
     
     res.json({
       success: true,
       message: 'Events scan completed',
-      data: {
-        total: scannedEvents.length,
-        active: activeCount,
-      },
+      data: result,
     });
   } catch (error) {
     console.error('Scan error:', error);

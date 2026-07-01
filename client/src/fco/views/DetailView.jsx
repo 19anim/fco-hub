@@ -5,7 +5,7 @@ import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpe
 import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 import { applyDetailBonuses, getDetailBonusModel } from './detailBonus.js';
-import { getTrainingStats } from './trainingOvrConfig.js';
+import { calculateTrainingOvr, getTrainingStats } from './trainingOvrConfig.js';
 
 const STAT_GROUPS = [
   { key: 'pace',      label: 'Tốc độ',     en: 'Pace' },
@@ -213,13 +213,13 @@ function getPositionTone(label) {
   return 'muted';
 }
 
-function Panel({ title, sub, children, className }) {
+function Panel({ title, sub, subTone, children, className }) {
   return (
     <div className={`fco-panel${className ? ' ' + className : ''}`}>
       <div className="fco-panel-head">
         <div className="fco-panel-title">
           {title}
-          {sub && <span className="fco-panel-title-sub">{sub}</span>}
+          {sub && <span className={`fco-panel-title-sub${subTone ? ` ${subTone}` : ''}`}>{sub}</span>}
         </div>
       </div>
       <div className="fco-panel-body">{children}</div>
@@ -272,26 +272,6 @@ function TrainingOvrTab({ p, position }) {
     );
   }
 
-  // Build lookup map from player's detailed sub-stats
-  const byKey = new Map();
-  FLAT_SUB_STAT_ORDER.forEach(({ group, label }) => {
-    const stat = (p.detailed?.[group] || []).find(item => item.label === label);
-    if (stat?.value != null) byKey.set(label, stat.value);
-  });
-  GK_STAT_GROUPS.forEach(group => {
-    const value = p.detailed?.gk?.[group.key] ?? null;
-    if (value != null) byKey.set(`gk:${group.label}`, value);
-  });
-
-  const baseValues = stats.map(s => byKey.get(s.statKey) ?? 0);
-
-  const ovrBefore = Math.floor(
-    stats.reduce((sum, s, i) => sum + baseValues[i] * s.coefficient, 0) / 100
-  );
-  const ovrAfter = Math.floor(
-    stats.reduce((sum, s, i) => sum + (baseValues[i] + (training[s.name] || 0)) * s.coefficient, 0) / 100
-  );
-
   function setPoint(name, delta) {
     setTraining(prev => {
       const cur = prev[name] || 0;
@@ -305,67 +285,101 @@ function TrainingOvrTab({ p, position }) {
     setTraining({});
   }
 
-  const gained = ovrAfter - ovrBefore;
+  const byKey = new Map();
+  FLAT_SUB_STAT_ORDER.forEach(({ group, label }) => {
+    const stat = (p.detailed?.[group] || []).find(item => item.label === label);
+    if (stat?.value != null) byKey.set(label, stat.value);
+  });
+  GK_STAT_GROUPS.forEach(group => {
+    const value = p.detailed?.gk?.[group.key] ?? null;
+    if (value != null) byKey.set(`gk:${group.label}`, value);
+  });
+
+  const statValues = Object.fromEntries(stats.map((stat) => [stat.name, byKey.get(stat.statKey) ?? 0]));
+  const trainingOvr = calculateTrainingOvr({ position, statValues, training });
+  const ovrBefore = trainingOvr.before;
+  const ovrAfter = trainingOvr.after;
+  const gained = trainingOvr.gained;
+  const selectedTraining = stats
+    .map((stat) => ({ ...stat, points: training[stat.name] || 0 }))
+    .filter((stat) => stat.points > 0);
+  const trainingSlots = Array.from({ length: 5 }, (_, index) => selectedTraining[index] || null);
 
   return (
     <div className="fco-training-tab">
-      {/* OVR summary row */}
-      <div className="fco-training-summary">
-        <span>OVR trước: <strong style={{ color: 'var(--text-primary)' }}>{ovrBefore}</strong></span>
-        <span style={{ color: 'var(--text-faint)' }}>→</span>
-        <span>OVR sau: <strong style={{ color: gained > 0 ? 'var(--accent)' : 'var(--text-primary)' }}>{ovrAfter}</strong></span>
-        {gained > 0 && <span style={{ color: 'var(--accent)', fontWeight: 700, fontFamily: 'var(--mono)' }}>+{gained}</span>}
-        <button type="button" className="fco-training-reset" onClick={reset} disabled={trainedCount === 0}>
-          Đặt lại
-        </button>
+      <div className="fco-training-dashboard">
+        <div className="fco-training-dashboard-main">
+          <div>
+            <div className="fco-training-kicker">Đào tạo OVR · {position}</div>
+            <div className="fco-training-helper">Tối đa 5 chỉ số, mỗi chỉ số +2 điểm</div>
+          </div>
+          <div className="fco-training-ovr-lockup">
+            <span className="fco-training-ovr-value" style={{ color: statColor(ovrBefore) }}>{ovrBefore}</span>
+            <span className="fco-training-ovr-arrow">→</span>
+            <span className="fco-training-ovr-value after" style={{ color: gained > 0 ? 'var(--accent)' : statColor(ovrAfter) }}>
+              {ovrAfter.toFixed(2)}
+            </span>
+          </div>
+          <div className="fco-training-dashboard-actions">
+            <span className={`fco-training-gain${gained > 0 ? ' on' : ''}`}>{gained > 0 ? `+${gained.toFixed(2)}` : '+0.00'} OVR</span>
+            <span className="fco-training-count">{trainedCount}/5 chỉ số</span>
+            <button type="button" className="fco-training-reset" onClick={reset} disabled={trainedCount === 0}>
+              Đặt lại
+            </button>
+          </div>
+        </div>
+        <div className="fco-training-slots" aria-label="Chỉ số đang đào tạo">
+          {trainingSlots.map((slot, index) => (
+            <div key={slot?.name || `slot-${index}`} className={`fco-training-slot${slot ? ' filled' : ''}`}>
+              <span>{slot ? slot.name : `Slot ${index + 1}`}</span>
+              <strong>{slot ? `+${slot.points}` : '—'}</strong>
+            </div>
+          ))}
+        </div>
       </div>
-      <p style={{ fontSize: 12, color: 'var(--text-faint)', margin: '4px 0 8px' }}>
-        Mỗi chỉ số tối đa +2 điểm, tối đa 5 chỉ số.
-      </p>
-      <table className="fco-training-table">
-        <thead>
-          <tr>
-            <th>Chỉ số</th>
-            <th>Hiện tại</th>
-            <th>Điểm rèn</th>
-          </tr>
-        </thead>
-        <tbody>
-          {stats.map((s, i) => {
-            const base = baseValues[i];
-            const pts = training[s.name] || 0;
-            const canAdd = pts < 2 && (pts > 0 || trainedCount < 5);
-            const canSub = pts > 0;
-            return (
-              <tr key={s.name}>
-                <td>{s.name}</td>
-                <td style={{ fontFamily: 'var(--mono)', fontWeight: 700, color: base > 0 ? statColor(base) : 'var(--text-faint)' }}>
-                  {base > 0 ? base : '—'}
-                </td>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <button
-                      type="button"
-                      className="fco-training-btn"
-                      disabled={!canSub}
-                      onClick={() => setPoint(s.name, -1)}
-                    >−</button>
-                    <span style={{ fontFamily: 'var(--mono)', minWidth: 14, textAlign: 'center', fontSize: 12 }}>
-                      {pts > 0 ? `+${pts}` : '0'}
-                    </span>
-                    <button
-                      type="button"
-                      className="fco-training-btn"
-                      disabled={!canAdd}
-                      onClick={() => setPoint(s.name, 1)}
-                    >+</button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+
+      <div className="fco-training-list">
+        <div className="fco-training-list-head">
+          <span>Chỉ số</span>
+          <span>Hệ số</span>
+          <span>Hiện tại</span>
+          <span>Điểm rèn</span>
+        </div>
+        {stats.map((s) => {
+          const base = byKey.get(s.statKey) ?? 0;
+          const pts = training[s.name] || 0;
+          const canAdd = pts < 2 && (pts > 0 || trainedCount < 5);
+          const canSub = pts > 0;
+          return (
+            <div key={s.name} className={`fco-training-row${pts > 0 ? ' on' : ''}`}>
+              <div className="fco-training-stat-name">
+                <strong>{s.name}</strong>
+              </div>
+              <div className="fco-training-coef">{s.coefficient}%</div>
+              <div className="fco-training-base" style={{ color: base > 0 ? statColor(base) : 'var(--text-faint)' }}>
+                {base > 0 ? base : '—'}
+              </div>
+              <div className="fco-training-controls">
+                <button
+                  type="button"
+                  className="fco-training-btn"
+                  disabled={!canSub}
+                  onClick={() => setPoint(s.name, -1)}
+                  aria-label={`Giảm điểm ${s.name}`}
+                >−</button>
+                <span className="fco-training-points">{pts > 0 ? `+${pts}` : '0'}</span>
+                <button
+                  type="button"
+                  className="fco-training-btn"
+                  disabled={!canAdd}
+                  onClick={() => setPoint(s.name, 1)}
+                  aria-label={`Tăng điểm ${s.name}`}
+                >+</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -547,7 +561,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
           )}
 
           {/* Vị trí + Chỉ số */}
-          <Panel title="Chỉ số" sub={selectedStatPosition} className="fa-position-panel">
+          <Panel title="Chỉ số" sub={selectedStatPosition} subTone={getPositionTone(selectedStatPosition)} className="fa-position-panel">
             <section className="perform">
               <PerformStats p={p} />
             </section>
@@ -579,7 +593,10 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
                 key: 'training',
                 label: 'Đào tạo OVR',
                 show: selectedStatPosition !== 'OVR',
-                content: <TrainingOvrTab p={p} position={selectedStatPosition} />,
+                content: <TrainingOvrTab
+                  p={p}
+                  position={selectedStatPosition}
+                />,
               },
             ]} />
           </Panel>

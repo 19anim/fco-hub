@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { applyDetailBonuses, getDetailBonusModel } from './detailBonus.js';
 
 describe('detail bonus math', () => {
-  it('keeps grade-only stat and ovr behavior', () => {
-    const bonuses = getDetailBonusModel({ grade: 5, level: 1, teamColorBonus: 0 });
+  it('uses the same grade formula for component stats and OVR', () => {
+    const bonuses = getDetailBonusModel({ grade: 8, level: 1, teamColorBonus: 0 });
 
-    expect(bonuses.gradeStatBonus).toBe(4);
-    expect(bonuses.statBonus).toBe(4);
+    expect(bonuses.gradeOvrBonus).toBe(15);
+    expect(bonuses.gradeStatBonus).toBe(15);
+    expect(bonuses.statBonus).toBe(15);
     expect(bonuses.flatBonus).toBe(0);
-    expect(bonuses.ovrBonus).toBeGreaterThan(0);
+    expect(bonuses.ovrBonus).toBe(15);
   });
 
   it('adds level as level minus one and bonus as flat points', () => {
