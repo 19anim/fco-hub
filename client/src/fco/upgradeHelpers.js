@@ -49,6 +49,14 @@ export function withUpgradeLevel(player, level = MIN_UPGRADE_LEVEL) {
   };
 }
 
+export function getSelectedMainUpgradeLevel(player, fallbackLevel = MIN_UPGRADE_LEVEL) {
+  return normalizeUpgradeLevel(player?.upgradeLevel ?? fallbackLevel);
+}
+
+export function isUpgradeLevelSelectDisabled(animStatus) {
+  return animStatus !== 'idle';
+}
+
 export function getPlayerCardKey(player) {
   if (!player) return '';
   return String(player.spid ?? player.id ?? `${player.name || ''}-${player.season || ''}-${player.ovr || ''}`);

@@ -13,6 +13,8 @@ import {
   calculateEffectGaugeBonus,
   calculateUpgradeGauge,
   getDisplayedOvrForPlayer,
+  getSelectedMainUpgradeLevel,
+  isUpgradeLevelSelectDisabled,
   normalizeMaterialOvr,
   normalizeUpgradeLevel,
   rollUpgrade,
@@ -89,9 +91,10 @@ export default function UpgradeView() {
   }[animStatus] || 'Sẵn sàng';
 
   function handleAddPlayer(player) {
-    const selected = withUpgradeLevel(player, level || MIN_UPGRADE_LEVEL);
+    const selectedLevel = getSelectedMainUpgradeLevel(player, level || MIN_UPGRADE_LEVEL);
+    const selected = withUpgradeLevel(player, selectedLevel);
     setMainPlayer(selected);
-    setLevel(prev => normalizeUpgradeLevel(prev || selected.upgradeLevel));
+    setLevel(selectedLevel);
     setPickerOpen(null);
   }
 
@@ -299,13 +302,13 @@ export default function UpgradeView() {
                   <span>Cấp thẻ</span>
                   <select
                     value={level}
-                    disabled={animStatus !== 'idle' || level >= MAX_UPGRADE_LEVEL}
+                    disabled={isUpgradeLevelSelectDisabled(animStatus)}
                     onChange={event => setLevel(normalizeUpgradeLevel(event.target.value))}
                   >
                     {Array.from({ length: MAX_UPGRADE_LEVEL - MIN_UPGRADE_LEVEL }, (_, index) => MIN_UPGRADE_LEVEL + index).map(option => (
                       <option key={option} value={option}>+{option} → +{option + 1}</option>
                     ))}
-                    {level >= MAX_UPGRADE_LEVEL && <option value={MAX_UPGRADE_LEVEL}>+{MAX_UPGRADE_LEVEL} tối đa</option>}
+                    <option value={MAX_UPGRADE_LEVEL}>+{MAX_UPGRADE_LEVEL} tối đa</option>
                   </select>
                 </label>
 
@@ -409,7 +412,7 @@ export default function UpgradeView() {
           title="Chọn cầu thủ nâng cấp"
           showTopPlayers
           allowLevelSelect={false}
-          defaultLevel={Math.max(MIN_UPGRADE_LEVEL, level || MIN_UPGRADE_LEVEL)}
+          defaultLevel={level >= MAX_UPGRADE_LEVEL ? MIN_UPGRADE_LEVEL : Math.max(MIN_UPGRADE_LEVEL, level || MIN_UPGRADE_LEVEL)}
           existing={[]}
           onAdd={handleAddPlayer}
           onClose={() => setPickerOpen(null)}

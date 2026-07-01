@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   calculateEffectGaugeBonus,
   calculateUpgradeGauge,
+  getSelectedMainUpgradeLevel,
+  isUpgradeLevelSelectDisabled,
   normalizeMaterialOvr,
 } from './upgradeHelpers.js';
 
@@ -53,5 +55,14 @@ describe('upgrade helper formula semantics', () => {
     expect(normalizeMaterialOvr('abc')).toBeNull();
     expect(normalizeMaterialOvr(0)).toBeNull();
     expect(normalizeMaterialOvr('200')).toBe(200);
+  });
+
+  it('uses the newly selected card level instead of carrying a maxed upgrade level', () => {
+    expect(getSelectedMainUpgradeLevel({ upgradeLevel: 1 }, 13)).toBe(1);
+  });
+
+  it('keeps the level selector enabled at max level while idle', () => {
+    expect(isUpgradeLevelSelectDisabled('idle')).toBe(false);
+    expect(isUpgradeLevelSelectDisabled('running')).toBe(true);
   });
 });
