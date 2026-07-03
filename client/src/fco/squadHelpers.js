@@ -634,6 +634,16 @@ export function swapSquadSlots(bySlotId, fromSlotId, toSlotId) {
   return next;
 }
 
+export function movePlayerToSlot(bySlotId, fromSlotId, toSlotId) {
+  if (!fromSlotId || !toSlotId || fromSlotId === toSlotId) return bySlotId || {};
+  const next = { ...(bySlotId || {}) };
+  const fromPlayer = next[fromSlotId];
+  if (!fromPlayer) return bySlotId || {};
+  delete next[fromSlotId];
+  next[toSlotId] = fromPlayer;
+  return next;
+}
+
 export function updateSquadPlayerLevel(bySlotId, slotId, level) {
   const player = bySlotId?.[slotId];
   if (!player) return bySlotId || {};
