@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CARD_THEME_FALLBACK_ID, getCardThemeCoverage, getCardThemeForPlayer } from './cardThemes.js';
+import { CARD_THEME_FALLBACK_ID, formatCardThemeCoverage, getCardThemeCoverage, getCardThemeForPlayer } from './cardThemes.js';
 
 describe('getCardThemeForPlayer', () => {
   it('returns a stable fallback theme for an unknown season', () => {
@@ -55,5 +55,19 @@ describe('FIFAAddict-compatible class names', () => {
     const theme = getCardThemeForPlayer({ season: 'NG' });
     expect(theme.className).toBe('card-theme-ng');
     expect(theme.className).not.toMatch(/\s/);
+  });
+});
+
+describe('formatCardThemeCoverage', () => {
+  it('formats cloned and fallback themes as markdown', () => {
+    const markdown = formatCardThemeCoverage({
+      cloned: [{ seasonCode: 'NG', themeId: 'ng', count: 2, backgroundImage: '/fco/card-themes/card-theme-ng.svg' }],
+      seasonVisual: [],
+      fallback: [{ seasonCode: 'UNKNOWN', themeId: 'fallback', count: 1 }],
+    });
+
+    expect(markdown).toContain('## Card theme coverage');
+    expect(markdown).toContain('- NG / ng — 2 player(s) — `/fco/card-themes/card-theme-ng.svg`');
+    expect(markdown).toContain('- UNKNOWN / fallback — 1 player(s) — fallback');
   });
 });

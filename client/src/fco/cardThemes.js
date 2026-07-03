@@ -93,3 +93,28 @@ export function getCardThemeCoverage(players = []) {
 
   return coverage;
 }
+
+function formatThemeLine(theme, status) {
+  const asset = theme.backgroundImage ? `\`${theme.backgroundImage}\`` : status;
+  return `- ${theme.seasonCode || '(unknown)'} / ${theme.themeId} — ${theme.count} player(s) — ${asset}`;
+}
+
+export function formatCardThemeCoverage(coverage) {
+  const cloned = coverage?.cloned || [];
+  const seasonVisual = coverage?.seasonVisual || [];
+  const fallback = coverage?.fallback || [];
+
+  return [
+    '## Card theme coverage',
+    '',
+    '### Cloned local assets',
+    cloned.length ? cloned.map((theme) => formatThemeLine(theme, 'local')).join('\n') : '- None',
+    '',
+    '### External/season visual fallback',
+    seasonVisual.length ? seasonVisual.map((theme) => formatThemeLine(theme, 'season visual')).join('\n') : '- None',
+    '',
+    '### Missing or CSS fallback',
+    fallback.length ? fallback.map((theme) => formatThemeLine(theme, 'fallback')).join('\n') : '- None',
+    '',
+  ].join('\n');
+}
