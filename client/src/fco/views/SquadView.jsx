@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import PlayerPicker from '../components/PlayerPicker.jsx';
 import LevelSelect from '../components/LevelSelect.jsx';
 import {
   FORMATION_OPTIONS,
   getFormationSlots,
+  getActiveSquadSlots,
+  normalizeSquadSlots,
   loadSquad,
   saveSquad,
   getStartersFromSquad,
@@ -21,6 +23,40 @@ import { Button, IconButton, PlayerCardMini } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 
 const QUICK_LEVELS = [1, 5, 8, 10, 13];
+const DRAG_BOUNDS = { left: 5, right: 95, top: 10 };
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function getRoleFromPosition(x, y, slots) {
+  const nonGkSlots = slots.filter((slot) => slot.pos !== 'GK');
+  let best = nonGkSlots[0]?.pos || 'CM';
+  let bestDistance = Infinity;
+  nonGkSlots.forEach((slot) => {
+    const dx = x - slot.x;
+    const dy = y - slot.y;
+    const distance = dx * dx + dy * dy;
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = slot.pos;
+    }
+  });
+  return best;
+}
+
+function swapSlotLayouts(slots, draggedSlotId, targetPos, initialLayout) {
+  const next = slots.map((slot) => ({ ...slot }));
+  const dragged = next.find((slot) => slot.id === draggedSlotId);
+  const occupant = next.find((slot) => slot.id !== draggedSlotId && slot.pos === targetPos);
+  if (!dragged) return next;
+  if (occupant) {
+    occupant.pos = initialLayout.pos;
+    occupant.x = initialLayout.x;
+    occupant.y = initialLayout.y;
+  }
+  return next;
+}
 
 export default function SquadView() {
   const [squad, setSquad] = useState(() => loadSquad());
@@ -28,29 +64,38 @@ export default function SquadView() {
   const [movingSlotId, setMovingSlotId] = useState(null);
   const [dragSlotId, setDragSlotId] = useState(null);
   const [dragOverSlotId, setDragOverSlotId] = useState(null);
+  const [layoutDrag, setLayoutDrag] = useState(null);
+  const pitchRef = useRef(null);
+  const layoutDragRef = useRef(null);
+  const suppressClickRef = useRef(false);
 
   const { formationId, bySlotId } = squad;
-  const slots = useMemo(() => getFormationSlots(formationId), [formationId]);
+  const slots = useMemo(() => getActiveSquadSlots(squad), [squad]);
 
   const starters = useMemo(() => getStartersFromSquad(bySlotId, slots), [bySlotId, slots]);
   const squadBonuses = useMemo(() => computeSquadBonuses(starters), [starters]);
   const filledCount = starters.length;
 
-  function persist(nextBySlotId) {
-    const next = { formationId, bySlotId: nextBySlotId };
+  function persist(nextBySlotId, nextCustomSlots = squad.customSlots) {
+    const next = { formationId, bySlotId: nextBySlotId, customSlots: normalizeSquadSlots(nextCustomSlots) };
+    setSquad(next);
+    saveSquad(next);
+  }
+
+  function persistSquad(next) {
     setSquad(next);
     saveSquad(next);
   }
 
   function handleChangeFormation(nextFormationId) {
-    if (nextFormationId === formationId) return;
+    if (nextFormationId === formationId && !squad.customSlots) return;
     const nextSlots = getFormationSlots(nextFormationId);
     const nextBySlotId = mapSquadToFormation(bySlotId, slots, nextSlots);
-    const next = { formationId: nextFormationId, bySlotId: nextBySlotId };
-    setSquad(next);
-    saveSquad(next);
+    persistSquad({ formationId: nextFormationId, bySlotId: nextBySlotId, customSlots: null });
     setMovingSlotId(null);
     setDragOverSlotId(null);
+    setLayoutDrag(null);
+    layoutDragRef.current = null;
   }
 
   function handleAddPlayer(player) {
@@ -64,9 +109,7 @@ export default function SquadView() {
   }
 
   function clearSquad() {
-    const next = { formationId, bySlotId: {} };
-    setSquad(next);
-    saveSquad(next);
+    persistSquad({ formationId, bySlotId: {}, customSlots: squad.customSlots || null });
     setMovingSlotId(null);
     setDragOverSlotId(null);
   }
@@ -108,39 +151,74 @@ export default function SquadView() {
   function clearDragState() {
     setDragSlotId(null);
     setDragOverSlotId(null);
+    setLayoutDrag(null);
+    layoutDragRef.current = null;
   }
 
-  function handleDragStart(slotId, e) {
-    if (!bySlotId[slotId]) { e.preventDefault(); return; }
-    setDragSlotId(slotId);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', slotId);
+  function getLayoutDragUpdate(event, dragState = layoutDragRef.current) {
+    if (!dragState || !pitchRef.current) return null;
+    const rect = pitchRef.current.getBoundingClientRect();
+    const dx = ((event.clientX - dragState.startClientX) / rect.width) * 100;
+    const dy = ((event.clientY - dragState.startClientY) / rect.height) * 100;
+    const gkSlot = dragState.baseSlots.find((slot) => slot.pos === 'GK');
+    const maxY = (gkSlot?.y || 88.5) - 0.1;
+    const x = clamp(dragState.initialSlot.x + dx, DRAG_BOUNDS.left, DRAG_BOUNDS.right);
+    const y = clamp(dragState.initialSlot.y + dy, DRAG_BOUNDS.top, maxY);
+    const pos = getRoleFromPosition(x, y, dragState.baseSlots);
+    const nextSlots = dragState.baseSlots.map((slot) => (
+      slot.id === dragState.slotId ? { ...slot, x, y, pos } : slot
+    ));
+    return { ...dragState, currentSlots: nextSlots, currentPos: pos, x, y, moved: true };
   }
 
-  function handleDragOver(slotId, e) {
-    if (!dragSlotId || dragSlotId === slotId) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverSlotId(slotId);
+  function handleSlotPointerDown(slot, event) {
+    if (event.button !== 0 || slot.pos === 'GK') return;
+    if (event.target.closest('button') && !event.target.closest('.fco-player-card-mini') && !event.target.closest('.fco-squad-empty')) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const baseSlots = slots.map((s) => ({ ...s }));
+    const initialSlot = { ...slot };
+    const nextDrag = {
+      pointerId: event.pointerId,
+      slotId: slot.id,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      initialSlot,
+      baseSlots,
+      currentSlots: baseSlots,
+      currentPos: slot.pos,
+      x: slot.x,
+      y: slot.y,
+      moved: false,
+    };
+    layoutDragRef.current = nextDrag;
+    setLayoutDrag(nextDrag);
+    setDragSlotId(slot.id);
   }
 
-  function handleDragLeave(slotId, e) {
-    if (!e.currentTarget.contains(e.relatedTarget) && dragOverSlotId === slotId) {
-      setDragOverSlotId(null);
-    }
+  function handleSlotPointerMove(event) {
+    const nextDrag = getLayoutDragUpdate(event);
+    if (!nextDrag) return;
+    layoutDragRef.current = nextDrag;
+    setLayoutDrag(nextDrag);
   }
 
-  function handleDrop(slotId, e) {
-    e.preventDefault();
-    const fromSlotId = dragSlotId || e.dataTransfer.getData('text/plain');
-    if (!fromSlotId || fromSlotId === slotId) { clearDragState(); return; }
-    const targetOccupied = Boolean(bySlotId[slotId]);
-    persist(targetOccupied ? swapSquadSlots(bySlotId, fromSlotId, slotId) : movePlayerToSlot(bySlotId, fromSlotId, slotId));
+  function handleSlotPointerUp(event) {
+    const nextDrag = getLayoutDragUpdate(event) || layoutDragRef.current;
+    if (!nextDrag) { clearDragState(); return; }
+    event.currentTarget.releasePointerCapture?.(nextDrag.pointerId);
+    if (!nextDrag.moved) { clearDragState(); return; }
+    suppressClickRef.current = true;
+    window.setTimeout(() => { suppressClickRef.current = false; }, 0);
+    const swappedSlots = swapSlotLayouts(nextDrag.currentSlots, nextDrag.slotId, nextDrag.currentPos, nextDrag.initialSlot);
+    persist(bySlotId, swappedSlots);
     clearDragState();
   }
 
+  const visibleSlots = layoutDrag?.currentSlots || slots;
+
   const existingKeys = Object.values(bySlotId).map((player) => getPlayerCardKey(player));
-  const activePickerSlot = slots.find((s) => s.id === pickerSlotId) || null;
+  const activePickerSlot = visibleSlots.find((s) => s.id === pickerSlotId) || null;
 
   return (
     <div className="fco-squad-view">
@@ -153,7 +231,7 @@ export default function SquadView() {
 
       <div className="fco-squad-toolbar">
         <div className="fco-squad-toolbar-group">
-          <span className="fco-squad-toolbar-label">Sơ đồ</span>
+          <span className="fco-squad-toolbar-label">Sơ đồ{squad.customSlots ? ' · Custom' : ''}</span>
           <div className="fco-squad-formations">
             {FORMATION_OPTIONS.map((opt) => (
               <button
@@ -194,7 +272,7 @@ export default function SquadView() {
       </div>
 
       <div className="fco-squad-layout">
-        <div className="fco-squad-pitch">
+        <div className="fco-squad-pitch" ref={pitchRef}>
           <div className="fco-pitch-lines" aria-hidden="true">
             <span className="fco-pitch-halfway" />
             <span className="fco-pitch-circle" />
@@ -212,7 +290,7 @@ export default function SquadView() {
             <span className="fco-pitch-corner fco-pitch-corner-bl" />
             <span className="fco-pitch-corner fco-pitch-corner-br" />
           </div>
-          {slots.map((slot) => {
+          {visibleSlots.map((slot) => {
             const player = bySlotId[slot.id];
             const bonus = getPlayerSquadBonus(squadBonuses.perPlayer, player);
             const boosted = applySquadBonus(player, bonus);
@@ -224,19 +302,16 @@ export default function SquadView() {
             return (
               <div
                 key={slot.id}
-                className={`fco-squad-slot${isDropTarget ? ' drop-target' : ''}${isDragOver ? ' drag-over' : ''}`}
+                className={`fco-squad-slot${isDropTarget ? ' drop-target' : ''}${isDragOver ? ' drag-over' : ''}${layoutDrag?.slotId === slot.id ? ' layout-dragging' : ''}`}
                 style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
-                onDragEnter={(e) => handleDragOver(slot.id, e)}
-                onDragOver={(e) => handleDragOver(slot.id, e)}
-                onDragLeave={(e) => handleDragLeave(slot.id, e)}
-                onDrop={(e) => handleDrop(slot.id, e)}
+                onPointerDown={(e) => handleSlotPointerDown(slot, e)}
+                onPointerMove={handleSlotPointerMove}
+                onPointerUp={handleSlotPointerUp}
+                onPointerCancel={clearDragState}
               >
                 {player ? (
                   <div
                     className={`fco-squad-card${isMovingSource ? ' moving' : ''}${isMoveTarget ? ' move-target' : ''}${dragSlotId === slot.id ? ' dragging' : ''}`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(slot.id, e)}
-                    onDragEnd={clearDragState}
                   >
                     <div className="fco-squad-card-actions">
                       <IconButton
@@ -260,7 +335,10 @@ export default function SquadView() {
                       ovr={boosted.ovr}
                       bonus={bonus}
                       level={player.upgradeLevel}
-                      onClick={() => (movingSlotId ? handleSlotClick(slot.id) : setPickerSlotId(slot.id))}
+                      onClick={() => {
+                        if (suppressClickRef.current) return;
+                        movingSlotId ? handleSlotClick(slot.id) : setPickerSlotId(slot.id);
+                      }}
                     />
 
                     <div className="fco-squad-cardlevel">
@@ -277,7 +355,10 @@ export default function SquadView() {
                   <button
                     type="button"
                     className={`fco-squad-empty${isMoveTarget ? ' move-target' : ''}${isDragOver ? ' drag-over' : ''}`}
-                    onClick={() => handleSlotClick(slot.id)}
+                    onClick={() => {
+                      if (suppressClickRef.current) return;
+                      handleSlotClick(slot.id);
+                    }}
                     aria-label={`Chọn cầu thủ vị trí ${slot.pos}`}
                   >
                     <span className="fco-squad-empty-plus">+</span>
@@ -330,7 +411,7 @@ export default function SquadView() {
 
           <div className="fco-squad-panel-note">
             Đã chọn {filledCount}/11 cầu thủ.
-            {movingSlotId ? ' Bấm vào một vị trí khác để đổi chỗ, hoặc bấm lại icon đổi vị trí để huỷ.' : ' Bấm icon đổi vị trí trên thẻ hoặc kéo thả để hoán đổi.'}
+            {movingSlotId ? ' Bấm vào một vị trí khác để đổi chỗ, hoặc bấm lại icon đổi vị trí để huỷ.' : ' Kéo vị trí trên sân để tạo sơ đồ custom; thả vào vùng đã có vị trí sẽ đổi chỗ.'}
           </div>
         </div>
       </div>

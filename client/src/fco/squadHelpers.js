@@ -579,33 +579,56 @@ function isPersistedV2(raw) {
   return raw && typeof raw === 'object' && raw.bySlotId && typeof raw.bySlotId === 'object';
 }
 
+export function normalizeSquadSlots(slots) {
+  if (!Array.isArray(slots) || slots.length !== 11) return null;
+  const seen = new Set();
+  const normalized = [];
+  for (const slot of slots) {
+    const id = String(slot?.id || '').trim();
+    const pos = String(slot?.pos || '').trim().toUpperCase();
+    const x = Number(slot?.x);
+    const y = Number(slot?.y);
+    if (!id || seen.has(id) || !POSITIONS_META[pos] || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+    seen.add(id);
+    normalized.push({ id, pos, x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) });
+  }
+  return normalized;
+}
+
 export function loadSquad() {
   try {
     const raw = JSON.parse(localStorage.getItem(SQUAD_LS_KEY) || '{}');
-    if (!raw || typeof raw !== 'object') return { formationId: DEFAULT_FORMATION_ID, bySlotId: {} };
+    if (!raw || typeof raw !== 'object') return { formationId: DEFAULT_FORMATION_ID, bySlotId: {}, customSlots: null };
     if (isPersistedV2(raw)) {
       return {
         formationId: FORMATIONS[raw.formationId] ? raw.formationId : DEFAULT_FORMATION_ID,
         bySlotId: raw.bySlotId || {},
+        customSlots: normalizeSquadSlots(raw.customSlots),
       };
     }
-    return { formationId: '4-3-3', bySlotId: raw };
+    return { formationId: '4-3-3', bySlotId: raw, customSlots: null };
   } catch {
-    return { formationId: DEFAULT_FORMATION_ID, bySlotId: {} };
+    return { formationId: DEFAULT_FORMATION_ID, bySlotId: {}, customSlots: null };
   }
 }
 
 export function saveSquad(squad) {
   try {
+    const customSlots = normalizeSquadSlots(squad?.customSlots);
     localStorage.setItem(SQUAD_LS_KEY, JSON.stringify({
       formationId: FORMATIONS[squad?.formationId] ? squad.formationId : DEFAULT_FORMATION_ID,
       bySlotId: squad?.bySlotId || {},
+      customSlots,
     }));
   } catch {}
 }
 
 export function getFormationSlots(formationId) {
   return getFormation(formationId).slots;
+}
+
+export function getActiveSquadSlots(squad) {
+  return normalizeSquadSlots(squad?.customSlots) || getFormationSlots(squad?.formationId || DEFAULT_FORMATION_ID);
 }
 
 export function getStartersFromSquad(bySlotId, slots = getFormationSlots(DEFAULT_FORMATION_ID)) {
