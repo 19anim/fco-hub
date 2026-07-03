@@ -58,6 +58,24 @@ function swapSlotLayouts(slots, draggedSlotId, targetPos, initialLayout) {
   return next;
 }
 
+const CUSTOM_FORMATION_BUCKETS = [
+  new Set(['LB', 'RB', 'LWB', 'RWB', 'CB', 'LCB', 'RCB']),
+  new Set(['CDM', 'LDM', 'RDM']),
+  new Set(['CM', 'LCM', 'RCM', 'LM', 'RM']),
+  new Set(['CAM', 'LAM', 'RAM']),
+  new Set(['ST', 'CF', 'LF', 'RF', 'LW', 'RW', 'LS', 'RS']),
+];
+
+function getCustomFormationLabel(slots) {
+  const counts = CUSTOM_FORMATION_BUCKETS.map(() => 0);
+  slots.forEach((slot) => {
+    if (slot.pos === 'GK') return;
+    const index = CUSTOM_FORMATION_BUCKETS.findIndex((bucket) => bucket.has(slot.pos));
+    if (index >= 0) counts[index] += 1;
+  });
+  return counts.filter(Boolean).join('-') || 'Custom';
+}
+
 export default function SquadView() {
   const [squad, setSquad] = useState(() => loadSquad());
   const [pickerSlotId, setPickerSlotId] = useState(null);
@@ -72,6 +90,7 @@ export default function SquadView() {
   const { formationId, bySlotId } = squad;
   const slots = useMemo(() => getActiveSquadSlots(squad), [squad]);
 
+  const customFormationLabel = useMemo(() => (squad.customSlots ? getCustomFormationLabel(slots) : ''), [squad.customSlots, slots]);
   const starters = useMemo(() => getStartersFromSquad(bySlotId, slots), [bySlotId, slots]);
   const squadBonuses = useMemo(() => computeSquadBonuses(starters), [starters]);
   const filledCount = starters.length;
@@ -231,13 +250,14 @@ export default function SquadView() {
 
       <div className="fco-squad-toolbar">
         <div className="fco-squad-toolbar-group">
-          <span className="fco-squad-toolbar-label">Sơ đồ{squad.customSlots ? ' · Custom' : ''}</span>
+          <span className="fco-squad-toolbar-label">Sơ đồ</span>
           <div className="fco-squad-formations">
+            {squad.customSlots && <span className="fco-squad-custom-formation">Custom · {customFormationLabel}</span>}
             {FORMATION_OPTIONS.map((opt) => (
               <button
                 key={opt.id}
                 type="button"
-                className={`fco-squad-formation-btn${opt.id === formationId ? ' active' : ''}`}
+                className={`fco-squad-formation-btn${!squad.customSlots && opt.id === formationId ? ' active' : ''}`}
                 onClick={() => handleChangeFormation(opt.id)}
               >
                 {opt.label}
