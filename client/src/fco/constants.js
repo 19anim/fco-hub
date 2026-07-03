@@ -17,14 +17,40 @@ export const SEASONS_META = {
   NG:     { name: "Normal",                 fg: "#cfd6df", bg: "linear-gradient(135deg,#2a313c,#1c222b)", ring: "#39424f" },
 };
 
+export const POSITION_BASE_ALIASES = Object.freeze({
+  LS: 'ST',
+  RS: 'ST',
+  LF: 'CF',
+  RF: 'CF',
+  LCB: 'CB',
+  RCB: 'CB',
+  LCM: 'CM',
+  RCM: 'CM',
+  LDM: 'CDM',
+  RDM: 'CDM',
+  LAM: 'CAM',
+  RAM: 'CAM',
+  LWB: 'LB',
+  RWB: 'RB',
+});
+
+export function resolvePositionCode(pos) {
+  const upperPos = String(pos || '').toUpperCase();
+  return POSITION_BASE_ALIASES[upperPos] || upperPos;
+}
+
 export const POSITIONS_META = {
   GK:  { group: "GK",  color: "#f5c84b" },
-  CB:  { group: "DEF", color: "#37a0ff" }, RB: { group: "DEF", color: "#37a0ff" }, LB: { group: "DEF", color: "#37a0ff" },
+  CB:  { group: "DEF", color: "#37a0ff" }, LCB: { group: "DEF", color: "#37a0ff" }, RCB: { group: "DEF", color: "#37a0ff" },
+  RB:  { group: "DEF", color: "#37a0ff" }, LB: { group: "DEF", color: "#37a0ff" },
   RWB: { group: "DEF", color: "#37a0ff" }, LWB:{ group: "DEF", color: "#37a0ff" },
-  CDM: { group: "MID", color: "#00e08a" }, CM: { group: "MID", color: "#00e08a" }, CAM:{ group: "MID", color: "#00e08a" },
+  CDM: { group: "MID", color: "#00e08a" }, LDM: { group: "MID", color: "#00e08a" }, RDM: { group: "MID", color: "#00e08a" },
+  CM:  { group: "MID", color: "#00e08a" }, LCM: { group: "MID", color: "#00e08a" }, RCM: { group: "MID", color: "#00e08a" },
+  CAM: { group: "MID", color: "#00e08a" }, LAM:{ group: "MID", color: "#00e08a" }, RAM:{ group: "MID", color: "#00e08a" },
   RM:  { group: "MID", color: "#00e08a" }, LM: { group: "MID", color: "#00e08a" },
   RW:  { group: "FWD", color: "#ff7a59" }, LW: { group: "FWD", color: "#ff7a59" },
-  CF:  { group: "FWD", color: "#ff7a59" }, ST: { group: "FWD", color: "#ff7a59" },
+  CF:  { group: "FWD", color: "#ff7a59" }, LF: { group: "FWD", color: "#ff7a59" }, RF: { group: "FWD", color: "#ff7a59" },
+  ST:  { group: "FWD", color: "#ff7a59" }, LS: { group: "FWD", color: "#ff7a59" }, RS: { group: "FWD", color: "#ff7a59" },
 };
 
 export const TRUST_META = {
