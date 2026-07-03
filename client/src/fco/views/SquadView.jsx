@@ -17,58 +17,73 @@ import {
   mapSquadToFormation,
   getPickerPosGroupsForSlot,
 } from '../squadHelpers.js';
-import { computeSquadBonuses, getPlayerSquadBonus, applySquadBonus } from '../teamColor.js';
-import { getPlayerCardKey, normalizeUpgradeLevel } from '../upgradeHelpers.js';
+import { getOvrForSlotPosition } from '../positionOvr.js';
+import { computeSquadBonuses, getPlayerSquadBonus } from '../teamColor.js';
+import { getPlayerCardKey, getOvrIncreaseForLevel, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import { Button, IconButton, PlayerCardMini } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 
 const QUICK_LEVELS = [1, 5, 8, 10, 13];
+const FORMATION_GROUPS = [
+  { label: '3 Back', prefix: '3-' },
+  { label: '4 Back', prefix: '4-' },
+  { label: '5 Back', prefix: '5-' },
+];
 const DRAG_BOUNDS = { left: 5, right: 95, top: 10, bottom: 82 };
 
-// Fixed role zones as fractions of the drag area, matching fifaaddict's rawDbZones table
-// (x fraction left-to-right, y fraction bottom-to-top i.e. yMax = closer to attacking third).
-const ROLE_ZONE_FRACTIONS = {
-  RWB: { xMin: 0.75, xMax: 1.0, yMin: 0.0, yMax: 0.4 },
-  RB: { xMin: 0.75, xMax: 1.0, yMin: 0.0, yMax: 0.225 },
-  RCB: { xMin: 0.5, xMax: 0.75, yMin: 0.0, yMax: 0.2 },
-  CB: { xMin: 0.25, xMax: 0.75, yMin: 0.0, yMax: 0.2 },
-  LCB: { xMin: 0.25, xMax: 0.5, yMin: 0.0, yMax: 0.2 },
-  LB: { xMin: 0.0, xMax: 0.25, yMin: 0.0, yMax: 0.225 },
-  LWB: { xMin: 0.0, xMax: 0.25, yMin: 0.0, yMax: 0.4 },
-  RDM: { xMin: 0.5, xMax: 0.75, yMin: 0.2, yMax: 0.4 },
-  CDM: { xMin: 0.25, xMax: 0.75, yMin: 0.2, yMax: 0.4 },
-  LDM: { xMin: 0.25, xMax: 0.5, yMin: 0.2, yMax: 0.4 },
-  RM: { xMin: 0.75, xMax: 1.0, yMin: 0.4, yMax: 0.7 },
-  RCM: { xMin: 0.5, xMax: 0.75, yMin: 0.4, yMax: 0.6 },
-  CM: { xMin: 0.25, xMax: 0.75, yMin: 0.4, yMax: 0.6 },
-  LCM: { xMin: 0.25, xMax: 0.5, yMin: 0.4, yMax: 0.6 },
-  LM: { xMin: 0.0, xMax: 0.25, yMin: 0.4, yMax: 0.7 },
-  RAM: { xMin: 0.5, xMax: 0.75, yMin: 0.55, yMax: 0.75 },
-  CAM: { xMin: 0.25, xMax: 0.75, yMin: 0.55, yMax: 0.75 },
-  LAM: { xMin: 0.25, xMax: 0.5, yMin: 0.55, yMax: 0.75 },
-  RF: { xMin: 0.5, xMax: 0.75, yMin: 0.7, yMax: 0.9 },
-  CF: { xMin: 0.25, xMax: 0.75, yMin: 0.7, yMax: 0.9 },
-  LF: { xMin: 0.25, xMax: 0.5, yMin: 0.7, yMax: 0.9 },
-  RW: { xMin: 0.75, xMax: 1.0, yMin: 0.4, yMax: 1.0 },
-  RS: { xMin: 0.5, xMax: 0.75, yMin: 0.85, yMax: 1.0 },
-  ST: { xMin: 0.25, xMax: 0.75, yMin: 0.85, yMax: 1.0 },
-  LS: { xMin: 0.25, xMax: 0.5, yMin: 0.85, yMax: 1.0 },
-  LW: { xMin: 0.0, xMax: 0.25, yMin: 0.4, yMax: 1.0 },
+const SOURCE_ROLE_MAX_TOP = 115;
+const SOURCE_ROLE_ZONES = {
+  SW: { left: 35, right: 65, top: 97.75, bottom: 109.25 },
+  RWB: { left: 75, right: 100, top: 69, bottom: 115 },
+  RB: { left: 75, right: 100, top: 80, bottom: 104 },
+  RCB: { left: 50, right: 75, top: 92, bottom: 115 },
+  CB: { left: 25, right: 75, top: 92, bottom: 115 },
+  LCB: { left: 25, right: 50, top: 92, bottom: 115 },
+  LB: { left: 0, right: 25, top: 80, bottom: 104 },
+  LWB: { left: 0, right: 25, top: 69, bottom: 115 },
+  RDM: { left: 50, right: 75, top: 69, bottom: 92 },
+  CDM: { left: 25, right: 75, top: 69, bottom: 92 },
+  LDM: { left: 25, right: 50, top: 69, bottom: 92 },
+  RM: { left: 75, right: 100, top: 34.5, bottom: 69 },
+  RCM: { left: 50, right: 75, top: 46, bottom: 69 },
+  CM: { left: 25, right: 75, top: 46, bottom: 69 },
+  LCM: { left: 25, right: 50, top: 46, bottom: 69 },
+  LM: { left: 0, right: 25, top: 34.5, bottom: 69 },
+  RAM: { left: 50, right: 75, top: 28.75, bottom: 51.75 },
+  CAM: { left: 25, right: 75, top: 28.75, bottom: 51.75 },
+  LAM: { left: 25, right: 50, top: 28.75, bottom: 51.75 },
+  RF: { left: 50, right: 75, top: 11.5, bottom: 34.5 },
+  CF: { left: 25, right: 75, top: 11.5, bottom: 34.5 },
+  LF: { left: 25, right: 50, top: 11.5, bottom: 34.5 },
+  RW: { left: 75, right: 100, top: 0, bottom: 69 },
+  RS: { left: 50, right: 75, top: 0, bottom: 17.25 },
+  ST: { left: 25, right: 75, top: 0, bottom: 17.25 },
+  LS: { left: 25, right: 50, top: 0, bottom: 17.25 },
+  LW: { left: 0, right: 25, top: 0, bottom: 69 },
+};
+const HIT_ROLE_ZONES = {
+  ...SOURCE_ROLE_ZONES,
+  SW: { left: 35, right: 65, top: 104, bottom: 115 },
+  RWB: { left: 75, right: 100, top: 69, bottom: 95 },
+  RB: { left: 75, right: 100, top: 95, bottom: 115 },
+  RCB: { left: 50, right: 75, top: 92, bottom: 104 },
+  CB: { left: 25, right: 75, top: 92, bottom: 104 },
+  LCB: { left: 25, right: 50, top: 92, bottom: 104 },
+  LB: { left: 0, right: 25, top: 95, bottom: 115 },
+  LWB: { left: 0, right: 25, top: 69, bottom: 95 },
 };
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function buildPositionZones(bounds) {
-  const w = bounds.right - bounds.left;
-  const h = bounds.bottom - bounds.top;
+function buildPositionZones(bounds, sourceZones = SOURCE_ROLE_ZONES) {
   const zones = {};
-  Object.entries(ROLE_ZONE_FRACTIONS).forEach(([role, z]) => {
-    const l = bounds.left + z.xMin * w;
-    const r = bounds.left + z.xMax * w;
-    const t = bounds.top + (1 - z.yMax) * h;
-    const b = bounds.top + (1 - z.yMin) * h;
+  Object.entries(sourceZones).forEach(([role, z]) => {
+    const l = z.left;
+    const r = z.right;
+    const t = (z.top / SOURCE_ROLE_MAX_TOP) * bounds.bottom;
+    const b = (z.bottom / SOURCE_ROLE_MAX_TOP) * bounds.bottom;
     zones[role] = { left: l, right: r, top: t, bottom: b, centerX: (l + r) / 2, centerY: (t + b) / 2 };
   });
   return zones;
@@ -86,7 +101,8 @@ function getRoleFromPosition(x, y, zones) {
       const z = zones[role];
       const dx = x - z.centerX;
       const dy = y - z.centerY;
-      const d = dx * dx + dy * dy;
+      const area = (z.right - z.left) * (z.bottom - z.top);
+      const d = dx * dx + dy * dy + area * 0.001;
       if (d < minDistance) { minDistance = d; matchedRole = role; }
     });
   } else {
@@ -116,7 +132,7 @@ function swapSlotLayouts(slots, draggedSlotId, targetPos, initialLayout) {
 }
 
 const CUSTOM_FORMATION_BUCKETS = [
-  new Set(['LB', 'RB', 'LWB', 'RWB', 'CB', 'LCB', 'RCB']),
+  new Set(['LB', 'RB', 'LWB', 'RWB', 'CB', 'LCB', 'RCB', 'SW']),
   new Set(['CDM', 'LDM', 'RDM']),
   new Set(['CM', 'LCM', 'RCM', 'LM', 'RM']),
   new Set(['CAM', 'LAM', 'RAM']),
@@ -137,6 +153,7 @@ export default function SquadView() {
   const [squad, setSquad] = useState(() => loadSquad());
   const [pickerSlotId, setPickerSlotId] = useState(null);
   const [movingSlotId, setMovingSlotId] = useState(null);
+  const [activeSlotId, setActiveSlotId] = useState(null);
   const [dragSlotId, setDragSlotId] = useState(null);
   const [dragOverSlotId, setDragOverSlotId] = useState(null);
   const [layoutDrag, setLayoutDrag] = useState(null);
@@ -150,6 +167,11 @@ export default function SquadView() {
 
   const isCustomLayout = Boolean(squad.customSlots) || Boolean(layoutDrag);
   const customFormationLabel = useMemo(() => (isCustomLayout ? getCustomFormationLabel(visibleSlots) : ''), [isCustomLayout, visibleSlots]);
+  const dragZone = useMemo(() => {
+    if (!layoutDrag?.currentPos) return null;
+    const zone = buildPositionZones(DRAG_BOUNDS)[layoutDrag.currentPos];
+    return zone ? { role: layoutDrag.currentPos, ...zone } : null;
+  }, [layoutDrag]);
   const starters = useMemo(() => getStartersFromSquad(bySlotId, slots), [bySlotId, slots]);
   const squadBonuses = useMemo(() => computeSquadBonuses(starters), [starters]);
   const filledCount = starters.length;
@@ -211,6 +233,7 @@ export default function SquadView() {
   }
 
   function handleSlotClick(slotId) {
+    setActiveSlotId(slotId);
     const player = bySlotId[slotId];
     if (movingSlotId) {
       if (movingSlotId === slotId) {
@@ -238,11 +261,9 @@ export default function SquadView() {
     const rect = pitchRef.current.getBoundingClientRect();
     const dx = ((event.clientX - dragState.startClientX) / rect.width) * 100;
     const dy = ((event.clientY - dragState.startClientY) / rect.height) * 100;
-    const gkSlot = dragState.baseSlots.find((slot) => slot.pos === 'GK');
-    const maxY = (gkSlot?.y || 88.5) - 0.1;
     const x = clamp(dragState.initialSlot.x + dx, DRAG_BOUNDS.left, DRAG_BOUNDS.right);
-    const y = clamp(dragState.initialSlot.y + dy, DRAG_BOUNDS.top, maxY);
-    const zones = buildPositionZones({ ...DRAG_BOUNDS, bottom: maxY });
+    const y = clamp(dragState.initialSlot.y + dy, DRAG_BOUNDS.top, DRAG_BOUNDS.bottom);
+    const zones = buildPositionZones(DRAG_BOUNDS, HIT_ROLE_ZONES);
     const pos = getRoleFromPosition(x, y, zones);
     const nextSlots = dragState.baseSlots.map((slot) => (
       slot.id === dragState.slotId ? { ...slot, x, y, pos } : slot
@@ -251,8 +272,11 @@ export default function SquadView() {
   }
 
   function handleSlotPointerDown(slot, event) {
-    if (event.button !== 0 || slot.pos === 'GK') return;
-    if (event.target.closest('button') && !event.target.closest('.fco-player-card-mini') && !event.target.closest('.fco-squad-empty')) return;
+    if (event.button !== 0) return;
+    setActiveSlotId(slot.id);
+    if (slot.pos === 'GK') return;
+    if (event.target.closest('.fco-squad-empty-add')) return;
+    if (event.target.closest('button') && !event.target.closest('.fco-player-card-mini')) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     const baseSlots = slots.map((s) => ({ ...s }));
@@ -308,19 +332,26 @@ export default function SquadView() {
 
       <div className="fco-squad-toolbar">
         <div className="fco-squad-toolbar-group">
-          <span className="fco-squad-toolbar-label">Sơ đồ</span>
-          <div className="fco-squad-formations">
+          <label className="fco-squad-toolbar-label" htmlFor="fco-squad-formation-select">Sơ đồ</label>
+          <div className="fco-squad-formation-select-wrap">
             {isCustomLayout && <span className="fco-squad-custom-formation">Custom · {customFormationLabel}</span>}
-            {FORMATION_OPTIONS.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                className={`fco-squad-formation-btn${!isCustomLayout && opt.id === formationId ? ' active' : ''}`}
-                onClick={() => handleChangeFormation(opt.id)}
-              >
-                {opt.label}
-              </button>
-            ))}
+            <select
+              id="fco-squad-formation-select"
+              className="fco-squad-formation-select"
+              value={isCustomLayout ? 'custom' : formationId}
+              onChange={(e) => {
+                if (e.target.value !== 'custom') handleChangeFormation(e.target.value);
+              }}
+            >
+              {isCustomLayout && <option value="custom">Custom · {customFormationLabel}</option>}
+              {FORMATION_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {FORMATION_OPTIONS.filter((opt) => opt.id.startsWith(group.prefix)).map((opt) => (
+                    <option key={opt.id} value={opt.id}>{opt.label}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -368,10 +399,26 @@ export default function SquadView() {
             <span className="fco-pitch-corner fco-pitch-corner-bl" />
             <span className="fco-pitch-corner fco-pitch-corner-br" />
           </div>
+          {dragZone && (
+            <div className="fco-squad-role-zones" aria-hidden="true">
+              <span
+                className="fco-squad-role-zone active"
+                style={{
+                  left: `${dragZone.left}%`,
+                  top: `${dragZone.top}%`,
+                  width: `${dragZone.right - dragZone.left}%`,
+                  height: `${dragZone.bottom - dragZone.top}%`,
+                }}
+              >
+                {dragZone.role}
+              </span>
+            </div>
+          )}
           {visibleSlots.map((slot) => {
             const player = bySlotId[slot.id];
             const bonus = getPlayerSquadBonus(squadBonuses.perPlayer, player);
-            const boosted = applySquadBonus(player, bonus);
+            const positionOvr = getOvrForSlotPosition(player, slot.pos);
+            const boostedOvr = positionOvr.ovr + getOvrIncreaseForLevel(player?.upgradeLevel) + (bonus?.totalBonus || 0);
             const isMovingSource = movingSlotId === slot.id;
             const isMoveTarget = movingSlotId && movingSlotId !== slot.id;
             const isDropTarget = dragSlotId && dragSlotId !== slot.id;
@@ -380,7 +427,7 @@ export default function SquadView() {
             return (
               <div
                 key={slot.id}
-                className={`fco-squad-slot${isDropTarget ? ' drop-target' : ''}${isDragOver ? ' drag-over' : ''}${layoutDrag?.slotId === slot.id ? ' layout-dragging' : ''}`}
+                className={`fco-squad-slot${activeSlotId === slot.id ? ' is-active' : ''}${isDropTarget ? ' drop-target' : ''}${isDragOver ? ' drag-over' : ''}${layoutDrag?.slotId === slot.id ? ' layout-dragging' : ''}`}
                 style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
                 onPointerDown={(e) => handleSlotPointerDown(slot, e)}
                 onPointerMove={handleSlotPointerMove}
@@ -410,7 +457,8 @@ export default function SquadView() {
                     <PlayerCardMini
                       player={player}
                       slotPos={slot.pos}
-                      ovr={boosted.ovr}
+                      ovr={boostedOvr}
+                      ovrIsFallback={positionOvr.ovrIsFallback}
                       bonus={bonus}
                       level={player.upgradeLevel}
                       onClick={() => {
@@ -430,18 +478,20 @@ export default function SquadView() {
                     </div>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    className={`fco-squad-empty${isMoveTarget ? ' move-target' : ''}${isDragOver ? ' drag-over' : ''}`}
-                    onClick={() => {
-                      if (suppressClickRef.current) return;
-                      handleSlotClick(slot.id);
-                    }}
-                    aria-label={`Chọn cầu thủ vị trí ${slot.pos}`}
-                  >
-                    <span className="fco-squad-empty-plus">+</span>
+                  <div className={`fco-squad-empty${isMoveTarget ? ' move-target' : ''}${isDragOver ? ' drag-over' : ''}`}>
+                    <button
+                      type="button"
+                      className="fco-squad-empty-add"
+                      onClick={() => {
+                        if (suppressClickRef.current) return;
+                        handleSlotClick(slot.id);
+                      }}
+                      aria-label={`Chọn cầu thủ vị trí ${slot.pos}`}
+                    >
+                      <span className="fco-squad-empty-plus">+</span>
+                    </button>
                     <span>{slot.pos}</span>
-                  </button>
+                  </div>
                 )}
               </div>
             );

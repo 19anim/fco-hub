@@ -24,6 +24,7 @@ export const POSITION_BASE_ALIASES = Object.freeze({
   RF: 'CF',
   LCB: 'CB',
   RCB: 'CB',
+  SW: 'CB',
   LCM: 'CM',
   RCM: 'CM',
   LDM: 'CDM',
@@ -41,7 +42,7 @@ export function resolvePositionCode(pos) {
 
 export const POSITIONS_META = {
   GK:  { group: "GK",  color: "#f5c84b" },
-  CB:  { group: "DEF", color: "#37a0ff" }, LCB: { group: "DEF", color: "#37a0ff" }, RCB: { group: "DEF", color: "#37a0ff" },
+  CB:  { group: "DEF", color: "#37a0ff" }, LCB: { group: "DEF", color: "#37a0ff" }, RCB: { group: "DEF", color: "#37a0ff" }, SW: { group: "DEF", color: "#37a0ff" },
   RB:  { group: "DEF", color: "#37a0ff" }, LB: { group: "DEF", color: "#37a0ff" },
   RWB: { group: "DEF", color: "#37a0ff" }, LWB:{ group: "DEF", color: "#37a0ff" },
   CDM: { group: "MID", color: "#00e08a" }, LDM: { group: "MID", color: "#00e08a" }, RDM: { group: "MID", color: "#00e08a" },

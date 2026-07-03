@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { getSeason, getPos, getTrust, initials, statColor } from './helpers.js';
+import { getSeason, getPos, getTrust, initials, statColor, cleanName } from './helpers.js';
 import { SEASONS_META } from './constants.js';
-import { getSeasonSprite } from './seasonSprites.js';
+import { getSeasonSprite, getSeasonVisual } from './seasonSprites.js';
+import { normalizeUpgradeLevel } from './upgradeHelpers.js';
 import * as I from './Icons.jsx';
 
 // ── Player Avatar ──────────────────────────────────────────────────────────────
@@ -57,6 +58,54 @@ export function PlayerAvatar({ player, size = 40, bare = false }) {
         {initials(player.name)}
       </span>
     </div>
+  );
+}
+
+export function PlayerCardMini({ player, slotPos, ovr, ovrIsFallback = false, bonus, level, className = '', onClick, title }) {
+  const season = getSeasonVisual(player?.season);
+  const upgradeLevel = normalizeUpgradeLevel(level ?? player?.upgradeLevel);
+  const totalBonus = bonus?.totalBonus || 0;
+  const cardStyle = {
+    '--fco-card-bg': season.cardImage ? `url(${season.cardImage})` : undefined,
+    '--fco-card-base': season.cardBg,
+    '--fco-card-ring': season.cardRing,
+    '--fco-card-side': season.cardSideColor,
+    '--fco-card-name': season.cardNameColor,
+    '--fco-card-text': season.cardTextColor,
+  };
+
+  return (
+    <button
+      type="button"
+      className={`fco-player-card-mini ${className}`.trim()}
+      style={cardStyle}
+      onClick={onClick}
+      title={title || cleanName(player?.name)}
+    >
+      <span className="fco-player-card-mini-bg" aria-hidden="true" />
+      <span className="fco-player-card-mini-top">
+        <span className="fco-player-card-mini-ovr-row">
+          <span className="fco-player-card-mini-ovr" style={{ color: statColor(ovr ?? player?.ovr) }}>{ovr ?? player?.ovr}</span>
+          {ovrIsFallback && (
+            <span className="fco-player-card-mini-ovr-warning" title="Không có OVR riêng cho vị trí này" aria-label="Không có OVR riêng cho vị trí này">
+              <I.Alert size={9} />
+            </span>
+          )}
+        </span>
+        <span className="fco-player-card-mini-pos">{slotPos || player?.primaryPos}</span>
+      </span>
+      <span className="fco-player-card-mini-season">
+        <SeasonChip code={player?.season} name={player?.seasonName} img={player?.seasonImg} />
+      </span>
+      <span className="fco-player-card-mini-art">
+        <PlayerAvatar player={player} size={78} bare />
+      </span>
+      <span className="fco-player-card-mini-name">{cleanName(player?.name)}</span>
+      <span className="fco-player-card-mini-badges">
+        <span className="fco-player-card-mini-level">+{upgradeLevel}</span>
+        {totalBonus > 0 && <span className="fco-player-card-mini-bonus">TC +{totalBonus}</span>}
+      </span>
+    </button>
   );
 }
 

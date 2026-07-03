@@ -1,80 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useEffect } from 'react';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
 import { fetchPlayers } from '../api.js';
 import { cleanName, statColor } from '../helpers.js';
 import { getPlayerCardKey, isSamePlayerCard, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import { PlayerAvatar, SeasonChip, PosPill } from '../ui.jsx';
-import LevelBadge from './LevelBadge.jsx';
+import LevelSelect from './LevelSelect.jsx';
 import * as I from '../Icons.jsx';
-
-const LEVELS = Array.from({ length: 13 }, (_, index) => index + 1);
-
-function LevelDropdown({ value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const [gridStyle, setGridStyle] = useState({});
-  const triggerRef = useRef(null);
-  const gridRef = useRef(null);
-
-  // Tính toán vị trí fixed cho grid khi mở
-  useEffect(() => {
-    if (!open || !triggerRef.current) return;
-    const r = triggerRef.current.getBoundingClientRect();
-    const gridW = 212;
-    const left = Math.min(r.right - gridW, window.innerWidth - gridW - 8);
-    setGridStyle({
-      position: 'fixed',
-      top: r.bottom + 6,
-      left: Math.max(8, left),
-      zIndex: 9999,
-      width: gridW,
-    });
-  }, [open]);
-
-  // Đóng khi click ngoài
-  useEffect(() => {
-    if (!open) return;
-    function handler(e) {
-      if (
-        triggerRef.current && !triggerRef.current.contains(e.target) &&
-        gridRef.current  && !gridRef.current.contains(e.target)
-      ) setOpen(false);
-    }
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
-
-  return (
-    <div
-      ref={triggerRef}
-      className="fco-lvl-dropdown"
-      onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
-    >
-      <LevelBadge level={value} scale={0.30} />
-      <I.ChevronDown size={10} className="fco-lvl-dropdown-caret" />
-      {open && createPortal(
-        <div
-          ref={gridRef}
-          className="fco-lvl-dropdown-grid"
-          style={gridStyle}
-          onClick={e => e.stopPropagation()}
-        >
-          {LEVELS.map(lv => (
-            <button
-              key={lv}
-              className={`fco-lvl-dropdown-item${lv === value ? ' active' : ''}`}
-              onClick={() => { onChange(lv); setOpen(false); }}
-            >
-              <LevelBadge level={lv} scale={0.28} />
-            </button>
-          ))}
-        </div>,
-        document.body
-      )}
-    </div>
-  );
-}
 
 export default function PlayerPicker({
   existing = [],
@@ -85,6 +17,8 @@ export default function PlayerPicker({
   showTopPlayers = false,
   allowLevelSelect = false,
   defaultLevel = 1,
+  posGroups = null,
+  pageSize = 20,
 }) {
   const [q, setQ] = useState('');
   const [results, setResults] = useState([]);
@@ -106,8 +40,9 @@ export default function PlayerPicker({
     setLoading(true);
     fetchPlayers({
       search,
+      posGroups: posGroups?.length ? posGroups : undefined,
       sort: 'ovr_desc',
-      pageSize: search ? 20 : 10,
+      pageSize: search ? pageSize : 10,
     })
       .then((res) => {
         if (!ignore) setResults(res.players);
@@ -119,7 +54,7 @@ export default function PlayerPicker({
     return () => {
       ignore = true;
     };
-  }, [debouncedQ, showTopPlayers]);
+  }, [debouncedQ, showTopPlayers, posGroups, pageSize]);
 
   function getLevel(playerId) {
     return normalizeUpgradeLevel(levelById[playerId] ?? defaultLevel);
@@ -182,7 +117,7 @@ export default function PlayerPicker({
                   </div>
                 </div>
                 {allowLevelSelect && !disabled && (
-                  <LevelDropdown
+                  <LevelSelect
                     value={selectedLevel}
                     onChange={lv => setLevelById(prev => ({ ...prev, [cardKey]: lv }))}
                   />

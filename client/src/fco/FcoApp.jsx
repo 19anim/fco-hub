@@ -6,6 +6,7 @@ import { fetchMeta } from './api.js';
 import DatabaseView from './views/DatabaseView.jsx';
 import EventsView from './views/EventsView.jsx';
 import UpgradeView from './views/UpgradeView.jsx';
+import SquadView from './views/SquadView.jsx';
 import DetailView from './views/DetailView.jsx';
 import CompareView from './views/CompareView.jsx';
 import WatchlistView from './views/WatchlistView.jsx';
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { id: 'events',    label: 'Sự kiện',    icon: I.Calendar  },
   { id: 'videos',    label: 'Videos',     icon: I.Video     },
   { id: 'upgrade',   label: 'Nâng cấp',   icon: I.Zap       },
+  { id: 'squad',     label: 'Đội hình',   icon: I.Users     },
   { id: 'compare',   label: 'So sánh',    icon: I.Compare   },
   { id: 'watchlist', label: 'Theo dõi',   icon: I.Star      },
 ];
@@ -30,6 +32,7 @@ const VIEW_PATHS = {
   events: '/events',
   videos: '/videos',
   upgrade: '/upgrade',
+  squad: '/doi-hinh',
   compare: '/compare',
   watchlist: '/watchlist',
   dataops: '/dataops',
@@ -41,6 +44,7 @@ const LEGACY_VIEW_MAP = {
   events: 'events',
   videos: 'videos',
   upgrade: 'upgrade',
+  squad: 'squad',
   compare: 'compare',
   watchlist: 'watchlist',
   dataops: 'dataops',
@@ -72,6 +76,7 @@ function parsePath(pathname = window.location.pathname, hash = window.location.h
 
   if (!first) return { view: 'db', param: null, legacyPath: '/players' };
   if (first === 'players') return { view: parts[1] ? 'detail' : 'db', param: parts.slice(1).join('/') || null, legacyPath: null };
+  if (first === 'doi-hinh') return { view: 'squad', param: null, legacyPath: null };
   if (VIEW_PATHS[first]) return { view: first, param: null, legacyPath: null };
 
   return { view: 'db', param: null, legacyPath: '/players' };
@@ -248,6 +253,9 @@ export default function FcoApp() {
         )}
         {activeView === 'upgrade' && (
           <UpgradeView onSelect={selectPlayer} />
+        )}
+        {activeView === 'squad' && (
+          <SquadView />
         )}
         {activeView === 'dataops' && isAdmin && <DataOpsView />}
       </main>
