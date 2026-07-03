@@ -494,16 +494,17 @@ export default function SquadView() {
                   >
                     <div className="fco-squad-card-actions">
                       <IconButton
-                        icon={I.ArrowUpDown}
-                        label="Đổi vị trí"
+                        icon={I.Settings}
+                        label="Chỉnh thẻ"
                         size={12}
-                        active={isMovingSource}
-                        onClick={() => setMovingSlotId(isMovingSource ? null : slot.id)}
+                        className="card-edit-btn"
+                        onClick={() => setPickerSlotId(slot.id)}
                       />
                       <IconButton
                         icon={I.X}
                         label="Xoá cầu thủ"
                         size={12}
+                        className="card-remove-btn"
                         onClick={() => removeFromSlot(slot.id)}
                       />
                     </div>
@@ -520,16 +521,6 @@ export default function SquadView() {
                         movingSlotId ? handleSlotClick(slot.id) : setPickerSlotId(slot.id);
                       }}
                     />
-
-                    <div className="fco-squad-cardlevel">
-                      <IconButton icon={I.Minus} label="Giảm cấp" size={11} onClick={() => stepLevel(slot.id, -1)} />
-                      <LevelSelect
-                        value={normalizeUpgradeLevel(player.upgradeLevel)}
-                        onChange={(lv) => changeLevel(slot.id, lv)}
-                        scale={0.16}
-                      />
-                      <IconButton icon={I.Plus} label="Tăng cấp" size={11} onClick={() => stepLevel(slot.id, 1)} />
-                    </div>
                   </div>
                 ) : (
                   <div className={`fco-squad-empty${isMoveTarget ? ' move-target' : ''}${isDragOver ? ' drag-over' : ''}`}>
