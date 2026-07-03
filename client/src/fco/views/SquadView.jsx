@@ -23,26 +23,83 @@ import { Button, IconButton, PlayerCardMini } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 
 const QUICK_LEVELS = [1, 5, 8, 10, 13];
-const DRAG_BOUNDS = { left: 5, right: 95, top: 10 };
+const DRAG_BOUNDS = { left: 5, right: 95, top: 10, bottom: 82 };
+
+// Fixed role zones as fractions of the drag area, matching fifaaddict's rawDbZones table
+// (x fraction left-to-right, y fraction bottom-to-top i.e. yMax = closer to attacking third).
+const ROLE_ZONE_FRACTIONS = {
+  RWB: { xMin: 0.75, xMax: 1.0, yMin: 0.0, yMax: 0.4 },
+  RB: { xMin: 0.75, xMax: 1.0, yMin: 0.0, yMax: 0.225 },
+  RCB: { xMin: 0.5, xMax: 0.75, yMin: 0.0, yMax: 0.2 },
+  CB: { xMin: 0.25, xMax: 0.75, yMin: 0.0, yMax: 0.2 },
+  LCB: { xMin: 0.25, xMax: 0.5, yMin: 0.0, yMax: 0.2 },
+  LB: { xMin: 0.0, xMax: 0.25, yMin: 0.0, yMax: 0.225 },
+  LWB: { xMin: 0.0, xMax: 0.25, yMin: 0.0, yMax: 0.4 },
+  RDM: { xMin: 0.5, xMax: 0.75, yMin: 0.2, yMax: 0.4 },
+  CDM: { xMin: 0.25, xMax: 0.75, yMin: 0.2, yMax: 0.4 },
+  LDM: { xMin: 0.25, xMax: 0.5, yMin: 0.2, yMax: 0.4 },
+  RM: { xMin: 0.75, xMax: 1.0, yMin: 0.4, yMax: 0.7 },
+  RCM: { xMin: 0.5, xMax: 0.75, yMin: 0.4, yMax: 0.6 },
+  CM: { xMin: 0.25, xMax: 0.75, yMin: 0.4, yMax: 0.6 },
+  LCM: { xMin: 0.25, xMax: 0.5, yMin: 0.4, yMax: 0.6 },
+  LM: { xMin: 0.0, xMax: 0.25, yMin: 0.4, yMax: 0.7 },
+  RAM: { xMin: 0.5, xMax: 0.75, yMin: 0.55, yMax: 0.75 },
+  CAM: { xMin: 0.25, xMax: 0.75, yMin: 0.55, yMax: 0.75 },
+  LAM: { xMin: 0.25, xMax: 0.5, yMin: 0.55, yMax: 0.75 },
+  RF: { xMin: 0.5, xMax: 0.75, yMin: 0.7, yMax: 0.9 },
+  CF: { xMin: 0.25, xMax: 0.75, yMin: 0.7, yMax: 0.9 },
+  LF: { xMin: 0.25, xMax: 0.5, yMin: 0.7, yMax: 0.9 },
+  RW: { xMin: 0.75, xMax: 1.0, yMin: 0.4, yMax: 1.0 },
+  RS: { xMin: 0.5, xMax: 0.75, yMin: 0.85, yMax: 1.0 },
+  ST: { xMin: 0.25, xMax: 0.75, yMin: 0.85, yMax: 1.0 },
+  LS: { xMin: 0.25, xMax: 0.5, yMin: 0.85, yMax: 1.0 },
+  LW: { xMin: 0.0, xMax: 0.25, yMin: 0.4, yMax: 1.0 },
+};
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function getRoleFromPosition(x, y, slots) {
-  const nonGkSlots = slots.filter((slot) => slot.pos !== 'GK');
-  let best = nonGkSlots[0]?.pos || 'CM';
-  let bestDistance = Infinity;
-  nonGkSlots.forEach((slot) => {
-    const dx = x - slot.x;
-    const dy = y - slot.y;
-    const distance = dx * dx + dy * dy;
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      best = slot.pos;
-    }
+function buildPositionZones(bounds) {
+  const w = bounds.right - bounds.left;
+  const h = bounds.bottom - bounds.top;
+  const zones = {};
+  Object.entries(ROLE_ZONE_FRACTIONS).forEach(([role, z]) => {
+    const l = bounds.left + z.xMin * w;
+    const r = bounds.left + z.xMax * w;
+    const t = bounds.top + (1 - z.yMax) * h;
+    const b = bounds.top + (1 - z.yMin) * h;
+    zones[role] = { left: l, right: r, top: t, bottom: b, centerX: (l + r) / 2, centerY: (t + b) / 2 };
   });
-  return best;
+  return zones;
+}
+
+function getRoleFromPosition(x, y, zones) {
+  let matchedRole = 'CM';
+  let minDistance = Infinity;
+  const insideRoles = [];
+  Object.entries(zones).forEach(([role, z]) => {
+    if (x >= z.left && x <= z.right && y >= z.top && y <= z.bottom) insideRoles.push(role);
+  });
+  if (insideRoles.length > 0) {
+    insideRoles.forEach((role) => {
+      const z = zones[role];
+      const dx = x - z.centerX;
+      const dy = y - z.centerY;
+      const d = dx * dx + dy * dy;
+      if (d < minDistance) { minDistance = d; matchedRole = role; }
+    });
+  } else {
+    Object.entries(zones).forEach(([role, z]) => {
+      const cx = clamp(x, z.left, z.right);
+      const cy = clamp(y, z.top, z.bottom);
+      const db = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+      const dc = (x - z.centerX) * (x - z.centerX) + (y - z.centerY) * (y - z.centerY);
+      const s = db * 1000 + dc;
+      if (s < minDistance) { minDistance = s; matchedRole = role; }
+    });
+  }
+  return matchedRole;
 }
 
 function swapSlotLayouts(slots, draggedSlotId, targetPos, initialLayout) {
@@ -89,8 +146,10 @@ export default function SquadView() {
 
   const { formationId, bySlotId } = squad;
   const slots = useMemo(() => getActiveSquadSlots(squad), [squad]);
+  const visibleSlots = layoutDrag?.currentSlots || slots;
 
-  const customFormationLabel = useMemo(() => (squad.customSlots ? getCustomFormationLabel(slots) : ''), [squad.customSlots, slots]);
+  const isCustomLayout = Boolean(squad.customSlots) || Boolean(layoutDrag);
+  const customFormationLabel = useMemo(() => (isCustomLayout ? getCustomFormationLabel(visibleSlots) : ''), [isCustomLayout, visibleSlots]);
   const starters = useMemo(() => getStartersFromSquad(bySlotId, slots), [bySlotId, slots]);
   const squadBonuses = useMemo(() => computeSquadBonuses(starters), [starters]);
   const filledCount = starters.length;
@@ -183,7 +242,8 @@ export default function SquadView() {
     const maxY = (gkSlot?.y || 88.5) - 0.1;
     const x = clamp(dragState.initialSlot.x + dx, DRAG_BOUNDS.left, DRAG_BOUNDS.right);
     const y = clamp(dragState.initialSlot.y + dy, DRAG_BOUNDS.top, maxY);
-    const pos = getRoleFromPosition(x, y, dragState.baseSlots);
+    const zones = buildPositionZones({ ...DRAG_BOUNDS, bottom: maxY });
+    const pos = getRoleFromPosition(x, y, zones);
     const nextSlots = dragState.baseSlots.map((slot) => (
       slot.id === dragState.slotId ? { ...slot, x, y, pos } : slot
     ));
@@ -234,8 +294,6 @@ export default function SquadView() {
     clearDragState();
   }
 
-  const visibleSlots = layoutDrag?.currentSlots || slots;
-
   const existingKeys = Object.values(bySlotId).map((player) => getPlayerCardKey(player));
   const activePickerSlot = visibleSlots.find((s) => s.id === pickerSlotId) || null;
 
@@ -252,12 +310,12 @@ export default function SquadView() {
         <div className="fco-squad-toolbar-group">
           <span className="fco-squad-toolbar-label">Sơ đồ</span>
           <div className="fco-squad-formations">
-            {squad.customSlots && <span className="fco-squad-custom-formation">Custom · {customFormationLabel}</span>}
+            {isCustomLayout && <span className="fco-squad-custom-formation">Custom · {customFormationLabel}</span>}
             {FORMATION_OPTIONS.map((opt) => (
               <button
                 key={opt.id}
                 type="button"
-                className={`fco-squad-formation-btn${!squad.customSlots && opt.id === formationId ? ' active' : ''}`}
+                className={`fco-squad-formation-btn${!isCustomLayout && opt.id === formationId ? ' active' : ''}`}
                 onClick={() => handleChangeFormation(opt.id)}
               >
                 {opt.label}
