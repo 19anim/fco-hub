@@ -49,3 +49,11 @@ describe('getCardThemeCoverage', () => {
     expect(coverage.seasonVisual).toEqual([]);
   });
 });
+
+describe('FIFAAddict-compatible class names', () => {
+  it('returns card-theme classes without spaces', () => {
+    const theme = getCardThemeForPlayer({ season: 'NG' });
+    expect(theme.className).toBe('card-theme-ng');
+    expect(theme.className).not.toMatch(/\s/);
+  });
+});

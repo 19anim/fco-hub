@@ -1776,46 +1776,237 @@ button { font-family: inherit; }
 .fco-squad-card.moving .fco-squad-cardlevel { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
 .fco-squad-cardlevel .fco-iconbtn { width: 20px; height: 20px; border-radius: 7px; }
 
-.fco-player-card-mini {
+.fco-player-card-mini-wrap {
   position: relative;
-  width: 99px; height: 104px; border: 0; padding: 0;
+  display: inline-block;
+  width: 99px;
+  height: 104px;
+  filter: drop-shadow(0 10px 16px rgba(0,0,0,.32));
+}
+
+.player-card.fc-card {
+  position: relative;
+  display: block;
+  width: 99px;
+  height: 104px;
+  border: 0;
+  padding: 0;
   border-radius: 16px 16px 13px 13px;
   background: transparent;
   color: var(--fco-card-text, var(--text));
   cursor: pointer;
-  filter: drop-shadow(0 10px 16px rgba(0,0,0,.32));
   overflow: hidden;
   isolation: isolate;
 }
-.fco-player-card-mini-bg {
-  position: absolute; inset: 0; z-index: -1;
+
+button.player-card.fc-card { font: inherit; }
+
+.card-bg-img.fc-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
   background:
-    var(--fco-card-bg, none) center / cover no-repeat,
+    var(--fco-card-theme-bg, none) center / cover no-repeat,
     radial-gradient(circle at 50% 22%, color-mix(in srgb, var(--fco-card-ring, var(--accent)) 34%, transparent), transparent 40%),
     linear-gradient(155deg, color-mix(in srgb, var(--fco-card-base, #29313b) 72%, #fff 8%), color-mix(in srgb, var(--fco-card-base, #111827) 72%, #000 28%));
   border: 1px solid color-mix(in srgb, var(--fco-card-ring, var(--accent)) 46%, rgba(255,255,255,.22));
-  border-radius: inherit;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 -26px 32px rgba(0,0,0,.32);
 }
-.fco-player-card-mini-bg::after {
+
+span.card-bg-img.fc-bg::after {
   content: '';
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
   background: linear-gradient(90deg, color-mix(in srgb, var(--fco-card-side, var(--accent)) 48%, transparent) 0 17%, transparent 17% 100%);
   opacity: .38;
 }
-.fco-player-card-mini-top { position: absolute; left: 7px; top: 8px; z-index: 2; display: flex; flex-direction: column; align-items: center; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,.65); }
-.fco-player-card-mini-ovr-row { display: inline-flex; align-items: flex-start; gap: 2px; }
-.fco-player-card-mini-ovr { font-family: var(--mono); font-size: 19px; font-weight: 900; letter-spacing: -.04em; }
-.fco-player-card-mini-ovr-warning { width: 13px; height: 13px; margin-top: -2px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; color: #f5c84b; background: rgba(0,0,0,.54); border: 1px solid rgba(245,200,75,.48); box-shadow: 0 1px 4px rgba(0,0,0,.34); text-shadow: none; }
-.fco-player-card-mini-pos { margin-top: 1px; font-family: var(--mono); font-size: 10px; font-weight: 900; color: var(--fco-card-name, #fff); }
-.fco-player-card-mini-season { position: absolute; right: 6px; top: 5px; z-index: 3; transform: scale(.76); transform-origin: top right; }
-.fco-player-card-mini-art { position: absolute; left: 50%; bottom: 28px; z-index: 1; transform: translateX(-45%); display: flex; align-items: flex-end; justify-content: center; width: 74px; height: 74px; }
-.fco-player-card-mini-art img { filter: drop-shadow(0 5px 6px rgba(0,0,0,.42)); }
-.fco-player-card-mini-name { position: absolute; left: 7px; right: 7px; bottom: 18px; z-index: 3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; color: var(--fco-card-name, #fff); font-size: 10px; font-weight: 850; text-shadow: 0 1px 2px rgba(0,0,0,.75); }
-.fco-player-card-mini-badges { position: absolute; left: 6px; right: 6px; bottom: 5px; z-index: 3; display: flex; align-items: center; justify-content: center; gap: 4px; }
-.fco-player-card-mini-level,
-.fco-player-card-mini-bonus { border-radius: 999px; padding: 2px 5px; font-family: var(--mono); font-size: 9px; font-weight: 900; line-height: 1; background: rgba(0,0,0,.48); border: 1px solid rgba(255,255,255,.16); color: #fff; }
-.fco-player-card-mini-bonus { color: var(--accent); }
+
+.card-ovr.fc-ovr {
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  z-index: 2;
+  font-family: var(--mono);
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.04em;
+  color: var(--fco-card-ovr-color, #fff);
+  text-shadow: 0 1px 2px rgba(0,0,0,.65);
+}
+
+.card-pos-label.fc-pos {
+  position: absolute;
+  left: 8px;
+  top: 29px;
+  z-index: 2;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--fco-card-name, #fff);
+  text-shadow: 0 1px 2px rgba(0,0,0,.65);
+}
+
+.fc-salary {
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  z-index: 3;
+  min-width: 18px;
+  border-radius: 999px;
+  padding: 2px 5px;
+  background: rgba(0,0,0,.48);
+  border: 1px solid rgba(255,255,255,.16);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+}
+
+.fc-salary.is-empty { opacity: 0; }
+
+.card-player-media.fc-player-media {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  z-index: 1;
+  transform: translateX(-45%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 74px;
+  height: 74px;
+}
+
+.card-player-media.fc-player-media img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 6px rgba(0,0,0,.42));
+}
+
+.fc-player-media-placeholder {
+  width: 54px;
+  height: 62px;
+  border-radius: 18px 18px 10px 10px;
+  background: rgba(255,255,255,.12);
+}
+
+.fc-grade {
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  z-index: 4;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  padding: 2px 5px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  background: rgba(0,0,0,.48);
+  border: 1px solid rgba(255,255,255,.16);
+  color: #fff;
+}
+
+.fc-grade.enchant_5,
+.fc-grade.enchant_6,
+.fc-grade.enchant_7,
+.fc-grade.enchant_8 { color: #72e8ff; }
+.fc-grade.enchant_9,
+.fc-grade.enchant_10,
+.fc-grade.enchant_11,
+.fc-grade.enchant_12,
+.fc-grade.enchant_13 { color: #ffd66e; }
+
+.card-player-name.fc-name-area {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  bottom: 18px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--fco-card-name, #fff);
+  text-shadow: 0 1px 2px rgba(0,0,0,.75);
+}
+
+.fc-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.card-flags.fc-flags {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 10px;
+}
+
+.fc-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  background: rgba(0,0,0,.42);
+  color: rgba(255,255,255,.9);
+  font-size: 6px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.fc-flag img { max-width: 14px; max-height: 10px; object-fit: cover; }
+
+.fco-player-card-mini-ovr-warning {
+  position: absolute;
+  left: 30px;
+  top: 6px;
+  z-index: 5;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #f5c84b;
+  background: rgba(0,0,0,.54);
+  border: 1px solid rgba(245,200,75,.48);
+  box-shadow: 0 1px 4px rgba(0,0,0,.34);
+  text-shadow: none;
+}
+
+.fco-player-card-mini-bonus {
+  position: absolute;
+  right: 6px;
+  bottom: 5px;
+  z-index: 5;
+  border-radius: 999px;
+  padding: 2px 5px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  background: rgba(0,0,0,.48);
+  border: 1px solid rgba(255,255,255,.16);
+  color: var(--accent);
+}
 
 .fco-squad-panels { display: flex; flex-direction: column; gap: 12px; }
 .fco-squad-panel { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); padding: 12px; }
@@ -1854,9 +2045,11 @@ button { font-family: inherit; }
   .fco-squad-formation-select { width: 100%; }
   .fco-squad-pitch { width: 100%; }
   .fco-squad-panels { grid-template-columns: 1fr; }
-  .fco-player-card-mini { width: 84px; height: 92px; }
+  .fco-player-card-mini-wrap,
+  .player-card.fc-card { width: 84px; height: 92px; }
   .fco-squad-empty { width: 84px; height: 92px; }
-  .fco-player-card-mini-art { width: 62px; height: 62px; bottom: 26px; }
-  .fco-player-card-mini-ovr { font-size: 16px; }
-  .fco-player-card-mini-name { font-size: 9px; bottom: 16px; }
+  .card-player-media.fc-player-media { width: 62px; height: 62px; bottom: 26px; }
+  .card-ovr.fc-ovr { font-size: 16px; }
+  .fc-name { font-size: 9px; }
+  .card-player-name.fc-name-area { bottom: 16px; }
 }
