@@ -18,6 +18,7 @@ import {
   getPickerPosGroupsForSlot,
 } from '../squadHelpers.js';
 import { getOvrForSlotPosition } from '../positionOvr.js';
+import { DEFAULT_SALARY_CAP, MAX_SALARY_CAP, getLineAverages, getSquadSalaryTotal, GROUP_LABELS } from '../squadSummary.js';
 import { computeSquadBonuses, getPlayerSquadBonus } from '../teamColor.js';
 import { getPlayerCardKey, getOvrIncreaseForLevel, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import { Button, IconButton, PlayerCardMini } from '../ui.jsx';
@@ -157,6 +158,7 @@ export default function SquadView() {
   const [dragSlotId, setDragSlotId] = useState(null);
   const [dragOverSlotId, setDragOverSlotId] = useState(null);
   const [layoutDrag, setLayoutDrag] = useState(null);
+  const [salaryCap, setSalaryCap] = useState(DEFAULT_SALARY_CAP);
   const pitchRef = useRef(null);
   const layoutDragRef = useRef(null);
   const suppressClickRef = useRef(false);
@@ -174,6 +176,11 @@ export default function SquadView() {
   }, [layoutDrag]);
   const starters = useMemo(() => getStartersFromSquad(bySlotId, slots), [bySlotId, slots]);
   const squadBonuses = useMemo(() => computeSquadBonuses(starters), [starters]);
+  const salaryTotal = useMemo(() => getSquadSalaryTotal(starters), [starters]);
+  const lineAverages = useMemo(() => getLineAverages(slots, bySlotId, squadBonuses.perPlayer), [slots, bySlotId, squadBonuses.perPlayer]);
+  const salaryProgress = salaryCap > 0 ? Math.min(100, (salaryTotal / salaryCap) * 100) : 100;
+  const overallProgress = lineAverages.overall == null ? 0 : Math.min(100, (lineAverages.overall / 150) * 100);
+  const isOverSalaryCap = salaryTotal > salaryCap;
   const filledCount = starters.length;
 
   function persist(nextBySlotId, nextCustomSlots = squad.customSlots) {
@@ -327,6 +334,53 @@ export default function SquadView() {
         <div>
           <h2 className="fco-h2">Xây dựng đội hình</h2>
           <p className="fco-sub">Chọn 11 cầu thủ đá chính, kéo thả để đổi vị trí và xem team color được kích hoạt.</p>
+        </div>
+      </div>
+
+      <div className="fco-squad-summary">
+        <div className={`fco-squad-summary-card${isOverSalaryCap ? ' is-over-limit' : ''}`}>
+          <div className="fco-squad-summary-head">
+            <div className="fco-squad-summary-label">Tổng lương</div>
+            <div className="fco-squad-summary-value">
+              {salaryTotal} /
+              <input
+                type="number"
+                min={0}
+                max={MAX_SALARY_CAP}
+                value={salaryCap}
+                onChange={(e) => {
+                  const next = Math.max(0, Math.min(MAX_SALARY_CAP, Number(e.target.value) || 0));
+                  setSalaryCap(next);
+                }}
+                className="fco-squad-summary-cap-input"
+              />
+            </div>
+          </div>
+          <div className="fco-squad-summary-bar" aria-label={`Tổng lương ${salaryTotal} trên ${salaryCap}`}>
+            <span style={{ width: `${salaryProgress}%` }} />
+          </div>
+        </div>
+        <div className="fco-squad-summary-card fco-squad-summary-card-wide">
+          <div className="fco-squad-summary-head">
+            <div className="fco-squad-summary-label">OVR trung bình</div>
+            <div className="fco-squad-summary-value">{lineAverages.overall ?? '—'}</div>
+          </div>
+          <div className="fco-squad-summary-bar" aria-label={`OVR trung bình ${lineAverages.overall ?? 0} trên 150`}>
+            <span style={{ width: `${overallProgress}%` }} />
+          </div>
+          <div className="fco-squad-summary-lines">
+            {['GK', 'DEF', 'MID', 'FWD'].map((key) => {
+              const value = lineAverages[key];
+              const progress = value == null ? 0 : Math.min(100, (value / 150) * 100);
+              return (
+                <div key={key} className={`fco-squad-summary-line line-${key.toLowerCase()}`}>
+                  <span className="fco-squad-summary-line-label">{GROUP_LABELS[key]}</span>
+                  <span className="fco-squad-summary-line-bar"><span style={{ width: `${progress}%` }} /></span>
+                  <b>{value ?? '—'}</b>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
