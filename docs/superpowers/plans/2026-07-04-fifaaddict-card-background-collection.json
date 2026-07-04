@@ -1,0 +1,1972 @@
+{
+  "total": 131,
+  "fifaAddictSeasons": [
+    {
+      "seasonCode": "100",
+      "value": "100",
+      "title": "ICON THE MOMENT",
+      "className": "search-season-option search-season-option__badge badged y100"
+    },
+    {
+      "seasonCode": "101",
+      "value": "101",
+      "title": "ICON",
+      "className": "search-season-option search-season-option__badge badged y101"
+    },
+    {
+      "seasonCode": "110",
+      "value": "110",
+      "title": "ICON THE MOMENT B",
+      "className": "search-season-option search-season-option__badge badged y110"
+    },
+    {
+      "seasonCode": "113",
+      "value": "113",
+      "title": "25 ICONS MATCH - Show & Prove",
+      "className": "search-season-option search-season-option__badge badged y113"
+    },
+    {
+      "seasonCode": "201",
+      "value": "201",
+      "title": "National Hero Debut",
+      "className": "search-season-option search-season-option__badge badged y201"
+    },
+    {
+      "seasonCode": "203",
+      "value": "203",
+      "title": "Team Of The Year 2018",
+      "className": "search-season-option search-season-option__badge badged y203"
+    },
+    {
+      "seasonCode": "206",
+      "value": "206",
+      "title": "Tournament Best",
+      "className": "search-season-option search-season-option__badge badged y206"
+    },
+    {
+      "seasonCode": "207",
+      "value": "207",
+      "title": "Top Transfer",
+      "className": "search-season-option search-season-option__badge badged y207"
+    },
+    {
+      "seasonCode": "209",
+      "value": "209",
+      "title": "Viet Nam",
+      "className": "search-season-option search-season-option__badge badged y209"
+    },
+    {
+      "seasonCode": "210",
+      "value": "210",
+      "title": "Golden Rookies",
+      "className": "search-season-option search-season-option__badge badged y210"
+    },
+    {
+      "seasonCode": "211",
+      "value": "211",
+      "title": "Team Of The Year 2019",
+      "className": "search-season-option search-season-option__badge badged y211"
+    },
+    {
+      "seasonCode": "214",
+      "value": "214",
+      "title": "Tournament Champions",
+      "className": "search-season-option search-season-option__badge badged y214"
+    },
+    {
+      "seasonCode": "215",
+      "value": "215",
+      "title": "Team Of The Season 2019",
+      "className": "search-season-option search-season-option__badge badged y215"
+    },
+    {
+      "seasonCode": "216",
+      "value": "216",
+      "title": "Heroes of the Team",
+      "className": "search-season-option search-season-option__badge badged y216"
+    },
+    {
+      "seasonCode": "217",
+      "value": "217",
+      "title": "Competitors of Continents",
+      "className": "search-season-option search-season-option__badge badged y217"
+    },
+    {
+      "seasonCode": "218",
+      "value": "218",
+      "title": "Ones Time Watch",
+      "className": "search-season-option search-season-option__badge badged y218"
+    },
+    {
+      "seasonCode": "219",
+      "value": "219",
+      "title": "2019 New Generation",
+      "className": "search-season-option search-season-option__badge badged y219"
+    },
+    {
+      "seasonCode": "220",
+      "value": "220",
+      "title": "Team Of The Year 2020",
+      "className": "search-season-option search-season-option__badge badged y220"
+    },
+    {
+      "seasonCode": "221",
+      "value": "221",
+      "title": "19–20 UEFA Champions League",
+      "className": "search-season-option search-season-option__badge badged y221"
+    },
+    {
+      "seasonCode": "222",
+      "value": "222",
+      "title": "Team Of The Year 2020 Nominate",
+      "className": "search-season-option search-season-option__badge badged y222"
+    },
+    {
+      "seasonCode": "224",
+      "value": "224",
+      "title": "Loyal Heroes",
+      "className": "search-season-option search-season-option__badge badged y224"
+    },
+    {
+      "seasonCode": "227",
+      "value": "227",
+      "title": "Best of Europe 20",
+      "className": "search-season-option search-season-option__badge badged y227"
+    },
+    {
+      "seasonCode": "230",
+      "value": "230",
+      "title": "Team Of The Season 2020",
+      "className": "search-season-option search-season-option__badge badged y230"
+    },
+    {
+      "seasonCode": "231",
+      "value": "231",
+      "title": "Veteran",
+      "className": "search-season-option search-season-option__badge badged y231"
+    },
+    {
+      "seasonCode": "233",
+      "value": "233",
+      "title": "Moments of Glory",
+      "className": "search-season-option search-season-option__badge badged y233"
+    },
+    {
+      "seasonCode": "235",
+      "value": "235",
+      "title": "Volta Live Ambassador",
+      "className": "search-season-option search-season-option__badge badged y235"
+    },
+    {
+      "seasonCode": "236",
+      "value": "236",
+      "title": "Liverpool Ambassador",
+      "className": "search-season-option search-season-option__badge badged y236"
+    },
+    {
+      "seasonCode": "237",
+      "value": "237",
+      "title": "Multi-League Champions",
+      "className": "search-season-option search-season-option__badge badged y237"
+    },
+    {
+      "seasonCode": "238",
+      "value": "238",
+      "title": "2020 New Generation",
+      "className": "search-season-option search-season-option__badge badged y238"
+    },
+    {
+      "seasonCode": "240",
+      "value": "240",
+      "title": "Team Of The Year 2021",
+      "className": "search-season-option search-season-option__badge badged y240"
+    },
+    {
+      "seasonCode": "241",
+      "value": "241",
+      "title": "Team Of The Year 2021 Nominate",
+      "className": "search-season-option search-season-option__badge badged y241"
+    },
+    {
+      "seasonCode": "242",
+      "value": "242",
+      "title": "20-21 UEFA Champions League",
+      "className": "search-season-option search-season-option__badge badged y242"
+    },
+    {
+      "seasonCode": "243",
+      "value": "243",
+      "title": "Nostalgia",
+      "className": "search-season-option search-season-option__badge badged y243"
+    },
+    {
+      "seasonCode": "246",
+      "value": "246",
+      "title": "Unsung Player",
+      "className": "search-season-option search-season-option__badge badged y246"
+    },
+    {
+      "seasonCode": "248",
+      "value": "248",
+      "title": "Vietnam Legends",
+      "className": "search-season-option search-season-option__badge badged y248"
+    },
+    {
+      "seasonCode": "250",
+      "value": "250",
+      "title": "Team Of The Season 2021",
+      "className": "search-season-option search-season-option__badge badged y250"
+    },
+    {
+      "seasonCode": "251",
+      "value": "251",
+      "title": "European Best Stars",
+      "className": "search-season-option search-season-option__badge badged y251"
+    },
+    {
+      "seasonCode": "252",
+      "value": "252",
+      "title": "Captain",
+      "className": "search-season-option search-season-option__badge badged y252"
+    },
+    {
+      "seasonCode": "253",
+      "value": "253",
+      "title": "Best of Europe 21",
+      "className": "search-season-option search-season-option__badge badged y253"
+    },
+    {
+      "seasonCode": "254",
+      "value": "254",
+      "title": "Chelsea FC Ambassador",
+      "className": "search-season-option search-season-option__badge badged y254"
+    },
+    {
+      "seasonCode": "255",
+      "value": "255",
+      "title": "22 Vietnam Best",
+      "className": "search-season-option search-season-option__badge badged y255"
+    },
+    {
+      "seasonCode": "256",
+      "value": "256",
+      "title": "Back to Back",
+      "className": "search-season-option search-season-option__badge badged y256"
+    },
+    {
+      "seasonCode": "258",
+      "value": "258",
+      "title": "Team Of The Year 2022",
+      "className": "search-season-option search-season-option__badge badged y258"
+    },
+    {
+      "seasonCode": "259",
+      "value": "259",
+      "title": "Team Of The Year 2022 Nominate",
+      "className": "search-season-option search-season-option__badge badged y259"
+    },
+    {
+      "seasonCode": "260",
+      "value": "260",
+      "title": "21-22 UEFA Champions League",
+      "className": "search-season-option search-season-option__badge badged y260"
+    },
+    {
+      "seasonCode": "261",
+      "value": "261",
+      "title": "22 Heroes",
+      "className": "search-season-option search-season-option__badge badged y261"
+    },
+    {
+      "seasonCode": "262",
+      "value": "262",
+      "title": "2021 New Generation",
+      "className": "search-season-option search-season-option__badge badged y262"
+    },
+    {
+      "seasonCode": "264",
+      "value": "264",
+      "title": "Free Agent",
+      "className": "search-season-option search-season-option__badge badged y264"
+    },
+    {
+      "seasonCode": "265",
+      "value": "265",
+      "title": "Legend of the Loan",
+      "className": "search-season-option search-season-option__badge badged y265"
+    },
+    {
+      "seasonCode": "267",
+      "value": "267",
+      "title": "Team Of The Season 2022",
+      "className": "search-season-option search-season-option__badge badged y267"
+    },
+    {
+      "seasonCode": "268",
+      "value": "268",
+      "title": "Legendary Numbers",
+      "className": "search-season-option search-season-option__badge badged y268"
+    },
+    {
+      "seasonCode": "270",
+      "value": "270",
+      "title": "Spotlight",
+      "className": "search-season-option search-season-option__badge badged y270"
+    },
+    {
+      "seasonCode": "272",
+      "value": "272",
+      "title": "Best of World Cup",
+      "className": "search-season-option search-season-option__badge badged y272"
+    },
+    {
+      "seasonCode": "273",
+      "value": "273",
+      "title": "World Cup 2022",
+      "className": "search-season-option search-season-option__badge badged y273"
+    },
+    {
+      "seasonCode": "274",
+      "value": "274",
+      "title": "Real Madrid CF Ambassadors",
+      "className": "search-season-option search-season-option__badge badged y274"
+    },
+    {
+      "seasonCode": "275",
+      "value": "275",
+      "title": "Vietnam Future Generation",
+      "className": "search-season-option search-season-option__badge badged y275"
+    },
+    {
+      "seasonCode": "276",
+      "value": "276",
+      "title": "2022 New Generation",
+      "className": "search-season-option search-season-option__badge badged y276"
+    },
+    {
+      "seasonCode": "278",
+      "value": "278",
+      "title": "Team Of The Year 2023",
+      "className": "search-season-option search-season-option__badge badged y278"
+    },
+    {
+      "seasonCode": "279",
+      "value": "279",
+      "title": "Team Of The Year 2023 Nominate",
+      "className": "search-season-option search-season-option__badge badged y279"
+    },
+    {
+      "seasonCode": "280",
+      "value": "280",
+      "title": "22-23 UEFA Champions League",
+      "className": "search-season-option search-season-option__badge badged y280"
+    },
+    {
+      "seasonCode": "281",
+      "value": "281",
+      "title": "23 Heroes",
+      "className": "search-season-option search-season-option__badge badged y281"
+    },
+    {
+      "seasonCode": "283",
+      "value": "283",
+      "title": "Home Grown",
+      "className": "search-season-option search-season-option__badge badged y283"
+    },
+    {
+      "seasonCode": "284",
+      "value": "284",
+      "title": "Returnees",
+      "className": "search-season-option search-season-option__badge badged y284"
+    },
+    {
+      "seasonCode": "286",
+      "value": "286",
+      "title": "23 Vietnam Best",
+      "className": "search-season-option search-season-option__badge badged y286"
+    },
+    {
+      "seasonCode": "287",
+      "value": "287",
+      "title": "Team Of The Season 2023",
+      "className": "search-season-option search-season-option__badge badged y287"
+    },
+    {
+      "seasonCode": "289",
+      "value": "289",
+      "title": "Century Club",
+      "className": "search-season-option search-season-option__badge badged y289"
+    },
+    {
+      "seasonCode": "290",
+      "value": "290",
+      "title": "FC Ambassador",
+      "className": "search-season-option search-season-option__badge badged y290"
+    },
+    {
+      "seasonCode": "291",
+      "value": "291",
+      "title": "23 Hard Worker",
+      "className": "search-season-option search-season-option__badge badged y291"
+    },
+    {
+      "seasonCode": "296",
+      "value": "296",
+      "title": "Paris Saint Germain",
+      "className": "search-season-option search-season-option__badge badged y296"
+    },
+    {
+      "seasonCode": "300",
+      "value": "300",
+      "title": "2025 LIVE",
+      "className": "search-season-option search-season-option__badge badged y300"
+    },
+    {
+      "seasonCode": "317",
+      "value": "317",
+      "title": "2017",
+      "className": "search-season-option search-season-option__badge badged y317"
+    },
+    {
+      "seasonCode": "318",
+      "value": "318",
+      "title": "2018",
+      "className": "search-season-option search-season-option__badge badged y318"
+    },
+    {
+      "seasonCode": "319",
+      "value": "319",
+      "title": "2019",
+      "className": "search-season-option search-season-option__badge badged y319"
+    },
+    {
+      "seasonCode": "320",
+      "value": "320",
+      "title": "2020",
+      "className": "search-season-option search-season-option__badge badged y320"
+    },
+    {
+      "seasonCode": "321",
+      "value": "321",
+      "title": "2021",
+      "className": "search-season-option search-season-option__badge badged y321"
+    },
+    {
+      "seasonCode": "322",
+      "value": "322",
+      "title": "2022",
+      "className": "search-season-option search-season-option__badge badged y322"
+    },
+    {
+      "seasonCode": "323",
+      "value": "323",
+      "title": "2023",
+      "className": "search-season-option search-season-option__badge badged y323"
+    },
+    {
+      "seasonCode": "324",
+      "value": "324",
+      "title": "2024",
+      "className": "search-season-option search-season-option__badge badged y324"
+    },
+    {
+      "seasonCode": "500",
+      "value": "500",
+      "title": "18-19 PLC Autumn",
+      "className": "search-season-option search-season-option__badge badged y500"
+    },
+    {
+      "seasonCode": "501",
+      "value": "501",
+      "title": "18-19 PLC Spring",
+      "className": "search-season-option search-season-option__badge badged y501"
+    },
+    {
+      "seasonCode": "502",
+      "value": "502",
+      "title": "19-20 PLC Autumn",
+      "className": "search-season-option search-season-option__badge badged y502"
+    },
+    {
+      "seasonCode": "503",
+      "value": "503",
+      "title": "19-20 PLC Spring",
+      "className": "search-season-option search-season-option__badge badged y503"
+    },
+    {
+      "seasonCode": "506",
+      "value": "506",
+      "title": "20-21 PLC Autumn",
+      "className": "search-season-option search-season-option__badge badged y506"
+    },
+    {
+      "seasonCode": "508",
+      "value": "508",
+      "title": "21-22 Premium Live",
+      "className": "search-season-option search-season-option__badge badged y508"
+    },
+    {
+      "seasonCode": "511",
+      "value": "511",
+      "title": "22-23 Premium Live",
+      "className": "search-season-option search-season-option__badge badged y511"
+    },
+    {
+      "seasonCode": "513",
+      "value": "513",
+      "title": "23-24 Premium Live",
+      "className": "search-season-option search-season-option__badge badged y513"
+    },
+    {
+      "seasonCode": "515",
+      "value": "515",
+      "title": "24-25 Premium Live",
+      "className": "search-season-option search-season-option__badge badged y515"
+    },
+    {
+      "seasonCode": "517",
+      "value": "517",
+      "title": "25-26 Premium Live",
+      "className": "search-season-option search-season-option__badge badged y517"
+    },
+    {
+      "seasonCode": "801",
+      "value": "801",
+      "title": "Juventus Ambassador",
+      "className": "search-season-option search-season-option__badge badged y801"
+    },
+    {
+      "seasonCode": "802",
+      "value": "802",
+      "title": "Decades",
+      "className": "search-season-option search-season-option__badge badged y802"
+    },
+    {
+      "seasonCode": "804",
+      "value": "804",
+      "title": "2023 New Generation",
+      "className": "search-season-option search-season-option__badge badged y804"
+    },
+    {
+      "seasonCode": "807",
+      "value": "807",
+      "title": "Team Of The Year 2024",
+      "className": "search-season-option search-season-option__badge badged y807"
+    },
+    {
+      "seasonCode": "808",
+      "value": "808",
+      "title": "Team Of The Year 2024 Nominate",
+      "className": "search-season-option search-season-option__badge badged y808"
+    },
+    {
+      "seasonCode": "810",
+      "value": "810",
+      "title": "23-24 UEFA Champions League",
+      "className": "search-season-option search-season-option__badge badged y810"
+    },
+    {
+      "seasonCode": "811",
+      "value": "811",
+      "title": "24 Heroes",
+      "className": "search-season-option search-season-option__badge badged y811"
+    },
+    {
+      "seasonCode": "813",
+      "value": "813",
+      "title": "Journeyman",
+      "className": "search-season-option search-season-option__badge badged y813"
+    },
+    {
+      "seasonCode": "814",
+      "value": "814",
+      "title": "Unexpected Transfer",
+      "className": "search-season-option search-season-option__badge badged y814"
+    },
+    {
+      "seasonCode": "815",
+      "value": "815",
+      "title": "UEFA EURO 2024",
+      "className": "search-season-option search-season-option__badge badged y815"
+    },
+    {
+      "seasonCode": "817",
+      "value": "817",
+      "title": "24 Vietnam Best",
+      "className": "search-season-option search-season-option__badge badged y817"
+    },
+    {
+      "seasonCode": "818",
+      "value": "818",
+      "title": "Last Dance",
+      "className": "search-season-option search-season-option__badge badged y818"
+    },
+    {
+      "seasonCode": "820",
+      "value": "820",
+      "title": "Team Of The Season 2024",
+      "className": "search-season-option search-season-option__badge badged y820"
+    },
+    {
+      "seasonCode": "821",
+      "value": "821",
+      "title": "Medalist",
+      "className": "search-season-option search-season-option__badge badged y821"
+    },
+    {
+      "seasonCode": "825",
+      "value": "825",
+      "title": "Champions of Europe",
+      "className": "search-season-option search-season-option__badge badged y825"
+    },
+    {
+      "seasonCode": "826",
+      "value": "826",
+      "title": "Energetic Player 2024",
+      "className": "search-season-option search-season-option__badge badged y826"
+    },
+    {
+      "seasonCode": "827",
+      "value": "827",
+      "title": "Ballon d'Or",
+      "className": "search-season-option search-season-option__badge badged y827"
+    },
+    {
+      "seasonCode": "828",
+      "value": "828",
+      "title": "Best Legend",
+      "className": "search-season-option search-season-option__badge badged y828"
+    },
+    {
+      "seasonCode": "829",
+      "value": "829",
+      "title": "Greatest Runner-Ups",
+      "className": "search-season-option search-season-option__badge badged y829"
+    },
+    {
+      "seasonCode": "831",
+      "value": "831",
+      "title": "Team Of The Year 2025",
+      "className": "search-season-option search-season-option__badge badged y831"
+    },
+    {
+      "seasonCode": "832",
+      "value": "832",
+      "title": "Team Of The Year 2025 Nominate",
+      "className": "search-season-option search-season-option__badge badged y832"
+    },
+    {
+      "seasonCode": "834",
+      "value": "834",
+      "title": "24-25 UEFA Champions League",
+      "className": "search-season-option search-season-option__badge badged y834"
+    },
+    {
+      "seasonCode": "835",
+      "value": "835",
+      "title": "25 Heroes",
+      "className": "search-season-option search-season-option__badge badged y835"
+    },
+    {
+      "seasonCode": "836",
+      "value": "836",
+      "title": "Wonderboys",
+      "className": "search-season-option search-season-option__badge badged y836"
+    },
+    {
+      "seasonCode": "837",
+      "value": "837",
+      "title": "25 Vietnam Best",
+      "className": "search-season-option search-season-option__badge badged y837"
+    },
+    {
+      "seasonCode": "838",
+      "value": "838",
+      "title": "Prime",
+      "className": "search-season-option search-season-option__badge badged y838"
+    },
+    {
+      "seasonCode": "840",
+      "value": "840",
+      "title": "Legend of Europa",
+      "className": "search-season-option search-season-option__badge badged y840"
+    },
+    {
+      "seasonCode": "843",
+      "value": "843",
+      "title": "NO.7 LEGENDS (Server: th,vn,cn)",
+      "className": "search-season-option search-season-option__badge badged y843"
+    },
+    {
+      "seasonCode": "844",
+      "value": "844",
+      "title": "Team Of The Season 2025",
+      "className": "search-season-option search-season-option__badge badged y844"
+    },
+    {
+      "seasonCode": "845",
+      "value": "845",
+      "title": "Continental Heroes",
+      "className": "search-season-option search-season-option__badge badged y845"
+    },
+    {
+      "seasonCode": "846",
+      "value": "846",
+      "title": "Dramatic Comebacks",
+      "className": "search-season-option search-season-option__badge badged y846"
+    },
+    {
+      "seasonCode": "848",
+      "value": "848",
+      "title": "Winning Streak",
+      "className": "search-season-option search-season-option__badge badged y848"
+    },
+    {
+      "seasonCode": "850",
+      "value": "850",
+      "title": "25 FCO Super Champions League",
+      "className": "search-season-option search-season-option__badge badged y850"
+    },
+    {
+      "seasonCode": "851",
+      "value": "851",
+      "title": "25 Devoted Player",
+      "className": "search-season-option search-season-option__badge badged y851"
+    },
+    {
+      "seasonCode": "852",
+      "value": "852",
+      "title": "Football Association Champions",
+      "className": "search-season-option search-season-option__badge badged y852"
+    },
+    {
+      "seasonCode": "854",
+      "value": "854",
+      "title": "Team Of The Year 2026",
+      "className": "search-season-option search-season-option__badge badged y854"
+    },
+    {
+      "seasonCode": "855",
+      "value": "855",
+      "title": "Team Of The Year 2026 Nominate",
+      "className": "search-season-option search-season-option__badge badged y855"
+    },
+    {
+      "seasonCode": "856",
+      "value": "856",
+      "title": "25-26 UEFA Champions League",
+      "className": "search-season-option search-season-option__badge badged y856"
+    },
+    {
+      "seasonCode": "858",
+      "value": "858",
+      "title": "26 Heroes",
+      "className": "search-season-option search-season-option__badge badged y858"
+    },
+    {
+      "seasonCode": "861",
+      "value": "861",
+      "title": "Warriors of Glory",
+      "className": "search-season-option search-season-option__badge badged y861"
+    },
+    {
+      "seasonCode": "863",
+      "value": "863",
+      "title": "Path to Glory",
+      "className": "search-season-option search-season-option__badge badged y863"
+    },
+    {
+      "seasonCode": "865",
+      "value": "865",
+      "title": "Infinite Prime",
+      "className": "search-season-option search-season-option__badge badged y865"
+    },
+    {
+      "seasonCode": "866",
+      "value": "866",
+      "title": "Team Of The Season 2026",
+      "className": "search-season-option search-season-option__badge badged y866"
+    }
+  ],
+  "records": [
+    {
+      "seasonCode": "100",
+      "title": "ICON THE MOMENT",
+      "themeId": "100",
+      "className": "card-theme-100",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c100.png",
+      "localPath": "/fco/card-themes/card-theme-100.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "101",
+      "title": "ICON",
+      "themeId": "101",
+      "className": "card-theme-101",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c101.png",
+      "localPath": "/fco/card-themes/card-theme-101.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "110",
+      "title": "ICON THE MOMENT B",
+      "themeId": "110",
+      "className": "card-theme-110",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c110.png",
+      "localPath": "/fco/card-themes/card-theme-110.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "113",
+      "title": "25 ICONS MATCH - Show & Prove",
+      "themeId": "113",
+      "className": "card-theme-113",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c113.png",
+      "localPath": "/fco/card-themes/card-theme-113.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "201",
+      "title": "National Hero Debut",
+      "themeId": "201",
+      "className": "card-theme-201",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c201.png",
+      "localPath": "/fco/card-themes/card-theme-201.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "203",
+      "title": "Team Of The Year 2018",
+      "themeId": "203",
+      "className": "card-theme-203",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c203.png",
+      "localPath": "/fco/card-themes/card-theme-203.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "206",
+      "title": "Tournament Best",
+      "themeId": "206",
+      "className": "card-theme-206",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c206.png",
+      "localPath": "/fco/card-themes/card-theme-206.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "207",
+      "title": "Top Transfer",
+      "themeId": "207",
+      "className": "card-theme-207",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c207.png",
+      "localPath": "/fco/card-themes/card-theme-207.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "209",
+      "title": "Viet Nam",
+      "themeId": "209",
+      "className": "card-theme-209",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c209.png",
+      "localPath": "/fco/card-themes/card-theme-209.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "210",
+      "title": "Golden Rookies",
+      "themeId": "210",
+      "className": "card-theme-210",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c210.png",
+      "localPath": "/fco/card-themes/card-theme-210.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "211",
+      "title": "Team Of The Year 2019",
+      "themeId": "211",
+      "className": "card-theme-211",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c211.png",
+      "localPath": "/fco/card-themes/card-theme-211.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "214",
+      "title": "Tournament Champions",
+      "themeId": "214",
+      "className": "card-theme-214",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c214.png",
+      "localPath": "/fco/card-themes/card-theme-214.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "215",
+      "title": "Team Of The Season 2019",
+      "themeId": "215",
+      "className": "card-theme-215",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c215.png",
+      "localPath": "/fco/card-themes/card-theme-215.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "216",
+      "title": "Heroes of the Team",
+      "themeId": "216",
+      "className": "card-theme-216",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c216.png",
+      "localPath": "/fco/card-themes/card-theme-216.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "217",
+      "title": "Competitors of Continents",
+      "themeId": "217",
+      "className": "card-theme-217",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c217.png",
+      "localPath": "/fco/card-themes/card-theme-217.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "218",
+      "title": "Ones Time Watch",
+      "themeId": "218",
+      "className": "card-theme-218",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c218.png",
+      "localPath": "/fco/card-themes/card-theme-218.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "219",
+      "title": "2019 New Generation",
+      "themeId": "219",
+      "className": "card-theme-219",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c219.png",
+      "localPath": "/fco/card-themes/card-theme-219.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "220",
+      "title": "Team Of The Year 2020",
+      "themeId": "220",
+      "className": "card-theme-220",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c220.png",
+      "localPath": "/fco/card-themes/card-theme-220.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "221",
+      "title": "19–20 UEFA Champions League",
+      "themeId": "221",
+      "className": "card-theme-221",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c221.png",
+      "localPath": "/fco/card-themes/card-theme-221.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "222",
+      "title": "Team Of The Year 2020 Nominate",
+      "themeId": "222",
+      "className": "card-theme-222",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c222.png",
+      "localPath": "/fco/card-themes/card-theme-222.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "224",
+      "title": "Loyal Heroes",
+      "themeId": "224",
+      "className": "card-theme-224",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c224.png",
+      "localPath": "/fco/card-themes/card-theme-224.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "227",
+      "title": "Best of Europe 20",
+      "themeId": "227",
+      "className": "card-theme-227",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c227.png",
+      "localPath": "/fco/card-themes/card-theme-227.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "230",
+      "title": "Team Of The Season 2020",
+      "themeId": "230",
+      "className": "card-theme-230",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c230.png",
+      "localPath": "/fco/card-themes/card-theme-230.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "231",
+      "title": "Veteran",
+      "themeId": "231",
+      "className": "card-theme-231",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c231.png",
+      "localPath": "/fco/card-themes/card-theme-231.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "233",
+      "title": "Moments of Glory",
+      "themeId": "233",
+      "className": "card-theme-233",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c233.png",
+      "localPath": "/fco/card-themes/card-theme-233.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "235",
+      "title": "Volta Live Ambassador",
+      "themeId": "235",
+      "className": "card-theme-235",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c235.png",
+      "localPath": "/fco/card-themes/card-theme-235.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "236",
+      "title": "Liverpool Ambassador",
+      "themeId": "236",
+      "className": "card-theme-236",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c236.png",
+      "localPath": "/fco/card-themes/card-theme-236.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "237",
+      "title": "Multi-League Champions",
+      "themeId": "237",
+      "className": "card-theme-237",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c237.png",
+      "localPath": "/fco/card-themes/card-theme-237.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "238",
+      "title": "2020 New Generation",
+      "themeId": "238",
+      "className": "card-theme-238",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c238.png",
+      "localPath": "/fco/card-themes/card-theme-238.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "240",
+      "title": "Team Of The Year 2021",
+      "themeId": "240",
+      "className": "card-theme-240",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c240.png",
+      "localPath": "/fco/card-themes/card-theme-240.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "241",
+      "title": "Team Of The Year 2021 Nominate",
+      "themeId": "241",
+      "className": "card-theme-241",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c241.png",
+      "localPath": "/fco/card-themes/card-theme-241.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "242",
+      "title": "20-21 UEFA Champions League",
+      "themeId": "242",
+      "className": "card-theme-242",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c242.png",
+      "localPath": "/fco/card-themes/card-theme-242.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "243",
+      "title": "Nostalgia",
+      "themeId": "243",
+      "className": "card-theme-243",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c243.png",
+      "localPath": "/fco/card-themes/card-theme-243.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "246",
+      "title": "Unsung Player",
+      "themeId": "246",
+      "className": "card-theme-246",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c246.png",
+      "localPath": "/fco/card-themes/card-theme-246.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "248",
+      "title": "Vietnam Legends",
+      "themeId": "248",
+      "className": "card-theme-248",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c248.png",
+      "localPath": "/fco/card-themes/card-theme-248.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "250",
+      "title": "Team Of The Season 2021",
+      "themeId": "250",
+      "className": "card-theme-250",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c250.png",
+      "localPath": "/fco/card-themes/card-theme-250.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "251",
+      "title": "European Best Stars",
+      "themeId": "251",
+      "className": "card-theme-251",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c251.png",
+      "localPath": "/fco/card-themes/card-theme-251.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "252",
+      "title": "Captain",
+      "themeId": "252",
+      "className": "card-theme-252",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c252.png",
+      "localPath": "/fco/card-themes/card-theme-252.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "253",
+      "title": "Best of Europe 21",
+      "themeId": "253",
+      "className": "card-theme-253",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c253.png",
+      "localPath": "/fco/card-themes/card-theme-253.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "254",
+      "title": "Chelsea FC Ambassador",
+      "themeId": "254",
+      "className": "card-theme-254",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c254.png",
+      "localPath": "/fco/card-themes/card-theme-254.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "255",
+      "title": "22 Vietnam Best",
+      "themeId": "255",
+      "className": "card-theme-255",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c255.png",
+      "localPath": "/fco/card-themes/card-theme-255.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "256",
+      "title": "Back to Back",
+      "themeId": "256",
+      "className": "card-theme-256",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c256.png",
+      "localPath": "/fco/card-themes/card-theme-256.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "258",
+      "title": "Team Of The Year 2022",
+      "themeId": "258",
+      "className": "card-theme-258",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c258.png",
+      "localPath": "/fco/card-themes/card-theme-258.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "259",
+      "title": "Team Of The Year 2022 Nominate",
+      "themeId": "259",
+      "className": "card-theme-259",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c259.png",
+      "localPath": "/fco/card-themes/card-theme-259.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "260",
+      "title": "21-22 UEFA Champions League",
+      "themeId": "260",
+      "className": "card-theme-260",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c260.png",
+      "localPath": "/fco/card-themes/card-theme-260.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "261",
+      "title": "22 Heroes",
+      "themeId": "261",
+      "className": "card-theme-261",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c261.png",
+      "localPath": "/fco/card-themes/card-theme-261.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "262",
+      "title": "2021 New Generation",
+      "themeId": "262",
+      "className": "card-theme-262",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c262.png",
+      "localPath": "/fco/card-themes/card-theme-262.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "264",
+      "title": "Free Agent",
+      "themeId": "264",
+      "className": "card-theme-264",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c264.png",
+      "localPath": "/fco/card-themes/card-theme-264.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "265",
+      "title": "Legend of the Loan",
+      "themeId": "265",
+      "className": "card-theme-265",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c265.png",
+      "localPath": "/fco/card-themes/card-theme-265.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "267",
+      "title": "Team Of The Season 2022",
+      "themeId": "267",
+      "className": "card-theme-267",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c267.png",
+      "localPath": "/fco/card-themes/card-theme-267.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "268",
+      "title": "Legendary Numbers",
+      "themeId": "268",
+      "className": "card-theme-268",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c268.png",
+      "localPath": "/fco/card-themes/card-theme-268.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "270",
+      "title": "Spotlight",
+      "themeId": "270",
+      "className": "card-theme-270",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c270.png",
+      "localPath": "/fco/card-themes/card-theme-270.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "272",
+      "title": "Best of World Cup",
+      "themeId": "272",
+      "className": "card-theme-272",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c272.png",
+      "localPath": "/fco/card-themes/card-theme-272.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "273",
+      "title": "World Cup 2022",
+      "themeId": "273",
+      "className": "card-theme-273",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c273.png",
+      "localPath": "/fco/card-themes/card-theme-273.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "274",
+      "title": "Real Madrid CF Ambassadors",
+      "themeId": "274",
+      "className": "card-theme-274",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c274.png",
+      "localPath": "/fco/card-themes/card-theme-274.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "275",
+      "title": "Vietnam Future Generation",
+      "themeId": "275",
+      "className": "card-theme-275",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c275.png",
+      "localPath": "/fco/card-themes/card-theme-275.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "276",
+      "title": "2022 New Generation",
+      "themeId": "276",
+      "className": "card-theme-276",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c276.png",
+      "localPath": "/fco/card-themes/card-theme-276.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "278",
+      "title": "Team Of The Year 2023",
+      "themeId": "278",
+      "className": "card-theme-278",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c278.png",
+      "localPath": "/fco/card-themes/card-theme-278.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "279",
+      "title": "Team Of The Year 2023 Nominate",
+      "themeId": "279",
+      "className": "card-theme-279",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c279.png",
+      "localPath": "/fco/card-themes/card-theme-279.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "280",
+      "title": "22-23 UEFA Champions League",
+      "themeId": "280",
+      "className": "card-theme-280",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c280.png",
+      "localPath": "/fco/card-themes/card-theme-280.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "281",
+      "title": "23 Heroes",
+      "themeId": "281",
+      "className": "card-theme-281",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c281.png",
+      "localPath": "/fco/card-themes/card-theme-281.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "283",
+      "title": "Home Grown",
+      "themeId": "283",
+      "className": "card-theme-283",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c283.png",
+      "localPath": "/fco/card-themes/card-theme-283.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "284",
+      "title": "Returnees",
+      "themeId": "284",
+      "className": "card-theme-284",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c284.png",
+      "localPath": "/fco/card-themes/card-theme-284.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "286",
+      "title": "23 Vietnam Best",
+      "themeId": "286",
+      "className": "card-theme-286",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c286.png",
+      "localPath": "/fco/card-themes/card-theme-286.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "287",
+      "title": "Team Of The Season 2023",
+      "themeId": "287",
+      "className": "card-theme-287",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c287.png",
+      "localPath": "/fco/card-themes/card-theme-287.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "289",
+      "title": "Century Club",
+      "themeId": "289",
+      "className": "card-theme-289",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c289.png",
+      "localPath": "/fco/card-themes/card-theme-289.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "290",
+      "title": "FC Ambassador",
+      "themeId": "290",
+      "className": "card-theme-290",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c290.png",
+      "localPath": "/fco/card-themes/card-theme-290.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "291",
+      "title": "23 Hard Worker",
+      "themeId": "291",
+      "className": "card-theme-291",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c291.png",
+      "localPath": "/fco/card-themes/card-theme-291.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "296",
+      "title": "Paris Saint Germain",
+      "themeId": "296",
+      "className": "card-theme-296",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c296.png",
+      "localPath": "/fco/card-themes/card-theme-296.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "300",
+      "title": "2025 LIVE",
+      "themeId": "300",
+      "className": "card-theme-300",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c300.png",
+      "localPath": "/fco/card-themes/card-theme-300.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "317",
+      "title": "2017",
+      "themeId": "317",
+      "className": "card-theme-317",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c317.png",
+      "localPath": "/fco/card-themes/card-theme-317.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "318",
+      "title": "2018",
+      "themeId": "318",
+      "className": "card-theme-318",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c318.png",
+      "localPath": "/fco/card-themes/card-theme-318.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "319",
+      "title": "2019",
+      "themeId": "319",
+      "className": "card-theme-319",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c319.png",
+      "localPath": "/fco/card-themes/card-theme-319.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "320",
+      "title": "2020",
+      "themeId": "320",
+      "className": "card-theme-320",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c320.png",
+      "localPath": "/fco/card-themes/card-theme-320.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "321",
+      "title": "2021",
+      "themeId": "321",
+      "className": "card-theme-321",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c321.png",
+      "localPath": "/fco/card-themes/card-theme-321.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "322",
+      "title": "2022",
+      "themeId": "322",
+      "className": "card-theme-322",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c322.png",
+      "localPath": "/fco/card-themes/card-theme-322.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "323",
+      "title": "2023",
+      "themeId": "323",
+      "className": "card-theme-323",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c323.png",
+      "localPath": "/fco/card-themes/card-theme-323.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "324",
+      "title": "2024",
+      "themeId": "324",
+      "className": "card-theme-324",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c324.png",
+      "localPath": "/fco/card-themes/card-theme-324.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "500",
+      "title": "18-19 PLC Autumn",
+      "themeId": "500",
+      "className": "card-theme-500",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c500.png",
+      "localPath": "/fco/card-themes/card-theme-500.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "501",
+      "title": "18-19 PLC Spring",
+      "themeId": "501",
+      "className": "card-theme-501",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c501.png",
+      "localPath": "/fco/card-themes/card-theme-501.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "502",
+      "title": "19-20 PLC Autumn",
+      "themeId": "502",
+      "className": "card-theme-502",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c502.png",
+      "localPath": "/fco/card-themes/card-theme-502.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "503",
+      "title": "19-20 PLC Spring",
+      "themeId": "503",
+      "className": "card-theme-503",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c503.png",
+      "localPath": "/fco/card-themes/card-theme-503.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "506",
+      "title": "20-21 PLC Autumn",
+      "themeId": "506",
+      "className": "card-theme-506",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c506.png",
+      "localPath": "/fco/card-themes/card-theme-506.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "508",
+      "title": "21-22 Premium Live",
+      "themeId": "508",
+      "className": "card-theme-508",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c508.png",
+      "localPath": "/fco/card-themes/card-theme-508.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "511",
+      "title": "22-23 Premium Live",
+      "themeId": "511",
+      "className": "card-theme-511",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c511.png",
+      "localPath": "/fco/card-themes/card-theme-511.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "513",
+      "title": "23-24 Premium Live",
+      "themeId": "513",
+      "className": "card-theme-513",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c513.png",
+      "localPath": "/fco/card-themes/card-theme-513.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "515",
+      "title": "24-25 Premium Live",
+      "themeId": "515",
+      "className": "card-theme-515",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c515.png",
+      "localPath": "/fco/card-themes/card-theme-515.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "517",
+      "title": "25-26 Premium Live",
+      "themeId": "517",
+      "className": "card-theme-517",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c517.png",
+      "localPath": "/fco/card-themes/card-theme-517.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "801",
+      "title": "Juventus Ambassador",
+      "themeId": "801",
+      "className": "card-theme-801",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c801.png",
+      "localPath": "/fco/card-themes/card-theme-801.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "802",
+      "title": "Decades",
+      "themeId": "802",
+      "className": "card-theme-802",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c802.png",
+      "localPath": "/fco/card-themes/card-theme-802.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "804",
+      "title": "2023 New Generation",
+      "themeId": "804",
+      "className": "card-theme-804",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c804.png",
+      "localPath": "/fco/card-themes/card-theme-804.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "807",
+      "title": "Team Of The Year 2024",
+      "themeId": "807",
+      "className": "card-theme-807",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c807.png",
+      "localPath": "/fco/card-themes/card-theme-807.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "808",
+      "title": "Team Of The Year 2024 Nominate",
+      "themeId": "808",
+      "className": "card-theme-808",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c808.png",
+      "localPath": "/fco/card-themes/card-theme-808.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "810",
+      "title": "23-24 UEFA Champions League",
+      "themeId": "810",
+      "className": "card-theme-810",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c810.png",
+      "localPath": "/fco/card-themes/card-theme-810.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "811",
+      "title": "24 Heroes",
+      "themeId": "811",
+      "className": "card-theme-811",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c811.png",
+      "localPath": "/fco/card-themes/card-theme-811.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "813",
+      "title": "Journeyman",
+      "themeId": "813",
+      "className": "card-theme-813",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c813.png",
+      "localPath": "/fco/card-themes/card-theme-813.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "814",
+      "title": "Unexpected Transfer",
+      "themeId": "814",
+      "className": "card-theme-814",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c814.png",
+      "localPath": "/fco/card-themes/card-theme-814.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "815",
+      "title": "UEFA EURO 2024",
+      "themeId": "815",
+      "className": "card-theme-815",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c815.png",
+      "localPath": "/fco/card-themes/card-theme-815.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "817",
+      "title": "24 Vietnam Best",
+      "themeId": "817",
+      "className": "card-theme-817",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c817.png",
+      "localPath": "/fco/card-themes/card-theme-817.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "818",
+      "title": "Last Dance",
+      "themeId": "818",
+      "className": "card-theme-818",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c818.png",
+      "localPath": "/fco/card-themes/card-theme-818.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "820",
+      "title": "Team Of The Season 2024",
+      "themeId": "820",
+      "className": "card-theme-820",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c820.png",
+      "localPath": "/fco/card-themes/card-theme-820.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "821",
+      "title": "Medalist",
+      "themeId": "821",
+      "className": "card-theme-821",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c821.png",
+      "localPath": "/fco/card-themes/card-theme-821.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "825",
+      "title": "Champions of Europe",
+      "themeId": "825",
+      "className": "card-theme-825",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c825.png",
+      "localPath": "/fco/card-themes/card-theme-825.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "826",
+      "title": "Energetic Player 2024",
+      "themeId": "826",
+      "className": "card-theme-826",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c826.png",
+      "localPath": "/fco/card-themes/card-theme-826.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "827",
+      "title": "Ballon d'Or",
+      "themeId": "827",
+      "className": "card-theme-827",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c827.png",
+      "localPath": "/fco/card-themes/card-theme-827.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "828",
+      "title": "Best Legend",
+      "themeId": "828",
+      "className": "card-theme-828",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c828.png",
+      "localPath": "/fco/card-themes/card-theme-828.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "829",
+      "title": "Greatest Runner-Ups",
+      "themeId": "829",
+      "className": "card-theme-829",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c829.png",
+      "localPath": "/fco/card-themes/card-theme-829.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "831",
+      "title": "Team Of The Year 2025",
+      "themeId": "831",
+      "className": "card-theme-831",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c831.png",
+      "localPath": "/fco/card-themes/card-theme-831.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "832",
+      "title": "Team Of The Year 2025 Nominate",
+      "themeId": "832",
+      "className": "card-theme-832",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c832.png",
+      "localPath": "/fco/card-themes/card-theme-832.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "834",
+      "title": "24-25 UEFA Champions League",
+      "themeId": "834",
+      "className": "card-theme-834",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c834.png",
+      "localPath": "/fco/card-themes/card-theme-834.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "835",
+      "title": "25 Heroes",
+      "themeId": "835",
+      "className": "card-theme-835",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c835.png",
+      "localPath": "/fco/card-themes/card-theme-835.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "836",
+      "title": "Wonderboys",
+      "themeId": "836",
+      "className": "card-theme-836",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c836.png",
+      "localPath": "/fco/card-themes/card-theme-836.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "837",
+      "title": "25 Vietnam Best",
+      "themeId": "837",
+      "className": "card-theme-837",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c837.png",
+      "localPath": "/fco/card-themes/card-theme-837.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "838",
+      "title": "Prime",
+      "themeId": "838",
+      "className": "card-theme-838",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c838.png",
+      "localPath": "/fco/card-themes/card-theme-838.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "840",
+      "title": "Legend of Europa",
+      "themeId": "840",
+      "className": "card-theme-840",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c840.png",
+      "localPath": "/fco/card-themes/card-theme-840.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "843",
+      "title": "NO.7 LEGENDS (Server: th,vn,cn)",
+      "themeId": "843",
+      "className": "card-theme-843",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c843.png",
+      "localPath": "/fco/card-themes/card-theme-843.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "844",
+      "title": "Team Of The Season 2025",
+      "themeId": "844",
+      "className": "card-theme-844",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c844.png",
+      "localPath": "/fco/card-themes/card-theme-844.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "845",
+      "title": "Continental Heroes",
+      "themeId": "845",
+      "className": "card-theme-845",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c845.png",
+      "localPath": "/fco/card-themes/card-theme-845.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "846",
+      "title": "Dramatic Comebacks",
+      "themeId": "846",
+      "className": "card-theme-846",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c846.png",
+      "localPath": "/fco/card-themes/card-theme-846.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "848",
+      "title": "Winning Streak",
+      "themeId": "848",
+      "className": "card-theme-848",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c848.png",
+      "localPath": "/fco/card-themes/card-theme-848.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "850",
+      "title": "25 FCO Super Champions League",
+      "themeId": "850",
+      "className": "card-theme-850",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c850.png",
+      "localPath": "/fco/card-themes/card-theme-850.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "851",
+      "title": "25 Devoted Player",
+      "themeId": "851",
+      "className": "card-theme-851",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c851.png",
+      "localPath": "/fco/card-themes/card-theme-851.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "852",
+      "title": "Football Association Champions",
+      "themeId": "852",
+      "className": "card-theme-852",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c852.png",
+      "localPath": "/fco/card-themes/card-theme-852.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "854",
+      "title": "Team Of The Year 2026",
+      "themeId": "854",
+      "className": "card-theme-854",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c854.png",
+      "localPath": "/fco/card-themes/card-theme-854.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "855",
+      "title": "Team Of The Year 2026 Nominate",
+      "themeId": "855",
+      "className": "card-theme-855",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c855.png",
+      "localPath": "/fco/card-themes/card-theme-855.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "856",
+      "title": "25-26 UEFA Champions League",
+      "themeId": "856",
+      "className": "card-theme-856",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c856.png",
+      "localPath": "/fco/card-themes/card-theme-856.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "858",
+      "title": "26 Heroes",
+      "themeId": "858",
+      "className": "card-theme-858",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c858.png",
+      "localPath": "/fco/card-themes/card-theme-858.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "861",
+      "title": "Warriors of Glory",
+      "themeId": "861",
+      "className": "card-theme-861",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c861.png",
+      "localPath": "/fco/card-themes/card-theme-861.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "863",
+      "title": "Path to Glory",
+      "themeId": "863",
+      "className": "card-theme-863",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c863.png",
+      "localPath": "/fco/card-themes/card-theme-863.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "865",
+      "title": "Infinite Prime",
+      "themeId": "865",
+      "className": "card-theme-865",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c865.png",
+      "localPath": "/fco/card-themes/card-theme-865.png",
+      "downloaded": true
+    },
+    {
+      "seasonCode": "866",
+      "title": "Team Of The Season 2026",
+      "themeId": "866",
+      "className": "card-theme-866",
+      "backgroundImage": "https://fifaaddict.com/fo4squad/assets/img/fo4cards/c866.png",
+      "localPath": "/fco/card-themes/card-theme-866.png",
+      "downloaded": true
+    }
+  ]
+}

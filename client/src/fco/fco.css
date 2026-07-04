@@ -1713,7 +1713,57 @@ button { font-family: inherit; }
 .fco-squad-slot.is-active { z-index: 8; }
 .fco-squad-slot.layout-dragging { z-index: 9; cursor: grabbing; }
 .fco-squad-slot.layout-dragging .fco-squad-card,
-.fco-squad-slot.layout-dragging .fco-squad-empty { opacity: .88; box-shadow: 0 14px 34px rgba(0,0,0,.34); }
+.fco-squad-slot.has-player {
+  /* Loại bỏ các display conflict */
+  display: block;
+}
+
+.fco-squad-slot.has-player .fco-squad-card {
+  width: 117px;
+  height: 170px;
+}
+
+.fco-squad-slot.empty-slot .fco-squad-empty-add {
+  width: 99px;
+  height: 104px;
+  border: 1px dashed var(--border);
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  border-radius: 12px;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  font-family: var(--mono);
+}
+.fco-squad-slot.empty-slot .fco-squad-empty-add:hover { border-color: var(--accent); color: var(--text); }
+
+
+.fco-squad-slot.empty-slot .fco-squad-empty-add {
+  width: 99px;
+  height: 104px;
+  border: 1px dashed var(--border);
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  border-radius: 12px;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  font-family: var(--mono);
+}
+.fco-squad-slot.empty-slot .fco-squad-empty-add:hover { border-color: var(--accent); color: var(--text); }
+
 .fco-squad-slot[style*="left: 5%"] { --slot-tx: 0; }
 .fco-squad-slot[style*="left: 95%"] { --slot-tx: -100%; }
 .fco-squad-slot.drop-target::before {
@@ -1739,7 +1789,7 @@ button { font-family: inherit; }
 }
 .fco-squad-empty-add { width: 34px; height: 34px; border: 1px solid rgba(255,255,255,.14); border-radius: 50%; background: rgba(255,255,255,.08); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
 .fco-squad-empty-add:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
-.fco-squad-empty-plus { display: inline-flex; align-items: center; justify-content: center; font-size: 21px; line-height: 1; }
+.fco-squad-empty-plus { display: inline-flex; align-items: center; justify-content: center; font-size: 28px; line-height: 1; }
 .fco-squad-empty:hover,
 .fco-squad-empty.drag-over { border-color: var(--accent); color: var(--text); transform: translateY(-1px); }
 .fco-squad-empty.move-target { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, rgba(7,28,18,.82)); animation: fco-squad-pulse 1.1s ease-in-out infinite; }
@@ -1795,8 +1845,8 @@ button { font-family: inherit; }
 .fco-player-card-mini-wrap {
   position: relative;
   display: inline-block;
-  width: 99px;
-  height: 104px;
+  width: 117px;
+  height: 170px;
   filter: drop-shadow(0 10px 16px rgba(0,0,0,.32));
 }
 
@@ -1815,22 +1865,42 @@ button { font-family: inherit; }
   isolation: isolate;
 }
 
+.player-card.fc-card--squad.has-player {
+  width: 117px;
+  height: 170px;
+  overflow: visible;
+}
+
 button.player-card.fc-card { font: inherit; }
 
 .card-bg-img.fc-bg {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+}
+
+span.card-bg-img.fc-bg {
   background:
     var(--fco-card-theme-bg, none) center / cover no-repeat,
     radial-gradient(circle at 50% 22%, color-mix(in srgb, var(--fco-card-ring, var(--accent)) 34%, transparent), transparent 40%),
     linear-gradient(155deg, color-mix(in srgb, var(--fco-card-base, #29313b) 72%, #fff 8%), color-mix(in srgb, var(--fco-card-base, #111827) 72%, #000 28%));
   border: 1px solid color-mix(in srgb, var(--fco-card-ring, var(--accent)) 46%, rgba(255,255,255,.22));
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 -26px 32px rgba(0,0,0,.32);
+}
+
+.player-card.fc-card--squad.has-player .card-bg-img.fc-bg {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  border-radius: inherit;
+  transform: none;
 }
 
 span.card-bg-img.fc-bg::after {
@@ -1873,11 +1943,10 @@ span.card-bg-img.fc-bg::after {
   right: 7px;
   top: 7px;
   z-index: 3;
-  min-width: 18px;
-  border-radius: 999px;
-  padding: 2px 5px;
-  background: rgba(0,0,0,.48);
-  border: 1px solid rgba(255,255,255,.16);
+  width: 18px;
+  height: 19px;
+  display: grid;
+  place-items: center;
   color: #fff;
   font-family: var(--mono);
   font-size: 9px;
@@ -1886,7 +1955,27 @@ span.card-bg-img.fc-bg::after {
   text-align: center;
 }
 
+.fc-salary .hexagon-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: rgba(255,255,255,.7);
+  pointer-events: none;
+}
+
+.fc-salary .hexagon-svg path { fill: rgba(0,0,0,.48); }
+
+.fc-salary .pay-number {
+  position: relative;
+  z-index: 1;
+}
+
 .fc-salary.is-empty { opacity: 0; }
+
+.player-card.fc-card--squad.has-player .card-ovr.fc-ovr { left: 5px; top: 34px; font-size: 19px; }
+.player-card.fc-card--squad.has-player .card-pos-label.fc-pos { left: 5px; top: 56px; width: 33px; text-align: center; }
+.player-card.fc-card--squad.has-player .fc-salary { right: auto; left: 11px; top: 77px; width: 21px; height: 24px; }
 
 .card-player-media.fc-player-media {
   position: absolute;
@@ -1908,6 +1997,22 @@ span.card-bg-img.fc-bg::after {
   filter: drop-shadow(0 5px 6px rgba(0,0,0,.42));
 }
 
+.player-card.fc-card--squad.has-player .card-player-media.fc-player-media {
+  left: 19px;
+  top: 27px;
+  bottom: auto;
+  width: 94px;
+  height: 94px;
+  transform: none;
+}
+
+.player-card.fc-card--squad.has-player .card-player-media.fc-player-media img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
+
 .fc-player-media-placeholder {
   width: 54px;
   height: 62px;
@@ -1921,26 +2026,27 @@ span.card-bg-img.fc-bg::after {
   bottom: 5px;
   z-index: 4;
   transform: translateX(-50%);
-  border-radius: 999px;
-  padding: 2px 5px;
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 900;
-  line-height: 1;
-  background: rgba(0,0,0,.48);
-  border: 1px solid rgba(255,255,255,.16);
-  color: #fff;
+  width: 22px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.55));
 }
 
-.fc-grade.enchant_5,
-.fc-grade.enchant_6,
-.fc-grade.enchant_7,
-.fc-grade.enchant_8 { color: #72e8ff; }
-.fc-grade.enchant_9,
-.fc-grade.enchant_10,
-.fc-grade.enchant_11,
-.fc-grade.enchant_12,
-.fc-grade.enchant_13 { color: #ffd66e; }
+.fc-grade.enchant_1 { background-image: url(/upgrade-badges/grade_1.png); }
+.fc-grade.enchant_2 { background-image: url(/upgrade-badges/grade_2.png); }
+.fc-grade.enchant_3 { background-image: url(/upgrade-badges/grade_3.png); }
+.fc-grade.enchant_4 { background-image: url(/upgrade-badges/grade_4.png); }
+.fc-grade.enchant_5 { background-image: url(/upgrade-badges/grade_5.png); }
+.fc-grade.enchant_6 { background-image: url(/upgrade-badges/grade_6.png); }
+.fc-grade.enchant_7 { background-image: url(/upgrade-badges/grade_7.png); }
+.fc-grade.enchant_8 { background-image: url(/upgrade-badges/grade_8.png); }
+.fc-grade.enchant_9 { background-image: url(/upgrade-badges/grade_9.png); }
+.fc-grade.enchant_10 { background-image: url(/upgrade-badges/grade_10.png); }
+.fc-grade.enchant_11 { background-image: url(/upgrade-badges/grade_11.png); }
+.fc-grade.enchant_12 { background-image: url(/upgrade-badges/grade_12.png); }
+.fc-grade.enchant_13 { background-image: url(/upgrade-badges/grade_13.png); }
 
 .card-player-name.fc-name-area {
   position: absolute;
@@ -1955,6 +2061,232 @@ span.card-bg-img.fc-bg::after {
   color: var(--fco-card-name, #fff);
   text-shadow: 0 1px 2px rgba(0,0,0,.75);
 }
+
+.player-card.fc-card--squad.has-player .card-player-name.fc-name-area {
+  left: 0;
+  right: 0;
+  top: 121px;
+  bottom: auto;
+  height: 42px;
+  gap: 3px;
+  justify-content: flex-start;
+}
+
+.player-card.fc-card--squad.has-player .fc-grade {
+  left: 9px;
+  bottom: 49px;
+  width: 26px;
+  height: 16px;
+  transform: none;
+}
+
+.player-card.fc-card--squad.has-player .fc-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 5px;
+  color: #fff3ca;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.player-card.fc-card--squad.has-player .fc-name .badged {
+  display: block;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 14px;
+  background-image: url("https://fifaaddict.com/fco-upgrade-simulator/assets/images/badged-year-responsive.png?v=1782350466");
+  background-size: 1800% 1100%;
+  background-repeat: no-repeat;
+}
+
+.player-card.fc-card--squad.has-player .fc-name .badged.y100 { background-position: 0% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y101 { background-position: 5.88235% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y102 { background-position: 11.7647% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y103 { background-position: 17.6471% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y104 { background-position: 23.5294% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y105 { background-position: 29.4118% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y106 { background-position: 35.2941% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y107 { background-position: 41.1765% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y110 { background-position: 47.0588% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y111 { background-position: 52.9412% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y112 { background-position: 58.8235% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y113 { background-position: 64.7059% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y114 { background-position: 70.5882% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y201 { background-position: 76.4706% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y202 { background-position: 82.3529% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y203 { background-position: 88.2353% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y206 { background-position: 94.1176% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y207 { background-position: 100% 0%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y209 { background-position: 0% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y210 { background-position: 5.88235% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y211 { background-position: 11.7647% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y213 { background-position: 17.6471% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y214 { background-position: 23.5294% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y215 { background-position: 29.4118% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y216 { background-position: 35.2941% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y217 { background-position: 41.1765% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y218 { background-position: 47.0588% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y219 { background-position: 52.9412% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y220 { background-position: 58.8235% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y221 { background-position: 64.7059% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y222 { background-position: 70.5882% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y224 { background-position: 76.4706% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y225 { background-position: 82.3529% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y226 { background-position: 88.2353% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y227 { background-position: 94.1176% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y230 { background-position: 100% 10%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y231 { background-position: 0% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y233 { background-position: 5.88235% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y235 { background-position: 11.7647% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y236 { background-position: 17.6471% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y237 { background-position: 23.5294% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y238 { background-position: 29.4118% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y239 { background-position: 35.2941% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y240 { background-position: 41.1765% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y241 { background-position: 47.0588% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y242 { background-position: 52.9412% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y243 { background-position: 58.8235% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y244 { background-position: 64.7059% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y246 { background-position: 70.5882% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y247 { background-position: 76.4706% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y248 { background-position: 82.3529% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y249 { background-position: 88.2353% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y250 { background-position: 94.1176% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y251 { background-position: 100% 20%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y252 { background-position: 0% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y253 { background-position: 5.88235% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y254 { background-position: 11.7647% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y255 { background-position: 17.6471% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y256 { background-position: 23.5294% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y257 { background-position: 29.4118% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y258 { background-position: 35.2941% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y259 { background-position: 41.1765% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y260 { background-position: 47.0588% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y261 { background-position: 52.9412% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y262 { background-position: 58.8235% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y264 { background-position: 64.7059% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y265 { background-position: 70.5882% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y266 { background-position: 76.4706% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y267 { background-position: 82.3529% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y268 { background-position: 88.2353% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y270 { background-position: 94.1176% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y271 { background-position: 100% 30%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y272 { background-position: 0% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y273 { background-position: 5.88235% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y274 { background-position: 11.7647% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y275 { background-position: 17.6471% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y276 { background-position: 23.5294% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y277 { background-position: 29.4118% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y278 { background-position: 35.2941% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y279 { background-position: 41.1765% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y280 { background-position: 47.0588% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y281 { background-position: 52.9412% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y283 { background-position: 58.8235% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y284 { background-position: 64.7059% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y285 { background-position: 70.5882% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y286 { background-position: 76.4706% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y287 { background-position: 82.3529% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y289 { background-position: 88.2353% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y290 { background-position: 94.1176% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y291 { background-position: 100% 40%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y293 { background-position: 0% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y294 { background-position: 5.88235% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y295 { background-position: 11.7647% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y296 { background-position: 17.6471% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y297 { background-position: 23.5294% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y298 { background-position: 29.4118% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y300 { background-position: 35.2941% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y317 { background-position: 41.1765% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y318 { background-position: 47.0588% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y319 { background-position: 52.9412% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y320 { background-position: 58.8235% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y321 { background-position: 64.7059% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y322 { background-position: 70.5882% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y323 { background-position: 76.4706% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y324 { background-position: 82.3529% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y500 { background-position: 88.2353% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y501 { background-position: 94.1176% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y502 { background-position: 100% 50%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y503 { background-position: 0% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y504 { background-position: 5.88235% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y506 { background-position: 11.7647% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y507 { background-position: 17.6471% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y508 { background-position: 23.5294% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y510 { background-position: 29.4118% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y511 { background-position: 35.2941% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y512 { background-position: 41.1765% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y513 { background-position: 47.0588% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y514 { background-position: 52.9412% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y515 { background-position: 58.8235% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y516 { background-position: 64.7059% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y517 { background-position: 70.5882% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y518 { background-position: 76.4706% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y801 { background-position: 82.3529% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y802 { background-position: 88.2353% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y804 { background-position: 94.1176% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y805 { background-position: 100% 60%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y806 { background-position: 0% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y807 { background-position: 5.88235% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y808 { background-position: 11.7647% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y809 { background-position: 17.6471% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y810 { background-position: 23.5294% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y811 { background-position: 29.4118% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y813 { background-position: 35.2941% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y814 { background-position: 41.1765% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y815 { background-position: 47.0588% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y816 { background-position: 52.9412% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y817 { background-position: 58.8235% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y818 { background-position: 64.7059% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y819 { background-position: 70.5882% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y820 { background-position: 76.4706% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y821 { background-position: 82.3529% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y824 { background-position: 88.2353% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y825 { background-position: 94.1176% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y826 { background-position: 100% 70%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y827 { background-position: 0% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y828 { background-position: 5.88235% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y829 { background-position: 11.7647% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y830 { background-position: 17.6471% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y831 { background-position: 23.5294% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y832 { background-position: 29.4118% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y833 { background-position: 35.2941% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y834 { background-position: 41.1765% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y835 { background-position: 47.0588% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y836 { background-position: 52.9412% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y837 { background-position: 58.8235% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y838 { background-position: 64.7059% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y839 { background-position: 70.5882% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y840 { background-position: 76.4706% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y841 { background-position: 82.3529% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y842 { background-position: 88.2353% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y843 { background-position: 94.1176% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y844 { background-position: 100% 80%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y845 { background-position: 0% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y846 { background-position: 5.88235% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y847 { background-position: 11.7647% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y848 { background-position: 17.6471% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y849 { background-position: 23.5294% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y850 { background-position: 29.4118% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y851 { background-position: 35.2941% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y852 { background-position: 41.1765% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y853 { background-position: 47.0588% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y854 { background-position: 52.9412% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y855 { background-position: 58.8235% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y856 { background-position: 64.7059% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y857 { background-position: 70.5882% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y858 { background-position: 76.4706% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y859 { background-position: 82.3529% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y860 { background-position: 88.2353% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y861 { background-position: 94.1176% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y862 { background-position: 100% 90%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y863 { background-position: 0% 100%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y864 { background-position: 5.88235% 100%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y865 { background-position: 11.7647% 100%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y866 { background-position: 17.6471% 100%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y872 { background-position: 23.5294% 100%; }
+.player-card.fc-card--squad.has-player .fc-name .badged.y873 { background-position: 29.4118% 100%; }
 
 .fc-name {
   max-width: 100%;
@@ -1974,21 +2306,21 @@ span.card-bg-img.fc-bg::after {
   min-height: 10px;
 }
 
-.fc-flag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 14px;
-  height: 10px;
-  border-radius: 2px;
-  background: rgba(0,0,0,.42);
-  color: rgba(255,255,255,.9);
-  font-size: 6px;
-  font-weight: 800;
-  line-height: 1;
+.player-card.fc-card--squad.has-player .card-flags.fc-flags {
+  width: 100%;
+  height: 15px;
+  min-height: 15px;
+  gap: 2%;
+  transform: none;
 }
 
-.fc-flag img { max-width: 14px; max-height: 10px; object-fit: cover; }
+.player-card.fc-card--squad.has-player .fc-flag {
+  background: none;
+  min-width: 15px;
+  height: 15px;
+}
+
+.fc-flag img { max-width: 18px; max-height: 13px; object-fit: contain; }
 
 .fco-player-card-mini-ovr-warning {
   position: absolute;
@@ -2064,8 +2396,17 @@ span.card-bg-img.fc-bg::after {
   .fco-player-card-mini-wrap,
   .player-card.fc-card { width: 84px; height: 92px; }
   .fco-squad-empty { width: 84px; height: 92px; }
+  .fco-squad-slot.has-player .fco-squad-card,
+  .fco-squad-slot.has-player .fco-player-card-mini-wrap,
+  .player-card.fc-card--squad.has-player { width: 99px; height: 144px; }
+  .player-card.fc-card--squad.has-player .card-player-media.fc-player-media { left: 16px; top: 23px; width: 79px; height: 79px; bottom: auto; }
   .card-player-media.fc-player-media { width: 62px; height: 62px; bottom: 26px; }
   .card-ovr.fc-ovr { font-size: 16px; }
-  .fc-name { font-size: 9px; }
+  .player-card.fc-card--squad.has-player .card-ovr.fc-ovr { left: 4px; top: 29px; }
+  .player-card.fc-card--squad.has-player .card-pos-label.fc-pos { left: 4px; top: 48px; }
+  .player-card.fc-card--squad.has-player .fc-salary { left: 9px; top: 65px; }
+  .player-card.fc-card--squad.has-player .fc-grade { left: 8px; bottom: 42px; }
+  .fc-name { font-size: 10px; }
   .card-player-name.fc-name-area { bottom: 16px; }
+  .player-card.fc-card--squad.has-player .card-player-name.fc-name-area { bottom: 9px; }
 }

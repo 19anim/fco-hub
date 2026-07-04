@@ -1,0 +1,295 @@
+# FIFAAddict card background collection coverage
+
+## Summary
+
+- FIFAAddict squadmaker seasons discovered: 131
+- FIFAAddict season mappings with local assets: 131
+- Unique downloaded theme PNGs: 131
+- App seasons considered: 130
+- App seasons mapped to local assets: 130
+- App seasons not found in FIFAAddict query: 0
+- FIFAAddict seasons not matched to app seasons: 1
+- Unresolved FIFAAddict seasons: 0
+
+## FIFAAddict local assets
+
+- 100 / 100 — ICON THE MOMENT — `/fco/card-themes/card-theme-100.png`
+- 101 / 101 — ICON — `/fco/card-themes/card-theme-101.png`
+- 110 / 110 — ICON THE MOMENT B — `/fco/card-themes/card-theme-110.png`
+- 113 / 113 — 25 ICONS MATCH - Show & Prove — `/fco/card-themes/card-theme-113.png`
+- 201 / 201 — National Hero Debut — `/fco/card-themes/card-theme-201.png`
+- 203 / 203 — Team Of The Year 2018 — `/fco/card-themes/card-theme-203.png`
+- 206 / 206 — Tournament Best — `/fco/card-themes/card-theme-206.png`
+- 207 / 207 — Top Transfer — `/fco/card-themes/card-theme-207.png`
+- 209 / 209 — Viet Nam — `/fco/card-themes/card-theme-209.png`
+- 210 / 210 — Golden Rookies — `/fco/card-themes/card-theme-210.png`
+- 211 / 211 — Team Of The Year 2019 — `/fco/card-themes/card-theme-211.png`
+- 214 / 214 — Tournament Champions — `/fco/card-themes/card-theme-214.png`
+- 215 / 215 — Team Of The Season 2019 — `/fco/card-themes/card-theme-215.png`
+- 216 / 216 — Heroes of the Team — `/fco/card-themes/card-theme-216.png`
+- 217 / 217 — Competitors of Continents — `/fco/card-themes/card-theme-217.png`
+- 218 / 218 — Ones Time Watch — `/fco/card-themes/card-theme-218.png`
+- 219 / 219 — 2019 New Generation — `/fco/card-themes/card-theme-219.png`
+- 220 / 220 — Team Of The Year 2020 — `/fco/card-themes/card-theme-220.png`
+- 221 / 221 — 19–20 UEFA Champions League — `/fco/card-themes/card-theme-221.png`
+- 222 / 222 — Team Of The Year 2020 Nominate — `/fco/card-themes/card-theme-222.png`
+- 224 / 224 — Loyal Heroes — `/fco/card-themes/card-theme-224.png`
+- 227 / 227 — Best of Europe 20 — `/fco/card-themes/card-theme-227.png`
+- 230 / 230 — Team Of The Season 2020 — `/fco/card-themes/card-theme-230.png`
+- 231 / 231 — Veteran — `/fco/card-themes/card-theme-231.png`
+- 233 / 233 — Moments of Glory — `/fco/card-themes/card-theme-233.png`
+- 235 / 235 — Volta Live Ambassador — `/fco/card-themes/card-theme-235.png`
+- 236 / 236 — Liverpool Ambassador — `/fco/card-themes/card-theme-236.png`
+- 237 / 237 — Multi-League Champions — `/fco/card-themes/card-theme-237.png`
+- 238 / 238 — 2020 New Generation — `/fco/card-themes/card-theme-238.png`
+- 240 / 240 — Team Of The Year 2021 — `/fco/card-themes/card-theme-240.png`
+- 241 / 241 — Team Of The Year 2021 Nominate — `/fco/card-themes/card-theme-241.png`
+- 242 / 242 — 20-21 UEFA Champions League — `/fco/card-themes/card-theme-242.png`
+- 243 / 243 — Nostalgia — `/fco/card-themes/card-theme-243.png`
+- 246 / 246 — Unsung Player — `/fco/card-themes/card-theme-246.png`
+- 248 / 248 — Vietnam Legends — `/fco/card-themes/card-theme-248.png`
+- 250 / 250 — Team Of The Season 2021 — `/fco/card-themes/card-theme-250.png`
+- 251 / 251 — European Best Stars — `/fco/card-themes/card-theme-251.png`
+- 252 / 252 — Captain — `/fco/card-themes/card-theme-252.png`
+- 253 / 253 — Best of Europe 21 — `/fco/card-themes/card-theme-253.png`
+- 254 / 254 — Chelsea FC Ambassador — `/fco/card-themes/card-theme-254.png`
+- 255 / 255 — 22 Vietnam Best — `/fco/card-themes/card-theme-255.png`
+- 256 / 256 — Back to Back — `/fco/card-themes/card-theme-256.png`
+- 258 / 258 — Team Of The Year 2022 — `/fco/card-themes/card-theme-258.png`
+- 259 / 259 — Team Of The Year 2022 Nominate — `/fco/card-themes/card-theme-259.png`
+- 260 / 260 — 21-22 UEFA Champions League — `/fco/card-themes/card-theme-260.png`
+- 261 / 261 — 22 Heroes — `/fco/card-themes/card-theme-261.png`
+- 262 / 262 — 2021 New Generation — `/fco/card-themes/card-theme-262.png`
+- 264 / 264 — Free Agent — `/fco/card-themes/card-theme-264.png`
+- 265 / 265 — Legend of the Loan — `/fco/card-themes/card-theme-265.png`
+- 267 / 267 — Team Of The Season 2022 — `/fco/card-themes/card-theme-267.png`
+- 268 / 268 — Legendary Numbers — `/fco/card-themes/card-theme-268.png`
+- 270 / 270 — Spotlight — `/fco/card-themes/card-theme-270.png`
+- 272 / 272 — Best of World Cup — `/fco/card-themes/card-theme-272.png`
+- 273 / 273 — World Cup 2022 — `/fco/card-themes/card-theme-273.png`
+- 274 / 274 — Real Madrid CF Ambassadors — `/fco/card-themes/card-theme-274.png`
+- 275 / 275 — Vietnam Future Generation — `/fco/card-themes/card-theme-275.png`
+- 276 / 276 — 2022 New Generation — `/fco/card-themes/card-theme-276.png`
+- 278 / 278 — Team Of The Year 2023 — `/fco/card-themes/card-theme-278.png`
+- 279 / 279 — Team Of The Year 2023 Nominate — `/fco/card-themes/card-theme-279.png`
+- 280 / 280 — 22-23 UEFA Champions League — `/fco/card-themes/card-theme-280.png`
+- 281 / 281 — 23 Heroes — `/fco/card-themes/card-theme-281.png`
+- 283 / 283 — Home Grown — `/fco/card-themes/card-theme-283.png`
+- 284 / 284 — Returnees — `/fco/card-themes/card-theme-284.png`
+- 286 / 286 — 23 Vietnam Best — `/fco/card-themes/card-theme-286.png`
+- 287 / 287 — Team Of The Season 2023 — `/fco/card-themes/card-theme-287.png`
+- 289 / 289 — Century Club — `/fco/card-themes/card-theme-289.png`
+- 290 / 290 — FC Ambassador — `/fco/card-themes/card-theme-290.png`
+- 291 / 291 — 23 Hard Worker — `/fco/card-themes/card-theme-291.png`
+- 296 / 296 — Paris Saint Germain — `/fco/card-themes/card-theme-296.png`
+- 300 / 300 — 2025 LIVE — `/fco/card-themes/card-theme-300.png`
+- 317 / 317 — 2017 — `/fco/card-themes/card-theme-317.png`
+- 318 / 318 — 2018 — `/fco/card-themes/card-theme-318.png`
+- 319 / 319 — 2019 — `/fco/card-themes/card-theme-319.png`
+- 320 / 320 — 2020 — `/fco/card-themes/card-theme-320.png`
+- 321 / 321 — 2021 — `/fco/card-themes/card-theme-321.png`
+- 322 / 322 — 2022 — `/fco/card-themes/card-theme-322.png`
+- 323 / 323 — 2023 — `/fco/card-themes/card-theme-323.png`
+- 324 / 324 — 2024 — `/fco/card-themes/card-theme-324.png`
+- 500 / 500 — 18-19 PLC Autumn — `/fco/card-themes/card-theme-500.png`
+- 501 / 501 — 18-19 PLC Spring — `/fco/card-themes/card-theme-501.png`
+- 502 / 502 — 19-20 PLC Autumn — `/fco/card-themes/card-theme-502.png`
+- 503 / 503 — 19-20 PLC Spring — `/fco/card-themes/card-theme-503.png`
+- 506 / 506 — 20-21 PLC Autumn — `/fco/card-themes/card-theme-506.png`
+- 508 / 508 — 21-22 Premium Live — `/fco/card-themes/card-theme-508.png`
+- 511 / 511 — 22-23 Premium Live — `/fco/card-themes/card-theme-511.png`
+- 513 / 513 — 23-24 Premium Live — `/fco/card-themes/card-theme-513.png`
+- 515 / 515 — 24-25 Premium Live — `/fco/card-themes/card-theme-515.png`
+- 517 / 517 — 25-26 Premium Live — `/fco/card-themes/card-theme-517.png`
+- 801 / 801 — Juventus Ambassador — `/fco/card-themes/card-theme-801.png`
+- 802 / 802 — Decades — `/fco/card-themes/card-theme-802.png`
+- 804 / 804 — 2023 New Generation — `/fco/card-themes/card-theme-804.png`
+- 807 / 807 — Team Of The Year 2024 — `/fco/card-themes/card-theme-807.png`
+- 808 / 808 — Team Of The Year 2024 Nominate — `/fco/card-themes/card-theme-808.png`
+- 810 / 810 — 23-24 UEFA Champions League — `/fco/card-themes/card-theme-810.png`
+- 811 / 811 — 24 Heroes — `/fco/card-themes/card-theme-811.png`
+- 813 / 813 — Journeyman — `/fco/card-themes/card-theme-813.png`
+- 814 / 814 — Unexpected Transfer — `/fco/card-themes/card-theme-814.png`
+- 815 / 815 — UEFA EURO 2024 — `/fco/card-themes/card-theme-815.png`
+- 817 / 817 — 24 Vietnam Best — `/fco/card-themes/card-theme-817.png`
+- 818 / 818 — Last Dance — `/fco/card-themes/card-theme-818.png`
+- 820 / 820 — Team Of The Season 2024 — `/fco/card-themes/card-theme-820.png`
+- 821 / 821 — Medalist — `/fco/card-themes/card-theme-821.png`
+- 825 / 825 — Champions of Europe — `/fco/card-themes/card-theme-825.png`
+- 826 / 826 — Energetic Player 2024 — `/fco/card-themes/card-theme-826.png`
+- 827 / 827 — Ballon d'Or — `/fco/card-themes/card-theme-827.png`
+- 828 / 828 — Best Legend — `/fco/card-themes/card-theme-828.png`
+- 829 / 829 — Greatest Runner-Ups — `/fco/card-themes/card-theme-829.png`
+- 831 / 831 — Team Of The Year 2025 — `/fco/card-themes/card-theme-831.png`
+- 832 / 832 — Team Of The Year 2025 Nominate — `/fco/card-themes/card-theme-832.png`
+- 834 / 834 — 24-25 UEFA Champions League — `/fco/card-themes/card-theme-834.png`
+- 835 / 835 — 25 Heroes — `/fco/card-themes/card-theme-835.png`
+- 836 / 836 — Wonderboys — `/fco/card-themes/card-theme-836.png`
+- 837 / 837 — 25 Vietnam Best — `/fco/card-themes/card-theme-837.png`
+- 838 / 838 — Prime — `/fco/card-themes/card-theme-838.png`
+- 840 / 840 — Legend of Europa — `/fco/card-themes/card-theme-840.png`
+- 843 / 843 — NO.7 LEGENDS (Server: th,vn,cn) — `/fco/card-themes/card-theme-843.png`
+- 844 / 844 — Team Of The Season 2025 — `/fco/card-themes/card-theme-844.png`
+- 845 / 845 — Continental Heroes — `/fco/card-themes/card-theme-845.png`
+- 846 / 846 — Dramatic Comebacks — `/fco/card-themes/card-theme-846.png`
+- 848 / 848 — Winning Streak — `/fco/card-themes/card-theme-848.png`
+- 850 / 850 — 25 FCO Super Champions League — `/fco/card-themes/card-theme-850.png`
+- 851 / 851 — 25 Devoted Player — `/fco/card-themes/card-theme-851.png`
+- 852 / 852 — Football Association Champions — `/fco/card-themes/card-theme-852.png`
+- 854 / 854 — Team Of The Year 2026 — `/fco/card-themes/card-theme-854.png`
+- 855 / 855 — Team Of The Year 2026 Nominate — `/fco/card-themes/card-theme-855.png`
+- 856 / 856 — 25-26 UEFA Champions League — `/fco/card-themes/card-theme-856.png`
+- 858 / 858 — 26 Heroes — `/fco/card-themes/card-theme-858.png`
+- 861 / 861 — Warriors of Glory — `/fco/card-themes/card-theme-861.png`
+- 863 / 863 — Path to Glory — `/fco/card-themes/card-theme-863.png`
+- 865 / 865 — Infinite Prime — `/fco/card-themes/card-theme-865.png`
+- 866 / 866 — Team Of The Season 2026 — `/fco/card-themes/card-theme-866.png`
+
+## Shared downloaded themes
+
+- None
+
+## App seasons mapped to local assets
+
+- 100 / 100 — ICON THE MOMENT — `/fco/card-themes/card-theme-100.png`
+- 101 / 101 — ICON — `/fco/card-themes/card-theme-101.png`
+- 110 / 110 — ICON THE MOMENT B — `/fco/card-themes/card-theme-110.png`
+- 113 / 113 — 25 ICONS MATCH - Show & Prove — `/fco/card-themes/card-theme-113.png`
+- 201 / 201 — National Hero Debut — `/fco/card-themes/card-theme-201.png`
+- 203 / 203 — Team Of The Year 2018 — `/fco/card-themes/card-theme-203.png`
+- 206 / 206 — Tournament Best — `/fco/card-themes/card-theme-206.png`
+- 207 / 207 — Top Transfer — `/fco/card-themes/card-theme-207.png`
+- 209 / 209 — Viet Nam — `/fco/card-themes/card-theme-209.png`
+- 210 / 210 — Golden Rookies — `/fco/card-themes/card-theme-210.png`
+- 211 / 211 — Team Of The Year 2019 — `/fco/card-themes/card-theme-211.png`
+- 214 / 214 — Tournament Champions — `/fco/card-themes/card-theme-214.png`
+- 215 / 215 — Team Of The Season 2019 — `/fco/card-themes/card-theme-215.png`
+- 216 / 216 — Heroes of the Team — `/fco/card-themes/card-theme-216.png`
+- 217 / 217 — Competitors of Continents — `/fco/card-themes/card-theme-217.png`
+- 218 / 218 — Ones Time Watch — `/fco/card-themes/card-theme-218.png`
+- 219 / 219 — 2019 New Generation — `/fco/card-themes/card-theme-219.png`
+- 220 / 220 — Team Of The Year 2020 — `/fco/card-themes/card-theme-220.png`
+- 221 / 221 — 19–20 UEFA Champions League — `/fco/card-themes/card-theme-221.png`
+- 222 / 222 — Team Of The Year 2020 Nominate — `/fco/card-themes/card-theme-222.png`
+- 224 / 224 — Loyal Heroes — `/fco/card-themes/card-theme-224.png`
+- 227 / 227 — Best of Europe 20 — `/fco/card-themes/card-theme-227.png`
+- 230 / 230 — Team Of The Season 2020 — `/fco/card-themes/card-theme-230.png`
+- 231 / 231 — Veteran — `/fco/card-themes/card-theme-231.png`
+- 233 / 233 — Moments of Glory — `/fco/card-themes/card-theme-233.png`
+- 235 / 235 — Volta Live Ambassador — `/fco/card-themes/card-theme-235.png`
+- 236 / 236 — Liverpool Ambassador — `/fco/card-themes/card-theme-236.png`
+- 237 / 237 — Multi-League Champions — `/fco/card-themes/card-theme-237.png`
+- 238 / 238 — 2020 New Generation — `/fco/card-themes/card-theme-238.png`
+- 240 / 240 — Team Of The Year 2021 — `/fco/card-themes/card-theme-240.png`
+- 241 / 241 — Team Of The Year 2021 Nominate — `/fco/card-themes/card-theme-241.png`
+- 242 / 242 — 20-21 UEFA Champions League — `/fco/card-themes/card-theme-242.png`
+- 243 / 243 — Nostalgia — `/fco/card-themes/card-theme-243.png`
+- 246 / 246 — Unsung Player — `/fco/card-themes/card-theme-246.png`
+- 248 / 248 — Vietnam Legends — `/fco/card-themes/card-theme-248.png`
+- 250 / 250 — Team Of The Season 2021 — `/fco/card-themes/card-theme-250.png`
+- 251 / 251 — European Best Stars — `/fco/card-themes/card-theme-251.png`
+- 252 / 252 — Captain — `/fco/card-themes/card-theme-252.png`
+- 253 / 253 — Best of Europe 21 — `/fco/card-themes/card-theme-253.png`
+- 254 / 254 — Chelsea FC Ambassador — `/fco/card-themes/card-theme-254.png`
+- 255 / 255 — 22 Vietnam Best — `/fco/card-themes/card-theme-255.png`
+- 256 / 256 — Back to Back — `/fco/card-themes/card-theme-256.png`
+- 258 / 258 — Team Of The Year 2022 — `/fco/card-themes/card-theme-258.png`
+- 259 / 259 — Team Of The Year 2022 Nominate — `/fco/card-themes/card-theme-259.png`
+- 260 / 260 — 21-22 UEFA Champions League — `/fco/card-themes/card-theme-260.png`
+- 261 / 261 — 22 Heroes — `/fco/card-themes/card-theme-261.png`
+- 262 / 262 — 2021 New Generation — `/fco/card-themes/card-theme-262.png`
+- 264 / 264 — Free Agent — `/fco/card-themes/card-theme-264.png`
+- 265 / 265 — Legend of the Loan — `/fco/card-themes/card-theme-265.png`
+- 267 / 267 — Team Of The Season 2022 — `/fco/card-themes/card-theme-267.png`
+- 268 / 268 — Legendary Numbers — `/fco/card-themes/card-theme-268.png`
+- 270 / 270 — Spotlight — `/fco/card-themes/card-theme-270.png`
+- 272 / 272 — Best of World Cup — `/fco/card-themes/card-theme-272.png`
+- 273 / 273 — World Cup 2022 — `/fco/card-themes/card-theme-273.png`
+- 274 / 274 — Real Madrid CF Ambassadors — `/fco/card-themes/card-theme-274.png`
+- 275 / 275 — Vietnam Future Generation — `/fco/card-themes/card-theme-275.png`
+- 276 / 276 — 2022 New Generation — `/fco/card-themes/card-theme-276.png`
+- 278 / 278 — Team Of The Year 2023 — `/fco/card-themes/card-theme-278.png`
+- 279 / 279 — Team Of The Year 2023 Nominate — `/fco/card-themes/card-theme-279.png`
+- 280 / 280 — 22-23 UEFA Champions League — `/fco/card-themes/card-theme-280.png`
+- 281 / 281 — 23 Heroes — `/fco/card-themes/card-theme-281.png`
+- 283 / 283 — Home Grown — `/fco/card-themes/card-theme-283.png`
+- 284 / 284 — Returnees — `/fco/card-themes/card-theme-284.png`
+- 286 / 286 — 23 Vietnam Best — `/fco/card-themes/card-theme-286.png`
+- 287 / 287 — Team Of The Season 2023 — `/fco/card-themes/card-theme-287.png`
+- 289 / 289 — Century Club — `/fco/card-themes/card-theme-289.png`
+- 290 / 290 — FC Ambassador — `/fco/card-themes/card-theme-290.png`
+- 291 / 291 — 23 Hard Worker — `/fco/card-themes/card-theme-291.png`
+- 296 / 296 — Paris Saint Germain — `/fco/card-themes/card-theme-296.png`
+- 300 / 300 — 2025 LIVE — `/fco/card-themes/card-theme-300.png`
+- 317 / 317 — 2017 — `/fco/card-themes/card-theme-317.png`
+- 318 / 318 — 2018 — `/fco/card-themes/card-theme-318.png`
+- 319 / 319 — 2019 — `/fco/card-themes/card-theme-319.png`
+- 320 / 320 — 2020 — `/fco/card-themes/card-theme-320.png`
+- 321 / 321 — 2021 — `/fco/card-themes/card-theme-321.png`
+- 322 / 322 — 2022 — `/fco/card-themes/card-theme-322.png`
+- 323 / 323 — 2023 — `/fco/card-themes/card-theme-323.png`
+- 324 / 324 — 2024 — `/fco/card-themes/card-theme-324.png`
+- 500 / 500 — 18-19 PLC Autumn — `/fco/card-themes/card-theme-500.png`
+- 501 / 501 — 18-19 PLC Spring — `/fco/card-themes/card-theme-501.png`
+- 502 / 502 — 19-20 PLC Autumn — `/fco/card-themes/card-theme-502.png`
+- 503 / 503 — 19-20 PLC Spring — `/fco/card-themes/card-theme-503.png`
+- 506 / 506 — 20-21 PLC Autumn — `/fco/card-themes/card-theme-506.png`
+- 508 / 508 — 21-22 Premium Live — `/fco/card-themes/card-theme-508.png`
+- 511 / 511 — 22-23 Premium Live — `/fco/card-themes/card-theme-511.png`
+- 513 / 513 — 23-24 Premium Live — `/fco/card-themes/card-theme-513.png`
+- 515 / 515 — 24-25 Premium Live — `/fco/card-themes/card-theme-515.png`
+- 517 / 517 — 25-26 Premium Live — `/fco/card-themes/card-theme-517.png`
+- 801 / 801 — Juventus Ambassador — `/fco/card-themes/card-theme-801.png`
+- 802 / 802 — Decades — `/fco/card-themes/card-theme-802.png`
+- 804 / 804 — 2023 New Generation — `/fco/card-themes/card-theme-804.png`
+- 807 / 807 — Team Of The Year 2024 — `/fco/card-themes/card-theme-807.png`
+- 808 / 808 — Team Of The Year 2024 Nominate — `/fco/card-themes/card-theme-808.png`
+- 810 / 810 — 23-24 UEFA Champions League — `/fco/card-themes/card-theme-810.png`
+- 811 / 811 — 24 Heroes — `/fco/card-themes/card-theme-811.png`
+- 813 / 813 — Journeyman — `/fco/card-themes/card-theme-813.png`
+- 814 / 814 — Unexpected Transfer — `/fco/card-themes/card-theme-814.png`
+- 815 / 815 — UEFA EURO 2024 — `/fco/card-themes/card-theme-815.png`
+- 817 / 817 — 24 Vietnam Best — `/fco/card-themes/card-theme-817.png`
+- 818 / 818 — Last Dance — `/fco/card-themes/card-theme-818.png`
+- 820 / 820 — Team Of The Season 2024 — `/fco/card-themes/card-theme-820.png`
+- 821 / 821 — Medalist — `/fco/card-themes/card-theme-821.png`
+- 825 / 825 — Champions of Europe — `/fco/card-themes/card-theme-825.png`
+- 826 / 826 — Energetic Player 2024 — `/fco/card-themes/card-theme-826.png`
+- 827 / 827 — Ballon d'Or — `/fco/card-themes/card-theme-827.png`
+- 828 / 828 — Best Legend — `/fco/card-themes/card-theme-828.png`
+- 829 / 829 — Greatest Runner-Ups — `/fco/card-themes/card-theme-829.png`
+- 831 / 831 — Team Of The Year 2025 — `/fco/card-themes/card-theme-831.png`
+- 832 / 832 — Team Of The Year 2025 Nominate — `/fco/card-themes/card-theme-832.png`
+- 834 / 834 — 24-25 UEFA Champions League — `/fco/card-themes/card-theme-834.png`
+- 835 / 835 — 25 Heroes — `/fco/card-themes/card-theme-835.png`
+- 836 / 836 — Wonderboys — `/fco/card-themes/card-theme-836.png`
+- 837 / 837 — 25 Vietnam Best — `/fco/card-themes/card-theme-837.png`
+- 838 / 838 — Prime — `/fco/card-themes/card-theme-838.png`
+- 840 / 840 — Legend of Europa — `/fco/card-themes/card-theme-840.png`
+- 843 / 843 — NO.7 LEGENDS (Server: th,vn,cn) — `/fco/card-themes/card-theme-843.png`
+- 844 / 844 — Team Of The Season 2025 — `/fco/card-themes/card-theme-844.png`
+- 845 / 845 — Continental Heroes — `/fco/card-themes/card-theme-845.png`
+- 846 / 846 — Dramatic Comebacks — `/fco/card-themes/card-theme-846.png`
+- 848 / 848 — Winning Streak — `/fco/card-themes/card-theme-848.png`
+- 850 / 850 — 25 FCO Super Champions League — `/fco/card-themes/card-theme-850.png`
+- 851 / 851 — 25 Devoted Player — `/fco/card-themes/card-theme-851.png`
+- 852 / 852 — Football Association Champions — `/fco/card-themes/card-theme-852.png`
+- 854 / 854 — Team Of The Year 2026 — `/fco/card-themes/card-theme-854.png`
+- 855 / 855 — Team Of The Year 2026 Nominate — `/fco/card-themes/card-theme-855.png`
+- 856 / 856 — 25-26 UEFA Champions League — `/fco/card-themes/card-theme-856.png`
+- 858 / 858 — 26 Heroes — `/fco/card-themes/card-theme-858.png`
+- 861 / 861 — Warriors of Glory — `/fco/card-themes/card-theme-861.png`
+- 863 / 863 — Path to Glory — `/fco/card-themes/card-theme-863.png`
+- 865 / 865 — Infinite Prime — `/fco/card-themes/card-theme-865.png`
+
+## App seasons not found in FIFAAddict query
+
+- None
+
+## FIFAAddict seasons not matched to app seasons
+
+- 866 / 866 — Team Of The Season 2026 — `/fco/card-themes/card-theme-866.png`
+
+## Unresolved FIFAAddict seasons
+
+- None

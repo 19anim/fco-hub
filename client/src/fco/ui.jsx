@@ -63,8 +63,7 @@ export function PlayerAvatar({ player, size = 40, bare = false }) {
   );
 }
 
-export function PlayerCardMini({ player, slotPos, ovr, ovrIsFallback = false, bonus, level, className = '', onClick, title }) {
-  const totalBonus = bonus?.totalBonus || 0;
+export function PlayerCardMini({ player, slotPos, ovr, ovrIsFallback = false, level, className = '', onClick, title }) {
   const theme = getCardThemeForPlayer(player);
 
   return (
@@ -86,7 +85,6 @@ export function PlayerCardMini({ player, slotPos, ovr, ovrIsFallback = false, bo
           <I.Alert size={9} />
         </span>
       )}
-      {totalBonus > 0 && <span className="fco-player-card-mini-bonus">TC +{totalBonus}</span>}
     </span>
   );
 }

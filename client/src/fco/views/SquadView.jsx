@@ -275,17 +275,15 @@ export default function SquadView() {
     const nextSlots = dragState.baseSlots.map((slot) => (
       slot.id === dragState.slotId ? { ...slot, x, y, pos } : slot
     ));
-    return { ...dragState, currentSlots: nextSlots, currentPos: pos, x, y, moved: true };
+    const moved = dragState.moved || Math.hypot(event.clientX - dragState.startClientX, event.clientY - dragState.startClientY) > 4;
+    return { ...dragState, currentSlots: nextSlots, currentPos: pos, x, y, moved };
   }
 
   function handleSlotPointerDown(slot, event) {
     if (event.button !== 0) return;
     setActiveSlotId(slot.id);
     if (slot.pos === 'GK') return;
-    if (event.target.closest('.fco-squad-empty-add')) return;
-    if (event.target.closest('button') && !event.target.closest('.fco-player-card-mini')) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    if (event.target.closest('button') && !event.target.closest('.fco-player-card-mini-wrap') && !event.target.closest('.fco-squad-empty-add')) return;
     const baseSlots = slots.map((s) => ({ ...s }));
     const initialSlot = { ...slot };
     const nextDrag = {
@@ -300,23 +298,30 @@ export default function SquadView() {
       x: slot.x,
       y: slot.y,
       moved: false,
+      captured: false,
     };
     layoutDragRef.current = nextDrag;
-    setLayoutDrag(nextDrag);
-    setDragSlotId(slot.id);
   }
 
   function handleSlotPointerMove(event) {
-    const nextDrag = getLayoutDragUpdate(event);
+    const dragState = layoutDragRef.current;
+    if (!dragState) return;
+    const nextDrag = getLayoutDragUpdate(event, dragState);
     if (!nextDrag) return;
+    if (nextDrag.moved && !dragState.captured) {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      nextDrag.captured = true;
+      setDragSlotId(nextDrag.slotId);
+    }
     layoutDragRef.current = nextDrag;
-    setLayoutDrag(nextDrag);
+    if (nextDrag.moved) setLayoutDrag(nextDrag);
   }
 
   function handleSlotPointerUp(event) {
     const nextDrag = getLayoutDragUpdate(event) || layoutDragRef.current;
     if (!nextDrag) { clearDragState(); return; }
-    event.currentTarget.releasePointerCapture?.(nextDrag.pointerId);
+    if (nextDrag.captured) event.currentTarget.releasePointerCapture?.(nextDrag.pointerId);
     if (!nextDrag.moved) { clearDragState(); return; }
     suppressClickRef.current = true;
     window.setTimeout(() => { suppressClickRef.current = false; }, 0);
@@ -481,7 +486,7 @@ export default function SquadView() {
             return (
               <div
                 key={slot.id}
-                className={`fco-squad-slot${activeSlotId === slot.id ? ' is-active' : ''}${isDropTarget ? ' drop-target' : ''}${isDragOver ? ' drag-over' : ''}${layoutDrag?.slotId === slot.id ? ' layout-dragging' : ''}`}
+                className={`fco-squad-slot ${player ? 'has-player' : 'empty-slot'}${activeSlotId === slot.id ? ' is-active' : ''}${isDropTarget ? ' drop-target' : ''}${isDragOver ? ' drag-over' : ''}${layoutDrag?.slotId === slot.id ? ' layout-dragging' : ''}`}
                 style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
                 onPointerDown={(e) => handleSlotPointerDown(slot, e)}
                 onPointerMove={handleSlotPointerMove}
@@ -523,20 +528,18 @@ export default function SquadView() {
                     />
                   </div>
                 ) : (
-                  <div className={`fco-squad-empty${isMoveTarget ? ' move-target' : ''}${isDragOver ? ' drag-over' : ''}`}>
-                    <button
-                      type="button"
-                      className="fco-squad-empty-add"
-                      onClick={() => {
-                        if (suppressClickRef.current) return;
-                        handleSlotClick(slot.id);
-                      }}
-                      aria-label={`Chọn cầu thủ vị trí ${slot.pos}`}
-                    >
-                      <span className="fco-squad-empty-plus">+</span>
-                    </button>
+                  <button
+                    type="button"
+                    className="fco-squad-empty-add"
+                    onClick={() => {
+                      if (suppressClickRef.current) return;
+                      handleSlotClick(slot.id);
+                    }}
+                    aria-label={`Chọn cầu thủ vị trí ${slot.pos}`}
+                  >
+                    <span className="fco-squad-empty-plus">+</span>
                     <span>{slot.pos}</span>
-                  </div>
+                  </button>
                 )}
               </div>
             );
