@@ -27,6 +27,15 @@ const ACTIONS = [
     confirm: false,
   },
   {
+    step: null,
+    key: 'scrape-card-themes',
+    label: 'Scrape Card Themes',
+    desc: 'Tải card background PNG cho từng mùa mới trên FIFAAddict và tự merge vào registry ảnh thẻ',
+    path: '/enrichment/fifaaddict/scrape-card-themes',
+    body: { headless: true },
+    confirm: false,
+  },
+  {
     step: 2,
     key: 'discover-by-season',
     label: 'Discover by Season',
