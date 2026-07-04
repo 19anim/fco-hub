@@ -15,6 +15,7 @@ import {
   syncFullPipeline,
   bulkScrapeDetails,
   backfillClubCareer,
+  backfillFifaAddictUic,
   resyncFifaAddictRecord,
   syncFifaAddict,
   syncFifaAddictAll,
@@ -182,6 +183,15 @@ export const backfillFifaAddictClubCareer = async (req, res) => {
       message: 'Error starting club career backfill',
       error: error.message,
     });
+  }
+};
+
+export const backfillFifaAddictUicController = async (req, res) => {
+  try {
+    const result = await backfillFifaAddictUic({ limit: Number(req.body?.limit) || 200 });
+    res.json({ success: true, message: `Đã cập nhật uic cho ${result.matched}/${result.processed} bản ghi.`, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error backfilling uic', error: error.message });
   }
 };
 

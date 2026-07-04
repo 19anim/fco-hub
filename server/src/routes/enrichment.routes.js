@@ -6,6 +6,7 @@ import {
   syncFifaAddictEnrichment,
   bulkScrapeDetailEnrichment,
   backfillFifaAddictClubCareer,
+  backfillFifaAddictUicController,
   discoverFifaAddict,
   discoverFifaAddictV2,
   discoverFifaAddictPids,
@@ -52,5 +53,6 @@ router.post('/fifaaddict/sync-all',         ...dataOps, withAudit, syncAllFifaAd
 router.post('/fifaaddict/resync',           ...dataOps, withAudit, resyncFifaAddictEnrichment);
 router.post('/fifaaddict/bulk-detail',      ...dataOps, withAudit, bulkScrapeDetailEnrichment);
 router.post('/fifaaddict/backfill-club-career', ...dataOps, withAudit, backfillFifaAddictClubCareer);
+router.post('/fifaaddict/backfill-uic',         ...dataOps, withAudit, backfillFifaAddictUicController);
 
 export default router;

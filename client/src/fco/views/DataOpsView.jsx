@@ -228,6 +228,21 @@ export default function DataOpsView() {
               </Button>
             }
           />
+
+          <OpCard
+            icon={I.Refresh} iconColor="#37a0ff"
+            title="6. Backfill UIC — cập nhật base identity"
+            sub="Tìm và lưu uic FIFAAddict cho các PlayerEnrichment còn thiếu để phục vụ team color catalog theo base player."
+            meta="Chạy theo từng đợt 200 record mặc định. Không thay đổi dữ liệu clubCareer hoặc các scrape job hiện có."
+            action={
+              <Button variant="secondary" size="lg" icon={I.Refresh}
+                loading={busy.backfillUic}
+                disabled={status?.bulkDetailRunning || status?.discoverBySeasonRunning || status?.scrapeSeasonsRunning}
+                onClick={() => run('backfillUic', '/enrichment/fifaaddict/backfill-uic')}>
+                Backfill UIC
+              </Button>
+            }
+          />
         </div>
 
         <div className="fco-ops-col">
