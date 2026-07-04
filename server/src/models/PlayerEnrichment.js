@@ -26,6 +26,7 @@ const playerEnrichmentSchema = new mongoose.Schema(
     source: { type: String, default: 'fifaaddict-vn', index: true },
     sourceUid: { type: String, required: true },
     sourceUrl: { type: String, required: true },
+    uic: { type: String, trim: true, default: '', index: true },
 
     displayNameVi: { type: String, required: true, trim: true, index: true },
     displayNameEn: { type: String, trim: true, default: '' },

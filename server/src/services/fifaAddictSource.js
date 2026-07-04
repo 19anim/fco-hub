@@ -389,6 +389,63 @@ function extractCookies(setCookieHeader) {
   return arr.map((c) => String(c).split(';')[0]).join('; ');
 }
 
+const SQUADMAKER_BASE_URL = 'https://fifaaddict.com/fco-squadmaker';
+
+let squadmakerToken = null;
+let squadmakerCookie = '';
+let squadmakerTokenAt = 0;
+
+export async function getSquadmakerRequestToken(axiosClient = axios, force = false) {
+  const useCache = axiosClient === axios;
+  if (useCache && !force && squadmakerToken && Date.now() - squadmakerTokenAt < 20 * 60 * 1000) {
+    return { token: squadmakerToken, cookie: squadmakerCookie };
+  }
+
+  const resp = await axiosClient.get(`${SQUADMAKER_BASE_URL}/api_bootstrap.php`, {
+    params: { lang: 'vn', v: '20260605-1' },
+    timeout: 30000,
+    headers: { 'User-Agent': UA, Referer: `${SQUADMAKER_BASE_URL}/` },
+  });
+
+  const match = String(resp.data || '').match(/requestToken"\s*:\s*"([a-z0-9]+)"/i);
+  const token = match ? match[1] : '';
+  const cookie = extractCookies(resp.headers?.['set-cookie']);
+
+  if (useCache && token) {
+    squadmakerToken = token;
+    squadmakerCookie = cookie;
+    squadmakerTokenAt = Date.now();
+  }
+
+  return { token, cookie };
+}
+
+export async function fetchFifaAddictUicByName(name, { limit = 10, axiosClient = axios } = {}) {
+  const query = normalizeText(name);
+  if (!query) return [];
+
+  const { token, cookie } = await getSquadmakerRequestToken(axiosClient);
+  if (!token) return [];
+
+  const params = new URLSearchParams({ q: query, limit: String(limit) });
+  const resp = await axiosClient.post(`${SQUADMAKER_BASE_URL}/api_search.php`, params.toString(), {
+    timeout: 30000,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-Squadmaker-Token': token,
+      Referer: `${SQUADMAKER_BASE_URL}/`,
+      'User-Agent': UA,
+      ...(cookie ? { Cookie: cookie } : {}),
+    },
+  });
+
+  const results = Array.isArray(resp.data?.results) ? resp.data.results : [];
+  return results
+    .map((row) => ({ uid: String(row?.uid || ''), uic: String(row?.uic || '') }))
+    .filter((row) => row.uid && row.uic);
+}
+
 async function getAraiwaToken(force = false) {
   if (!force && araiwaToken && Date.now() - araiwaTokenAt < 4 * 60 * 1000) {
     return araiwaToken;
@@ -1636,6 +1693,36 @@ async function getSearchSeedsFromNexonNames({ limit = 200, delayMs = DEFAULT_API
   }
 
   return [...new Set(seeds)];
+}
+
+export async function backfillFifaAddictUic({ limit = 200 } = {}) {
+  const rows = await PlayerEnrichment.find({ source: 'fifaaddict-vn', uic: { $in: ['', null] } })
+    .select('_id sourceUid displayNameVi displayNameEn')
+    .limit(limit)
+    .lean();
+
+  let matched = 0;
+  let skipped = 0;
+
+  for (const row of rows) {
+    const name = row.displayNameVi || row.displayNameEn;
+    if (!name) { skipped += 1; continue; }
+
+    try {
+      const candidates = await fetchFifaAddictUicByName(name, { limit: 20 });
+      const found = candidates.find((candidate) => candidate.uid === row.sourceUid);
+      if (!found) { skipped += 1; continue; }
+
+      await PlayerEnrichment.updateOne({ _id: row._id }, { $set: { uic: found.uic } });
+      matched += 1;
+    } catch {
+      skipped += 1;
+    }
+
+    await sleep(DEFAULT_API_DELAY_MS);
+  }
+
+  return { processed: rows.length, matched, skipped };
 }
 
 export async function backfillClubCareer({

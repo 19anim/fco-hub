@@ -6,9 +6,11 @@ import {
   buildClubCareerFanoutOperations,
   resolveClubCareerBackfillCap,
   extractClubCareer,
+  fetchFifaAddictUicByName,
   getClubCareerPlayerKey,
   getClubCareerSource,
   getFifaAddictLeagueSlug,
+  getSquadmakerRequestToken,
   hasCompatibleClubCareerIdentity,
 } from './fifaAddictSource.js';
 
@@ -223,4 +225,43 @@ test('clubCareer fanout operations skip empty career payloads', () => {
 test('maps LaLiga display name to FIFAAddict league slug', () => {
   assert.equal(getFifaAddictLeagueSlug('Spain Primera Division'), 'spain-la-liga');
   assert.equal(getFifaAddictLeagueSlug('LaLiga'), 'spain-la-liga');
+});
+
+test('getSquadmakerRequestToken extracts token and cookie from the bootstrap response', async () => {
+  const fakeAxiosGet = async (url) => {
+    if (!url.includes('api_bootstrap.php')) throw new Error(`unexpected url ${url}`);
+    return {
+      data: '(function(window){window.SquadmakerBootstrap = {"requestToken":"abc123def456"};})(window);',
+      headers: { 'set-cookie': ['squadmaker_rt=abc123def456; expires=Mon; path=/'] },
+    };
+  };
+  const result = await getSquadmakerRequestToken({ get: fakeAxiosGet });
+  assert.equal(result.token, 'abc123def456');
+  assert.equal(result.cookie, 'squadmaker_rt=abc123def456');
+});
+
+test('fetchFifaAddictUicByName maps search results to uid/uic pairs', async () => {
+  const fakeAxiosGet = async () => ({
+    data: '(function(window){window.SquadmakerBootstrap = {"requestToken":"tok"};})(window);',
+    headers: { 'set-cookie': ['squadmaker_rt=tok; path=/'] },
+  });
+  const fakeAxiosPost = async (url, body, config) => {
+    assert.ok(url.includes('api_search.php'));
+    assert.equal(config.headers['X-Squadmaker-Token'], 'tok');
+    return {
+      data: {
+        results: [
+          { uid: 'kjvnqjvpb', uic: 'qnlxrb', name_short: 'Matheus Cunha' },
+          { uid: 'other', uic: 'zzz', name_short: 'Someone Else' },
+        ],
+      },
+    };
+  };
+  const rows = await fetchFifaAddictUicByName('Matheus Cunha', {
+    axiosClient: { get: fakeAxiosGet, post: fakeAxiosPost },
+  });
+  assert.deepEqual(rows, [
+    { uid: 'kjvnqjvpb', uic: 'qnlxrb' },
+    { uid: 'other', uic: 'zzz' },
+  ]);
 });
