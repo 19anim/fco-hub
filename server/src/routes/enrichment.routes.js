@@ -13,6 +13,7 @@ import {
   scrapeFifaAddictPlaywright,
   syncFullFifaAddict,
   scrapeSeasons,
+  scrapeCardThemes,
   listSeasons,
   discoverFifaAddictBySeason,
 } from '../controllers/enrichment.controller.js';
@@ -43,6 +44,7 @@ router.post('/fifaaddict/discover-hybrid',  ...dataOps, withAudit, discoverFifaA
 router.post('/fifaaddict/discover-by-season', ...dataOps, withAudit, discoverFifaAddictBySeason);
 router.post('/fifaaddict/scrape-playwright', ...dataOps, withAudit, scrapeFifaAddictPlaywright);
 router.post('/fifaaddict/scrape-seasons',   ...dataOps, withAudit, scrapeSeasons);
+router.post('/fifaaddict/scrape-card-themes', ...dataOps, withAudit, scrapeCardThemes);
 router.get('/fifaaddict/seasons', listSeasons);
 router.post('/fifaaddict/sync-full',        ...dataOps, withAudit, syncFullFifaAddict);
 router.post('/fifaaddict/sync',             ...dataOps, withAudit, syncFifaAddictEnrichment);

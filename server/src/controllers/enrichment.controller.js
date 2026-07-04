@@ -23,6 +23,7 @@ import {
 } from '../services/fifaAddictSource.js';
 import { scrapeFifaAddictWithPlaywright, isPlaywrightRunning } from '../services/fifaAddictPlaywrightScraper.js';
 import { scrapeFifaAddictSeasons, isScrapeSeasonsRunning } from '../services/fifaAddictSeasonScraper.js';
+import { collectAndRegisterFifaAddictCardBackgrounds, isCardBackgroundCollectionRunning } from '../services/fifaAddictCardBackgroundCollector.js';
 import FifaAddictSeason from '../models/FifaAddictSeason.js';
 
 // POST /api/enrichment/fifaaddict/discover
@@ -112,7 +113,7 @@ export const syncAllFifaAddictEnrichment = async (req, res) => {
 export const getEnrichmentStatus = async (req, res) => {
   try {
     const status = await getFifaAddictStatus();
-    res.json({ success: true, data: { ...status, scrapeSeasonsRunning: isScrapeSeasonsRunning(), clubCareerBackfillRunning: isClubCareerBackfillRunning() } });
+    res.json({ success: true, data: { ...status, scrapeSeasonsRunning: isScrapeSeasonsRunning(), clubCareerBackfillRunning: isClubCareerBackfillRunning(), cardBackgroundCollectionRunning: isCardBackgroundCollectionRunning() } });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -296,6 +297,25 @@ export const scrapeSeasons = async (req, res) => {
     res.json({ success: true, message: `Đã lưu ${result.scraped} season.`, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error scraping seasons', error: error.message });
+  }
+};
+
+// POST /api/enrichment/fifaaddict/scrape-card-themes
+// Quét squadmaker FIFAAddict để tải card background PNG cho từng season và
+// tự merge kết quả vào client/src/fco/cardThemeRegistry.json.
+export const scrapeCardThemes = async (req, res) => {
+  try {
+    if (isCardBackgroundCollectionRunning()) {
+      return res.status(409).json({ success: false, message: 'Card background collector đang chạy.' });
+    }
+    const result = await collectAndRegisterFifaAddictCardBackgrounds({ headless: req.body?.headless !== false });
+    res.json({
+      success: true,
+      message: `Đã map ${result.mappedSeasons}/${result.totalSeasons} season. Mới: ${result.added.length}, cập nhật: ${result.updated.length}.`,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error scraping card themes', error: error.message });
   }
 };
 

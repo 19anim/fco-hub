@@ -8,7 +8,7 @@ import { collectFifaAddictCardBackgrounds } from '../src/services/fifaAddictCard
 import {
   buildLocalCardThemeEntries,
   formatCollectionCoverage,
-  formatLocalCardThemeEntries,
+  mergeCardThemeRegistry,
   reconcileCardThemeCoverage,
 } from '../../client/src/fco/cardThemeRegistryTools.js';
 
@@ -17,7 +17,7 @@ const rootDir = path.resolve(__dirname, '../..');
 dotenv.config({ path: path.join(rootDir, 'server/.env') });
 const coveragePath = path.join(rootDir, 'docs/superpowers/plans/2026-07-04-fifaaddict-card-background-coverage.md');
 const jsonPath = path.join(rootDir, 'docs/superpowers/plans/2026-07-04-fifaaddict-card-background-collection.json');
-const registrySnippetPath = path.join(rootDir, 'docs/superpowers/plans/2026-07-04-fifaaddict-card-background-registry-snippet.txt');
+const registryPath = path.join(rootDir, 'client/src/fco/cardThemeRegistry.json');
 
 function getArgValue(name) {
   const prefix = `--${name}=`;
@@ -74,18 +74,21 @@ async function main() {
     unresolved: built.unresolved,
   });
   const coverage = formatCollectionCoverage(reconciledCoverage);
-  const snippet = formatLocalCardThemeEntries(built.entries);
+
+  const existingRegistry = JSON.parse(await fs.readFile(registryPath, 'utf8').catch(() => '{}'));
+  const { registry, added, updated } = mergeCardThemeRegistry(existingRegistry, built.entries);
 
   await fs.writeFile(jsonPath, `${JSON.stringify(result, null, 2)}\n`);
   await fs.writeFile(coveragePath, coverage);
-  await fs.writeFile(registrySnippetPath, `${snippet}\n`);
+  await fs.writeFile(registryPath, `${JSON.stringify(registry, null, 2)}\n`);
 
   console.log(`Wrote ${jsonPath}`);
   console.log(`Wrote ${coveragePath}`);
-  console.log(`Wrote ${registrySnippetPath}`);
+  console.log(`Wrote ${registryPath}`);
   console.log(`Discovered ${result.total} FIFAAddict squadmaker seasons.`);
   console.log(`Mapped ${Object.keys(built.entries).length} FIFAAddict season backgrounds to local assets.`);
   console.log(`Matched ${reconciledCoverage.summary.appMappedSeasons}/${reconciledCoverage.summary.appSeasons} app seasons (admin catalog codes) to local assets for reporting.`);
+  console.log(`Registry: ${added.length} new season(s) added${added.length ? ` (${added.join(', ')})` : ''}, ${updated.length} updated${updated.length ? ` (${updated.join(', ')})` : ''}.`);
 }
 
 main()

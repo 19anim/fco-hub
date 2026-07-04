@@ -203,6 +203,29 @@ export function reconcileCardThemeCoverage({
   };
 }
 
+export function mergeCardThemeRegistry(existingRegistry = {}, newEntries = {}) {
+  const merged = { ...existingRegistry };
+  const added = [];
+  const updated = [];
+
+  for (const [seasonCode, theme] of Object.entries(newEntries)) {
+    const previous = merged[seasonCode];
+    if (!previous) {
+      added.push(seasonCode);
+    } else if (previous.backgroundImage !== theme.backgroundImage || previous.themeId !== theme.themeId) {
+      updated.push(seasonCode);
+    }
+    merged[seasonCode] = theme;
+  }
+
+  const sorted = {};
+  for (const key of Object.keys(merged).sort((a, b) => a.localeCompare(b))) {
+    sorted[key] = merged[key];
+  }
+
+  return { registry: sorted, added: added.sort(), updated: updated.sort() };
+}
+
 export function formatLocalCardThemeEntries(entries = {}) {
   return Object.entries(entries)
     .sort(([a], [b]) => a.localeCompare(b))

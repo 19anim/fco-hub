@@ -2,10 +2,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { buildLocalCardThemeEntries, mergeCardThemeRegistry } from '../../../client/src/fco/cardThemeRegistryTools.js';
 
 const FIFAADDICT_SQUADMAKER_URL = 'https://fifaaddict.com/vn/fco-squadmaker/';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_OUTPUT_DIR = path.resolve(__dirname, '../../../client/public/fco/card-themes');
+const rootDir = path.resolve(__dirname, '../../..');
+const DEFAULT_OUTPUT_DIR = path.resolve(rootDir, 'client/public/fco/card-themes');
+const REGISTRY_PATH = path.join(rootDir, 'client/src/fco/cardThemeRegistry.json');
 
 export function extractThemeId(className = '') {
   const match = String(className).match(/(?:^|\s)card-theme-([a-z0-9_-]+)(?:\s|$)/i);
@@ -234,4 +237,39 @@ export async function collectFifaAddictCardBackgrounds({ headless = true, season
   }
 
   return { total: fifaAddictSeasons.length, fifaAddictSeasons, records };
+}
+
+let cardBackgroundCollectionRunning = false;
+
+export function isCardBackgroundCollectionRunning() {
+  return cardBackgroundCollectionRunning;
+}
+
+// Crawls FIFAAddict squadmaker for every season, downloads any card background
+// PNG not already present locally, then merges the new season -> theme
+// mappings straight into the app's card theme registry (client/src/fco/cardThemeRegistry.json).
+export async function collectAndRegisterFifaAddictCardBackgrounds({ headless = true, onProgress } = {}) {
+  if (cardBackgroundCollectionRunning) {
+    throw new Error('Card background collector đang chạy.');
+  }
+  cardBackgroundCollectionRunning = true;
+
+  try {
+    const result = await collectFifaAddictCardBackgrounds({ headless, onProgress });
+    const built = buildLocalCardThemeEntries(result.records);
+
+    const existingRegistry = JSON.parse(await fs.readFile(REGISTRY_PATH, 'utf8').catch(() => '{}'));
+    const { registry, added, updated } = mergeCardThemeRegistry(existingRegistry, built.entries);
+    await fs.writeFile(REGISTRY_PATH, `${JSON.stringify(registry, null, 2)}\n`);
+
+    return {
+      totalSeasons: result.total,
+      mappedSeasons: Object.keys(built.entries).length,
+      unresolved: built.unresolved,
+      added,
+      updated,
+    };
+  } finally {
+    cardBackgroundCollectionRunning = false;
+  }
 }

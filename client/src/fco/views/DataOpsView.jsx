@@ -136,6 +136,23 @@ export default function DataOpsView() {
           />
 
           <OpCard
+            icon={I.Layers} iconColor="#c084fc"
+            title="1b. Scrape Card Themes — cập nhật ảnh nền thẻ"
+            sub="Quét squadmaker FIFAAddict, tải card background PNG cho từng season mới và tự merge vào registry ảnh thẻ (không cần sửa code tay)."
+            meta="Chạy khi FIFAAddict thêm mùa mới và thẻ cầu thủ bị fallback màu trơn/không đúng ảnh nền."
+            action={
+              <Button variant="primary" size="lg" icon={I.Layers}
+                loading={busy.scrapeCardThemes || status?.cardBackgroundCollectionRunning}
+                disabled={status?.discoverBySeasonRunning}
+                onClick={() => run('scrapeCardThemes', '/enrichment/fifaaddict/scrape-card-themes', {
+                  headless: true,
+                })}>
+                Scrape Card Themes
+              </Button>
+            }
+          />
+
+          <OpCard
             icon={I.Refresh} iconColor="var(--accent)"
             title="2. Discover by Season — crawl danh sách cầu thủ"
             sub="Pipeline chính hiện tại: loop qua bảng season và phân trang bằng spos=ovr_0-{pos1val}, tránh lỗi lặp/skip từ page=N cũ."

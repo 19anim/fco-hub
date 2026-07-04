@@ -3,6 +3,7 @@ import {
   buildLocalCardThemeEntries,
   formatCollectionCoverage,
   formatLocalCardThemeEntries,
+  mergeCardThemeRegistry,
   reconcileCardThemeCoverage,
 } from './cardThemeRegistryTools.js';
 
@@ -45,6 +46,29 @@ describe('buildLocalCardThemeEntries', () => {
     expect(result.sharedThemes).toEqual([
       { themeId: '865', seasons: ['ICONTM', 'ICONTMB'], localPath: '/fco/card-themes/card-theme-865.png' },
     ]);
+  });
+});
+
+describe('mergeCardThemeRegistry', () => {
+  it('adds new seasons, updates changed ones, and keeps untouched entries', () => {
+    const existing = {
+      ICONTM: { themeId: '865', className: 'card-theme-865', backgroundImage: '/fco/card-themes/card-theme-865.png' },
+      OLD: { themeId: '100', className: 'card-theme-100', backgroundImage: '/fco/card-themes/card-theme-100.png' },
+    };
+    const newEntries = {
+      ICONTM: { themeId: '865', className: 'card-theme-865', backgroundImage: '/fco/card-themes/card-theme-865.png' },
+      NEWSEASON: { themeId: '999', className: 'card-theme-999', backgroundImage: '/fco/card-themes/card-theme-999.png' },
+      OLD: { themeId: '101', className: 'card-theme-101', backgroundImage: '/fco/card-themes/card-theme-101.png' },
+    };
+
+    const { registry, added, updated } = mergeCardThemeRegistry(existing, newEntries);
+
+    expect(added).toEqual(['NEWSEASON']);
+    expect(updated).toEqual(['OLD']);
+    expect(registry.NEWSEASON).toEqual(newEntries.NEWSEASON);
+    expect(registry.OLD).toEqual(newEntries.OLD);
+    expect(registry.ICONTM).toEqual(existing.ICONTM);
+    expect(Object.keys(registry)).toEqual(['ICONTM', 'NEWSEASON', 'OLD']);
   });
 });
 
