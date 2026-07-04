@@ -420,7 +420,7 @@ export async function getSquadmakerRequestToken(axiosClient = axios, force = fal
   return { token, cookie };
 }
 
-export async function fetchFifaAddictUicByName(name, { limit = 10, axiosClient = axios } = {}) {
+export async function fetchFifaAddictUicByName(name, { limit = 10, seasonCode = '', axiosClient = axios } = {}) {
   const query = normalizeText(name);
   if (!query) return [];
 
@@ -428,6 +428,11 @@ export async function fetchFifaAddictUicByName(name, { limit = 10, axiosClient =
   if (!token) return [];
 
   const params = new URLSearchParams({ q: query, limit: String(limit) });
+  const cleanSeasonCode = String(seasonCode || '').trim();
+  if (cleanSeasonCode) {
+    params.set('season_ids', cleanSeasonCode);
+    params.set('servers', 'vn');
+  }
   const resp = await axiosClient.post(`${SQUADMAKER_BASE_URL}/api_search.php`, params.toString(), {
     timeout: 30000,
     headers: {
@@ -1558,6 +1563,32 @@ export function buildClubCareerFanoutOperations(reference, records = [], clubCar
     }));
 }
 
+export function buildUicBackfillGroups(records = []) {
+  return buildClubCareerBackfillGroups(records);
+}
+
+function hasCompatibleUicIdentity(reference = {}, candidate = {}) {
+  const referenceKey = getClubCareerPlayerKey(reference);
+  const referenceBirthDate = normalizedOptionalIdentityValue(reference.birthDateText);
+  if (!referenceKey || !referenceBirthDate) return false;
+  return referenceKey === getClubCareerPlayerKey(candidate)
+    && referenceBirthDate === normalizedOptionalIdentityValue(candidate.birthDateText);
+}
+
+export function buildUicFanoutOperations(reference, records = [], uic = '') {
+  const cleanUic = String(uic || '').trim();
+  if (!cleanUic) return [];
+
+  return records
+    .filter((record) => hasCompatibleUicIdentity(reference, record))
+    .map((record) => ({
+      updateOne: {
+        filter: { _id: record._id },
+        update: { $set: { uic: cleanUic } },
+      },
+    }));
+}
+
 export function isBulkDetailRunning() {
   return bulkDetailRunning;
 }
@@ -1695,34 +1726,110 @@ async function getSearchSeedsFromNexonNames({ limit = 200, delayMs = DEFAULT_API
   return [...new Set(seeds)];
 }
 
-export async function backfillFifaAddictUic({ limit = 200 } = {}) {
-  const rows = await PlayerEnrichment.find({ source: 'fifaaddict-vn', uic: { $in: ['', null] } })
-    .select('_id sourceUid displayNameVi displayNameEn')
-    .limit(limit)
-    .lean();
+let uicBackfillRunning = false;
 
-  let matched = 0;
-  let skipped = 0;
+export function isUicBackfillRunning() {
+  return uicBackfillRunning;
+}
 
-  for (const row of rows) {
-    const name = row.displayNameVi || row.displayNameEn;
-    if (!name) { skipped += 1; continue; }
+export async function backfillFifaAddictUic({ limit = 0, delayMs = DEFAULT_API_DELAY_MS } = {}) {
+  if (uicBackfillRunning) throw new Error('UIC backfill is already running.');
+
+  const query = { source: 'fifaaddict-vn', uic: { $in: ['', null] } };
+  const total = await PlayerEnrichment.countDocuments(query);
+  const numericLimit = Number(limit) || 0;
+  const cap = numericLimit > 0 ? Math.min(numericLimit, total) : total;
+  const rows = cap > 0
+    ? await PlayerEnrichment.find(query)
+      .select('_id sourceUid displayNameVi displayNameEn birthDateText seasonCode')
+      .limit(cap)
+      .lean()
+    : [];
+  const groups = buildUicBackfillGroups(rows);
+
+  const run = await SyncRun.create({
+    source: 'fifaaddict-vn',
+    status: 'running',
+    requested: rows.length,
+    message: `UIC backfill: ${rows.length}/${total} records queued`,
+  });
+
+  uicBackfillRunning = true;
+
+  const job = (async () => {
+    let processed = 0;
+    let matched = 0;
+    let skipped = 0;
+    const errors = [];
 
     try {
-      const candidates = await fetchFifaAddictUicByName(name, { limit: 20 });
-      const found = candidates.find((candidate) => candidate.uid === row.sourceUid);
-      if (!found) { skipped += 1; continue; }
+      for (const group of groups) {
+        const reference = group.records.find((record) => record.birthDateText) || group.records[0];
+        const name = reference.displayNameVi || reference.displayNameEn;
+        if (!name) {
+          skipped += group.records.length;
+          processed += group.records.length;
+        } else {
+          try {
+            const candidates = await fetchFifaAddictUicByName(name, { limit: 20, seasonCode: reference.seasonCode });
+            const found = candidates.find((candidate) => group.records.some((record) => candidate.uid === record.sourceUid));
+            if (found) {
+              const matchedRecord = group.records.find((record) => record.sourceUid === found.uid) || reference;
+              const operations = buildUicFanoutOperations(matchedRecord, group.records, found.uic);
+              if (operations.length) {
+                await PlayerEnrichment.bulkWrite(operations, { ordered: false });
+                matched += operations.length;
+                skipped += group.records.length - operations.length;
+              } else {
+                skipped += group.records.length;
+              }
+            } else {
+              skipped += group.records.length;
+            }
+            processed += group.records.length;
+          } catch (error) {
+            skipped += group.records.length;
+            processed += group.records.length;
+            if (errors.length < 50) errors.push(`${name}: ${error.message}`);
+          }
+        }
 
-      await PlayerEnrichment.updateOne({ _id: row._id }, { $set: { uic: found.uic } });
-      matched += 1;
-    } catch {
-      skipped += 1;
+        await SyncRun.findByIdAndUpdate(run._id, {
+          $set: {
+            processed,
+            updated: matched,
+            failed: skipped,
+            errors,
+            message: `UIC backfill: ${processed}/${rows.length} records done (${matched} matched, ${skipped} skipped)`,
+          },
+        }).catch(() => {});
+
+        if (delayMs > 0) await sleep(delayMs);
+      }
+
+      await SyncRun.findByIdAndUpdate(run._id, {
+        $set: {
+          status: 'success',
+          finishedAt: new Date(),
+          processed,
+          updated: matched,
+          failed: skipped,
+          errors,
+          message: `UIC backfill done: ${matched} records updated, ${skipped} skipped`,
+        },
+      });
+    } catch (error) {
+      await SyncRun.findByIdAndUpdate(run._id, {
+        $set: { status: 'failed', finishedAt: new Date(), message: error.message, errors: [error.message] },
+      }).catch(() => {});
+    } finally {
+      uicBackfillRunning = false;
     }
+  })();
 
-    await sleep(DEFAULT_API_DELAY_MS);
-  }
+  job.catch(() => {});
 
-  return { processed: rows.length, matched, skipped };
+  return { runId: run._id, queued: rows.length, total, message: 'UIC backfill started in background.' };
 }
 
 export async function backfillClubCareer({

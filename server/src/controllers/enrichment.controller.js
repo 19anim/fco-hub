@@ -3,6 +3,7 @@ import {
   isBulkSyncRunning,
   isBulkDetailRunning,
   isClubCareerBackfillRunning,
+  isUicBackfillRunning,
   isDiscoverRunning,
   discoverAllPlayers,
   isDiscoverV2Running,
@@ -114,7 +115,7 @@ export const syncAllFifaAddictEnrichment = async (req, res) => {
 export const getEnrichmentStatus = async (req, res) => {
   try {
     const status = await getFifaAddictStatus();
-    res.json({ success: true, data: { ...status, scrapeSeasonsRunning: isScrapeSeasonsRunning(), clubCareerBackfillRunning: isClubCareerBackfillRunning(), cardBackgroundCollectionRunning: isCardBackgroundCollectionRunning() } });
+    res.json({ success: true, data: { ...status, scrapeSeasonsRunning: isScrapeSeasonsRunning(), clubCareerBackfillRunning: isClubCareerBackfillRunning(), uicBackfillRunning: isUicBackfillRunning(), cardBackgroundCollectionRunning: isCardBackgroundCollectionRunning() } });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -188,10 +189,17 @@ export const backfillFifaAddictClubCareer = async (req, res) => {
 
 export const backfillFifaAddictUicController = async (req, res) => {
   try {
-    const result = await backfillFifaAddictUic({ limit: Number(req.body?.limit) || 200 });
-    res.json({ success: true, message: `Đã cập nhật uic cho ${result.matched}/${result.processed} bản ghi.`, data: result });
+    if (isUicBackfillRunning()) {
+      return res.status(409).json({ success: false, message: 'UIC backfill đang chạy. Theo dõi /api/enrichment/status.' });
+    }
+
+    const result = await backfillFifaAddictUic({
+      limit: Number(req.body?.limit) || 0,
+      delayMs: req.body?.delayMs,
+    });
+    res.status(202).json({ success: true, message: result.message, data: result });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error backfilling uic', error: error.message });
+    res.status(500).json({ success: false, message: 'Error starting uic backfill', error: error.message });
   }
 };
 

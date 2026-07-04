@@ -27,7 +27,7 @@ const ACTIONS = [
     confirm: false,
   },
   {
-    step: null,
+    step: '1b',
     key: 'scrape-card-themes',
     label: 'Scrape Card Themes',
     desc: 'Tải card background PNG cho từng mùa mới trên FIFAAddict và tự merge vào registry ảnh thẻ',
@@ -69,6 +69,15 @@ const ACTIONS = [
     desc: 'Force fetch lại detail cho toàn bộ FIFAAddict records, kể cả record đã có lịch sử CLB',
     path: '/enrichment/fifaaddict/backfill-club-career',
     body: { batchSize: 50, delayMs: 600, limit: 0, onlyMissing: false },
+    confirm: true,
+  },
+  {
+    step: 6,
+    key: 'backfill-uic',
+    label: 'Backfill UIC',
+    desc: 'Tìm và lưu uic FIFAAddict cho các PlayerEnrichment còn thiếu để phục vụ team color catalog theo base player',
+    path: '/enrichment/fifaaddict/backfill-uic',
+    body: { limit: 0 },
     confirm: true,
   },
   {

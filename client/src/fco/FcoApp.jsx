@@ -10,7 +10,6 @@ import SquadView from './views/SquadView.jsx';
 import DetailView from './views/DetailView.jsx';
 import CompareView from './views/CompareView.jsx';
 import WatchlistView from './views/WatchlistView.jsx';
-import DataOpsView from './views/DataOpsView.jsx';
 import VideosView from './views/VideosView.jsx';
 import * as I from './Icons.jsx';
 
@@ -23,10 +22,6 @@ const NAV_ITEMS = [
   { id: 'compare',   label: 'So sánh',    icon: I.Compare   },
   { id: 'watchlist', label: 'Theo dõi',   icon: I.Star      },
 ];
-const ADMIN_ITEMS = [
-  { id: 'dataops', label: 'Data Ops', icon: I.Hammer },
-];
-
 const VIEW_PATHS = {
   db: '/players',
   events: '/events',
@@ -35,7 +30,6 @@ const VIEW_PATHS = {
   squad: '/squad-maker',
   compare: '/compare',
   watchlist: '/watchlist',
-  dataops: '/dataops',
 };
 
 const LEGACY_VIEW_MAP = {
@@ -47,7 +41,6 @@ const LEGACY_VIEW_MAP = {
   squad: 'squad',
   compare: 'compare',
   watchlist: 'watchlist',
-  dataops: 'dataops',
 };
 
 function parseLegacyHash(hash = window.location.hash) {
@@ -195,7 +188,6 @@ export default function FcoApp() {
   // Decode param in case it was encoded
   const decodedParam = param ? decodeURIComponent(param) : null;
   const activeView = (view === 'detail' && decodedParam) ? 'detail' : (view || 'db');
-  const navItems = isAdmin ? [...NAV_ITEMS, ...ADMIN_ITEMS] : NAV_ITEMS;
 
   return (
     <div className="fco-app">
@@ -206,7 +198,7 @@ export default function FcoApp() {
         </div>
 
         <div className="fco-navitems">
-          {navItems.map(item => (
+          {NAV_ITEMS.map(item => (
             <a key={item.id}
               href={routeUrl(item.id)}
               className={`fco-navitem${activeView === item.id ? ' active' : ''}`}
@@ -258,7 +250,6 @@ export default function FcoApp() {
         {activeView === 'squad' && (
           <SquadView />
         )}
-        {activeView === 'dataops' && isAdmin && <DataOpsView />}
       </main>
 
       {toast && (

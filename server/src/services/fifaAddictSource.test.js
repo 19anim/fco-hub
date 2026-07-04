@@ -4,6 +4,8 @@ import {
   buildClubCareerBackfillGroups,
   buildClubCareerBackfillQuery,
   buildClubCareerFanoutOperations,
+  buildUicBackfillGroups,
+  buildUicFanoutOperations,
   resolveClubCareerBackfillCap,
   extractClubCareer,
   fetchFifaAddictUicByName,
@@ -222,6 +224,81 @@ test('clubCareer fanout operations skip empty career payloads', () => {
   );
 });
 
+test('UIC backfill groups records by normalized player key and skips empty names', () => {
+  const groups = buildUicBackfillGroups([
+    { _id: '1', displayNameEn: 'Matheus Cunha', displayNameVi: 'Matheus Cunha' },
+    { _id: '2', displayNameEn: ' matheus  cunha ', displayNameVi: 'Matheus Cunha' },
+    { _id: '3', displayNameEn: '', displayNameVi: 'A Lan' },
+    { _id: '4', displayNameEn: '', displayNameVi: '' },
+  ]);
+
+  assert.deepEqual(
+    groups.map((group) => ({ key: group.key, ids: group.records.map((record) => record._id) })),
+    [
+      { key: 'matheus cunha', ids: ['1', '2'] },
+      { key: 'a lan', ids: ['3'] },
+    ]
+  );
+});
+
+test('UIC fanout operations update compatible same-name and same-birthdate records only', () => {
+  const reference = {
+    _id: '1',
+    displayNameEn: 'Matheus Cunha',
+    birthDateText: '1999-05-27',
+  };
+
+  const operations = buildUicFanoutOperations(reference, [
+    reference,
+    {
+      _id: '2',
+      displayNameEn: ' Matheus  Cunha ',
+      birthDateText: '1999-05-27',
+    },
+    {
+      _id: '3',
+      displayNameEn: 'Matheus Cunha',
+      birthDateText: '',
+    },
+    {
+      _id: '4',
+      displayNameEn: 'Matheus Cunha',
+      birthDateText: '2001-01-01',
+    },
+    {
+      _id: '5',
+      displayNameEn: 'Other Player',
+      birthDateText: '1999-05-27',
+    },
+  ], 'qnlxrb');
+
+  assert.deepEqual(operations, [
+    {
+      updateOne: {
+        filter: { _id: '1' },
+        update: { $set: { uic: 'qnlxrb' } },
+      },
+    },
+    {
+      updateOne: {
+        filter: { _id: '2' },
+        update: { $set: { uic: 'qnlxrb' } },
+      },
+    },
+  ]);
+});
+
+test('UIC fanout operations skip records when reference birthDateText is missing', () => {
+  assert.deepEqual(
+    buildUicFanoutOperations(
+      { _id: '1', displayNameEn: 'A Lan', birthDateText: '' },
+      [{ _id: '1', displayNameEn: 'A Lan', birthDateText: '' }],
+      'base-uic'
+    ),
+    []
+  );
+});
+
 test('maps LaLiga display name to FIFAAddict league slug', () => {
   assert.equal(getFifaAddictLeagueSlug('Spain Primera Division'), 'spain-la-liga');
   assert.equal(getFifaAddictLeagueSlug('LaLiga'), 'spain-la-liga');
@@ -264,4 +341,26 @@ test('fetchFifaAddictUicByName maps search results to uid/uic pairs', async () =
     { uid: 'kjvnqjvpb', uic: 'qnlxrb' },
     { uid: 'other', uic: 'zzz' },
   ]);
+});
+
+test('fetchFifaAddictUicByName filters squadmaker search by season and VN server', async () => {
+  const fakeAxiosGet = async () => ({
+    data: '(function(window){window.SquadmakerBootstrap = {"requestToken":"tok"};})(window);',
+    headers: { 'set-cookie': ['squadmaker_rt=tok; path=/'] },
+  });
+  const fakeAxiosPost = async (url, body) => {
+    assert.ok(url.includes('api_search.php'));
+    const params = new URLSearchParams(body);
+    assert.equal(params.get('q'), 'Naldo');
+    assert.equal(params.get('season_ids'), '216');
+    assert.equal(params.get('servers'), 'vn');
+    return { data: { results: [{ uid: 'bbvqwvlq', uic: 'beayjx' }] } };
+  };
+
+  const rows = await fetchFifaAddictUicByName('Naldo', {
+    seasonCode: '216',
+    axiosClient: { get: fakeAxiosGet, post: fakeAxiosPost },
+  });
+
+  assert.deepEqual(rows, [{ uid: 'bbvqwvlq', uic: 'beayjx' }]);
 });
