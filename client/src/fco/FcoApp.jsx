@@ -32,7 +32,7 @@ const VIEW_PATHS = {
   events: '/events',
   videos: '/videos',
   upgrade: '/upgrade',
-  squad: '/doi-hinh',
+  squad: '/squad-maker',
   compare: '/compare',
   watchlist: '/watchlist',
   dataops: '/dataops',
@@ -76,7 +76,8 @@ function parsePath(pathname = window.location.pathname, hash = window.location.h
 
   if (!first) return { view: 'db', param: null, legacyPath: '/players' };
   if (first === 'players') return { view: parts[1] ? 'detail' : 'db', param: parts.slice(1).join('/') || null, legacyPath: null };
-  if (first === 'doi-hinh') return { view: 'squad', param: null, legacyPath: null };
+  if (first === 'doi-hinh') return { view: 'squad', param: null, legacyPath: routeUrl('squad') };
+  if (first === 'squad-maker') return { view: 'squad', param: null, legacyPath: null };
   if (VIEW_PATHS[first]) return { view: first, param: null, legacyPath: null };
 
   return { view: 'db', param: null, legacyPath: '/players' };
