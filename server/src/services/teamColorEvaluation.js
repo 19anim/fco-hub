@@ -95,3 +95,44 @@ export function iterateTeamColorResponseItems(response) {
   }
   return result;
 }
+
+export async function persistTeamColorObservations(fifaAddictResponse, payload, payloadHash, { catalogModel, observationModel } = {}) {
+  const payloadPlayers = Array.isArray(payload?.players) ? payload.players : [];
+  const items = iterateTeamColorResponseItems(fifaAddictResponse);
+
+  let catalogUpserts = 0;
+  let observationsCreated = 0;
+
+  for (const { item, category } of items) {
+    const catalogUpdate = buildCatalogUpsertFromResponseItem(item, category, payloadPlayers);
+    if (!catalogUpdate.tcid) continue;
+
+    await catalogModel.findOneAndUpdate(
+      { tcid: catalogUpdate.tcid },
+      {
+        $set: {
+          category: catalogUpdate.category,
+          refType: catalogUpdate.refType,
+          refId: catalogUpdate.refId,
+          type: catalogUpdate.type,
+          names: catalogUpdate.names,
+          image: catalogUpdate.image,
+          lastObservedAt: new Date(),
+        },
+        $addToSet: catalogUpdate.observedPlayerUics.length
+          ? { 'observedPlayers.uic': { $each: catalogUpdate.observedPlayerUics } }
+          : {},
+        $push: { levels: catalogUpdate.levels[0] },
+        $inc: { observationCount: 1 },
+      },
+      { upsert: true, new: true }
+    );
+    catalogUpserts += 1;
+
+    const observation = buildObservationFromResponseItem(item, category, payloadHash, payloadPlayers);
+    await observationModel.create(observation);
+    observationsCreated += 1;
+  }
+
+  return { catalogUpserts, observationsCreated };
+}

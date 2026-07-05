@@ -451,6 +451,25 @@ export async function fetchFifaAddictUicByName(name, { limit = 10, seasonCode = 
     .filter((row) => row.uid && row.uic);
 }
 
+export async function fetchFifaAddictTeamColor(payload, { axiosClient = axios } = {}) {
+  const { token, cookie } = await getSquadmakerRequestToken(axiosClient);
+  if (!token) throw new Error('Could not obtain squadmaker request token');
+
+  const resp = await axiosClient.post(`${SQUADMAKER_BASE_URL}/api_team_color.php`, payload, {
+    timeout: 30000,
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-Squadmaker-Token': token,
+      Referer: `${SQUADMAKER_BASE_URL}/`,
+      'User-Agent': UA,
+      ...(cookie ? { Cookie: cookie } : {}),
+    },
+  });
+
+  return resp.data;
+}
+
 async function getAraiwaToken(force = false) {
   if (!force && araiwaToken && Date.now() - araiwaTokenAt < 4 * 60 * 1000) {
     return araiwaToken;

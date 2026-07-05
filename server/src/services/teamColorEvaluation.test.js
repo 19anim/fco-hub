@@ -7,6 +7,7 @@ import {
   buildCatalogUpsertFromResponseItem,
   buildObservationFromResponseItem,
   iterateTeamColorResponseItems,
+  persistTeamColorObservations,
 } from './teamColorEvaluation.js';
 
 test('validateTeamColorPayload rejects payloads without players', () => {
@@ -136,4 +137,62 @@ test('iterateTeamColorResponseItems flattens active groups across club, grade, r
     { item: { tcid: 'a' }, category: 'club' },
     { item: { tcid: 'b' }, category: 'grade' },
   ]);
+});
+
+function createFakeCatalogModel() {
+  const docs = new Map();
+  return {
+    docs,
+    async findOneAndUpdate(filter, update) {
+      const key = filter.tcid;
+      const existing = docs.get(key) || { tcid: key, observedPlayers: [], observationCount: 0 };
+      const nextObservedPlayers = [...existing.observedPlayers];
+      for (const uic of update.$addToSet?.['observedPlayers.uic']?.$each || []) {
+        if (!nextObservedPlayers.some((p) => p.uic === uic)) nextObservedPlayers.push({ uic });
+      }
+      const merged = {
+        ...existing,
+        ...update.$set,
+        observedPlayers: nextObservedPlayers,
+        observationCount: existing.observationCount + 1,
+      };
+      docs.set(key, merged);
+      return merged;
+    },
+  };
+}
+
+function createFakeObservationModel() {
+  const created = [];
+  return { created, async create(doc) { created.push(doc); return doc; } };
+}
+
+test('persistTeamColorObservations upserts catalog entries and creates observations for active groups only', async () => {
+  const fifaAddictResponse = {
+    groups: {
+      club: {
+        active: [{
+          tcid: 'tc1', name_vn: 'MU', ref_id: '11', ref_type: 'team', type: 2, level: 4, required: 11,
+          matched_slots: ['player-1'], qualified_slots: ['player-1'], rewards: { ovr: 4 },
+        }],
+        candidates: [{ tcid: 'ignored-candidate' }],
+      },
+      grade: { active: [], candidates: [] },
+      relation: { active: [], candidates: [] },
+    },
+  };
+  const payload = { players: [{ slot_id: 'player-1', uid: 'kjvnqjvpb', uic: 'qnlxrb' }] };
+  const catalogModel = createFakeCatalogModel();
+  const observationModel = createFakeObservationModel();
+
+  const result = await persistTeamColorObservations(fifaAddictResponse, payload, 'hash1', {
+    catalogModel,
+    observationModel,
+  });
+
+  assert.equal(result.catalogUpserts, 1);
+  assert.equal(result.observationsCreated, 1);
+  assert.equal(catalogModel.docs.get('tc1').observationCount, 1);
+  assert.equal(observationModel.created[0].tcid, 'tc1');
+  assert.equal(observationModel.created[0].payloadHash, 'hash1');
 });
