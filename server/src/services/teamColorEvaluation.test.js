@@ -143,17 +143,16 @@ function createFakeCatalogModel() {
   const docs = new Map();
   return {
     docs,
+    findOne(filter) {
+      const key = filter.tcid;
+      return { lean: async () => docs.get(key) || null };
+    },
     async findOneAndUpdate(filter, update) {
       const key = filter.tcid;
       const existing = docs.get(key) || { tcid: key, observedPlayers: [], observationCount: 0 };
-      const nextObservedPlayers = [...existing.observedPlayers];
-      for (const uic of update.$addToSet?.['observedPlayers.uic']?.$each || []) {
-        if (!nextObservedPlayers.some((p) => p.uic === uic)) nextObservedPlayers.push({ uic });
-      }
       const merged = {
         ...existing,
         ...update.$set,
-        observedPlayers: nextObservedPlayers,
         observationCount: existing.observationCount + 1,
       };
       docs.set(key, merged);

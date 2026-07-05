@@ -17,6 +17,7 @@ import adminSearchRoutes from './routes/adminSearch.routes.js';
 import publicMonetizationRoutes from './routes/publicMonetization.routes.js';
 import adminAnalyticsRoutes from './routes/adminAnalytics.routes.js';
 import adminAuditLogRoutes from './routes/adminAuditLog.routes.js';
+import teamColorEvaluationRoutes from './routes/teamColorEvaluation.routes.js';
 import FCOCrawler from './services/fcoCrawler.js';
 import { syncScannedEvents } from './services/eventScanSync.js';
 import { syncFifaAddict } from './services/fifaAddictSource.js';
@@ -86,6 +87,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/enrichment', enrichmentRoutes);
 app.use('/api/players', playerRoutes);
 app.use('/api/usage', usageRoutes);
+app.use('/api/team-colors', teamColorEvaluationRoutes);
 
 // Health check routes
 app.get('/health', (req, res) => {

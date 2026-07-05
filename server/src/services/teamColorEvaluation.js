@@ -96,6 +96,20 @@ export function iterateTeamColorResponseItems(response) {
   return result;
 }
 
+function mergeObservedPlayers(existingObservedPlayers, newUics) {
+  const merged = [...(existingObservedPlayers || [])];
+  const now = new Date();
+  for (const uic of newUics) {
+    const existing = merged.find((p) => p.uic === uic);
+    if (existing) {
+      existing.lastObservedAt = now;
+    } else {
+      merged.push({ uic, uids: [], firstObservedAt: now, lastObservedAt: now });
+    }
+  }
+  return merged;
+}
+
 export async function persistTeamColorObservations(fifaAddictResponse, payload, payloadHash, { catalogModel, observationModel } = {}) {
   const payloadPlayers = Array.isArray(payload?.players) ? payload.players : [];
   const items = iterateTeamColorResponseItems(fifaAddictResponse);
@@ -107,6 +121,11 @@ export async function persistTeamColorObservations(fifaAddictResponse, payload, 
     const catalogUpdate = buildCatalogUpsertFromResponseItem(item, category, payloadPlayers);
     if (!catalogUpdate.tcid) continue;
 
+    const existing = await catalogModel.findOne({ tcid: catalogUpdate.tcid }).lean();
+    const observedPlayers = catalogUpdate.observedPlayerUics.length
+      ? mergeObservedPlayers(existing?.observedPlayers, catalogUpdate.observedPlayerUics)
+      : (existing?.observedPlayers || []);
+
     await catalogModel.findOneAndUpdate(
       { tcid: catalogUpdate.tcid },
       {
@@ -117,11 +136,9 @@ export async function persistTeamColorObservations(fifaAddictResponse, payload, 
           type: catalogUpdate.type,
           names: catalogUpdate.names,
           image: catalogUpdate.image,
+          observedPlayers,
           lastObservedAt: new Date(),
         },
-        $addToSet: catalogUpdate.observedPlayerUics.length
-          ? { 'observedPlayers.uic': { $each: catalogUpdate.observedPlayerUics } }
-          : {},
         $push: { levels: catalogUpdate.levels[0] },
         $inc: { observationCount: 1 },
       },
