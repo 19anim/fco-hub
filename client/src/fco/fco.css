@@ -2491,6 +2491,7 @@ span.card-bg-img.fc-bg::after {
   overflow: hidden;
 }
 .team-color-detail-player__face { width: 100%; height: 100%; object-fit: cover; }
+.team-color-detail-player--inactive .team-color-detail-player__face { filter: grayscale(1); opacity: .28; }
 
 @keyframes fco-role-zone-in {
   from { opacity: 0; transform: scale(.96); }

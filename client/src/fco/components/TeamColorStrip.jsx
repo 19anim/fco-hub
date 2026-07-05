@@ -28,16 +28,22 @@ function getSourceUid(player) {
   return String(player?._raw?.enrichment?.sourceUid || player?.spid || '');
 }
 
-function TeamColorDetailCard({ item, groupKey, bySlotId }) {
+function TeamColorDetailCard({ item, bySlotId }) {
   const rewardEntries = Object.entries(item.rewards || {});
-  const matchedSlots = groupKey !== 'grade' ? (item.matched_slots || []) : [];
-  const players = matchedSlots
+  const matchedSlots = Array.isArray(item.matched_slots) ? item.matched_slots : [];
+  const qualifiedSlots = Array.isArray(item.qualified_slots) && item.qualified_slots.length
+    ? item.qualified_slots
+    : matchedSlots;
+  const matchedSet = new Set(matchedSlots);
+
+  const players = [...new Set(qualifiedSlots)]
     .map((slotId) => {
       const player = bySlotId?.[slotId];
       if (!player) return null;
-      return { slotId, uid: getSourceUid(player), name: player.name || '' };
+      return { slotId, uid: getSourceUid(player), name: player.name || '', isMatched: matchedSet.has(slotId) };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort((a, b) => (a.isMatched === b.isMatched ? 0 : a.isMatched ? -1 : 1));
 
   return (
     <article className="team-color-detail-card">
@@ -67,7 +73,11 @@ function TeamColorDetailCard({ item, groupKey, bySlotId }) {
       {players.length > 0 && (
         <div className="team-color-detail-card__players">
           {players.map((player) => (
-            <div key={player.slotId} className="team-color-detail-player" title={player.name}>
+            <div
+              key={player.slotId}
+              className={`team-color-detail-player${player.isMatched ? '' : ' team-color-detail-player--inactive'}`}
+              title={player.name}
+            >
               {getPlayerFaceUrl(player.uid) && (
                 <img className="team-color-detail-player__face" src={getPlayerFaceUrl(player.uid)} alt={player.name || ''} loading="lazy" draggable="false" />
               )}
@@ -79,7 +89,7 @@ function TeamColorDetailCard({ item, groupKey, bySlotId }) {
   );
 }
 
-function TeamColorDetailModal({ items, groupKey, title, bySlotId, onClose }) {
+function TeamColorDetailModal({ items, title, bySlotId, onClose }) {
   return (
     <div className="team-color-detail-overlay active" onClick={onClose}>
       <div className="team-color-detail-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
@@ -89,7 +99,7 @@ function TeamColorDetailModal({ items, groupKey, title, bySlotId, onClose }) {
         </div>
         <div className="team-color-detail-list">
           {items.map((item) => (
-            <TeamColorDetailCard key={item.tcid} item={item} groupKey={groupKey} bySlotId={bySlotId} />
+            <TeamColorDetailCard key={item.tcid} item={item} bySlotId={bySlotId} />
           ))}
         </div>
       </div>
@@ -136,7 +146,6 @@ export function TeamColorStrip({ result, loading, error, bySlotId }) {
         return (
           <TeamColorDetailModal
             items={items}
-            groupKey={openGroupKey}
             title={label}
             bySlotId={bySlotId}
             onClose={() => setOpenGroupKey(null)}
