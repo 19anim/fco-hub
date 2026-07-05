@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
-import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
+import { normalizeBackendSearch } from '../../utils/backendSearch.js';
 import { fetchPlayers, fetchMeta, fetchClubsByLeague } from '../api.js';
 import { shouldClearCareerClubForLeagueChange, shouldLoadClubsForLeague } from '../views/DatabaseView.filters.js';
 import { cleanName, statColor } from '../helpers.js';
@@ -60,8 +59,8 @@ export default function PlayerPickerFiltered({
   const [levelById, setLevelById] = useState({});
 
   const previousLeagueRef = useRef(undefined);
-  const debouncedSearch = useDebouncedValue(search, search.trim() ? BACKEND_SEARCH_DEBOUNCE_MS : 0);
-  const normalizedSearch = normalizeBackendSearch(debouncedSearch);
+  const normalizedSearch = normalizeBackendSearch(search);
+  const [submittedParams, setSubmittedParams] = useState(null);
 
   useEffect(() => {
     fetchMeta().then(res => {
@@ -93,31 +92,12 @@ export default function PlayerPickerFiltered({
   );
 
   useEffect(() => {
-    if (!canRunBackendSearch(debouncedSearch)) return;
+    if (!submittedParams) return;
 
     let ignore = false;
     setLoading(true);
 
-    const params = hasActiveFilter
-      ? {
-          search: normalizedSearch,
-          posGroups: positions.length ? positions : undefined,
-          seasons, ovr, salaryMax,
-          league, nation, club,
-          preferredFoot, weakFoot, skillMoves, workRateAttack, workRateDefense,
-          heightMin, heightMax, weightMin, weightMax, reputation,
-          statFilter, statMin, statMax,
-          traits: trait ? [trait] : [],
-          sort: 'ovr_desc',
-          pageSize,
-        }
-      : {
-          posGroups: posGroups?.length ? posGroups : undefined,
-          sort: 'ovr_desc',
-          pageSize: 10,
-        };
-
-    fetchPlayers(params)
+    fetchPlayers(submittedParams)
       .then(res => {
         if (!ignore) setResults(res.players);
       })
@@ -126,12 +106,42 @@ export default function PlayerPickerFiltered({
       });
 
     return () => { ignore = true; };
-  }, [
-    debouncedSearch, hasActiveFilter, normalizedSearch, positions, seasons, ovr, salaryMax,
-    league, nation, club, preferredFoot, weakFoot, skillMoves, workRateAttack, workRateDefense,
-    heightMin, heightMax, weightMin, weightMax, reputation, statFilter, statMin, statMax, trait,
-    posGroups, pageSize,
-  ]);
+  }, [submittedParams]);
+
+  function submitSearch() {
+    const hasNonSearchFilter = Boolean(
+      positions.length || seasons.length || league || nation || club ||
+      preferredFoot || weakFoot || skillMoves || workRateAttack || workRateDefense ||
+      heightMin || heightMax || weightMin || weightMax || reputation || trait ||
+      statFilter || salaryMax < DEFAULT_SALARY ||
+      ovr[0] > DEFAULT_OVR[0] || ovr[1] < DEFAULT_OVR[1]
+    );
+
+    if (search.trim() && normalizedSearch.length < 2) {
+      setSubmittedParams(null);
+      setResults([]);
+      return;
+    }
+
+    if (!normalizedSearch && !hasNonSearchFilter) {
+      setSubmittedParams(null);
+      setResults([]);
+      return;
+    }
+
+    setSubmittedParams({
+      search: normalizedSearch || undefined,
+      posGroups: positions.length ? positions : undefined,
+      seasons, ovr, salaryMax,
+      league, nation, club,
+      preferredFoot, weakFoot, skillMoves, workRateAttack, workRateDefense,
+      heightMin, heightMax, weightMin, weightMax, reputation,
+      statFilter, statMin, statMax,
+      traits: trait ? [trait] : [],
+      sort: 'ovr_desc',
+      pageSize,
+    });
+  }
 
   function resetFilters() {
     setSearch('');
@@ -156,6 +166,8 @@ export default function PlayerPickerFiltered({
     setStatMin('');
     setStatMax('');
     setTrait('');
+    setSubmittedParams(null);
+    setResults([]);
   }
 
   function getLevel(playerId) {
@@ -170,6 +182,45 @@ export default function PlayerPickerFiltered({
   }
 
   const seasonOptions = useMemo(() => allSeasons, [allSeasons]);
+  const seasonFilter = seasonOptions.length > 0 && (
+    <div className="fco-picker-seasons">
+      {seasonOptions.map(s => {
+        const sid = String(s.seasonId);
+        const isSelected = seasons.includes(sid);
+        const seasonSprite = getSeasonSprite(sid) || s.seasonSprite;
+        const seasonMeta = s.seasonImg || seasonSprite ? null : (SEASONS_META[sid] || SEASONS_META[sid.toUpperCase()] || SEASONS_META.NG);
+        return (
+          <button
+            key={s.seasonId}
+            type="button"
+            className={`fco-season-opt${isSelected ? ' on' : ''}`}
+            title={s.seasonName}
+            onClick={() => setSeasons(prev => prev.includes(sid) ? prev.filter(x => x !== sid) : [...prev, sid])}
+          >
+            {seasonSprite ? (
+              <span
+                className="fco-season-sprite fco-season-opt-sprite"
+                aria-hidden="true"
+                style={{
+                  '--season-sprite-url': `url(${seasonSprite.spriteUrl || '/fifaaddict-season-sprite.png'})`,
+                  '--season-sprite-position': seasonSprite.backgroundPosition,
+                  '--season-sprite-size': seasonSprite.backgroundSize || 'auto',
+                  '--season-sprite-width': `${seasonSprite.width || 30}px`,
+                  '--season-sprite-height': `${seasonSprite.height || 24}px`,
+                }}
+              />
+            ) : s.seasonImg ? (
+              <img src={s.seasonImg} alt="" className="fco-season-opt-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
+            ) : (
+              <div className="fco-season-opt-badge" style={{ background: seasonMeta?.bg, color: seasonMeta?.fg, borderColor: seasonMeta?.ring }}>
+                <span>{seasonMeta?.name || sid}</span>
+              </div>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <div className="fco-modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -186,107 +237,75 @@ export default function PlayerPickerFiltered({
           </button>
         </div>
 
-        <div className="fco-picker-filters">
-          <PlayerSearchForm
-            search={search} setSearch={setSearch}
-            positions={positions} setPositions={setPositions}
-            ovr={ovr} setOvr={setOvr}
-            salaryMax={salaryMax} setSalaryMax={setSalaryMax}
-            league={league} setLeague={setLeague} leagueOptions={allLeagues}
-            nation={nation} setNation={setNation} nationOptions={allNations}
-            club={club} setClub={setClub} clubOptions={clubOptions}
-            preferredFoot={preferredFoot} setPreferredFoot={setPreferredFoot}
-            weakFoot={weakFoot} setWeakFoot={setWeakFoot}
-            skillMoves={skillMoves} setSkillMoves={setSkillMoves}
-            workRateAttack={workRateAttack} setWorkRateAttack={setWorkRateAttack}
-            workRateDefense={workRateDefense} setWorkRateDefense={setWorkRateDefense}
-            heightMin={heightMin} setHeightMin={setHeightMin}
-            heightMax={heightMax} setHeightMax={setHeightMax}
-            weightMin={weightMin} setWeightMin={setWeightMin}
-            weightMax={weightMax} setWeightMax={setWeightMax}
-            reputation={reputation} setReputation={setReputation}
-            statFilter={statFilter} setStatFilter={setStatFilter}
-            statMin={statMin} setStatMin={setStatMin}
-            statMax={statMax} setStatMax={setStatMax}
-            trait={trait} setTrait={setTrait}
-            traitOptions={allTraits}
-            onReset={resetFilters}
-            onSearch={() => {}}
-          />
+        <div className="fco-picker-body">
+          <div className="fco-picker-filters">
+            <PlayerSearchForm
+              search={search} setSearch={setSearch}
+              positions={positions} setPositions={setPositions}
+              ovr={ovr} setOvr={setOvr}
+              salaryMax={salaryMax} setSalaryMax={setSalaryMax}
+              league={league} setLeague={setLeague} leagueOptions={allLeagues}
+              nation={nation} setNation={setNation} nationOptions={allNations}
+              club={club} setClub={setClub} clubOptions={clubOptions}
+              preferredFoot={preferredFoot} setPreferredFoot={setPreferredFoot}
+              weakFoot={weakFoot} setWeakFoot={setWeakFoot}
+              skillMoves={skillMoves} setSkillMoves={setSkillMoves}
+              workRateAttack={workRateAttack} setWorkRateAttack={setWorkRateAttack}
+              workRateDefense={workRateDefense} setWorkRateDefense={setWorkRateDefense}
+              heightMin={heightMin} setHeightMin={setHeightMin}
+              heightMax={heightMax} setHeightMax={setHeightMax}
+              weightMin={weightMin} setWeightMin={setWeightMin}
+              weightMax={weightMax} setWeightMax={setWeightMax}
+              reputation={reputation} setReputation={setReputation}
+              statFilter={statFilter} setStatFilter={setStatFilter}
+              statMin={statMin} setStatMin={setStatMin}
+              statMax={statMax} setStatMax={setStatMax}
+              trait={trait} setTrait={setTrait}
+              traitOptions={allTraits}
+              seasonSlot={seasonFilter}
+              defaultExpanded
+              lockExpanded
+              onReset={resetFilters}
+              onSearch={submitSearch}
+            />
+          </div>
 
-          {seasonOptions.length > 0 && (
-            <div className="fco-picker-seasons">
-              {seasonOptions.map(s => {
-                const sid = String(s.seasonId);
-                const isSelected = seasons.includes(sid);
-                const seasonSprite = getSeasonSprite(sid) || s.seasonSprite;
-                const seasonMeta = s.seasonImg || seasonSprite ? null : (SEASONS_META[sid] || SEASONS_META[sid.toUpperCase()] || SEASONS_META.NG);
-                return (
-                  <button
-                    key={s.seasonId}
-                    type="button"
-                    className={`fco-season-opt${isSelected ? ' on' : ''}`}
-                    title={s.seasonName}
-                    onClick={() => setSeasons(prev => prev.includes(sid) ? prev.filter(x => x !== sid) : [...prev, sid])}
-                  >
-                    {seasonSprite ? (
-                      <span
-                        className="fco-season-sprite fco-season-opt-sprite"
-                        aria-hidden="true"
-                        style={{
-                          '--season-sprite-url': `url(${seasonSprite.spriteUrl || '/fifaaddict-season-sprite.png'})`,
-                          '--season-sprite-position': seasonSprite.backgroundPosition,
-                          '--season-sprite-size': seasonSprite.backgroundSize || 'auto',
-                          '--season-sprite-width': `${seasonSprite.width || 30}px`,
-                          '--season-sprite-height': `${seasonSprite.height || 24}px`,
-                        }}
-                      />
-                    ) : s.seasonImg ? (
-                      <img src={s.seasonImg} alt="" className="fco-season-opt-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    ) : (
-                      <div className="fco-season-opt-badge" style={{ background: seasonMeta?.bg, color: seasonMeta?.fg, borderColor: seasonMeta?.ring }}>
-                        <span>{seasonMeta?.name || sid}</span>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+          <div className="fco-modal-list">
+            {loading && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-faint)' }}><I.Spinner size={20} className="fco-spin" /></div>}
+            {!loading && results.map(p => {
+              const cardKey = getPlayerCardKey(p);
+              const disabled = existing.includes(cardKey) || existing.includes(p.id) || existingPlayers.some(player => isSamePlayerCard(p, player));
+              const selectedLevel = getLevel(cardKey);
 
-        <div className="fco-modal-list">
-          {loading && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-faint)' }}><I.Spinner size={20} className="fco-spin" /></div>}
-          {!loading && results.map(p => {
-            const cardKey = getPlayerCardKey(p);
-            const disabled = existing.includes(cardKey) || existing.includes(p.id) || existingPlayers.some(player => isSamePlayerCard(p, player));
-            const selectedLevel = getLevel(cardKey);
-
-            return (
-              <button key={cardKey || p.id} className="fco-modal-item" disabled={disabled} onClick={() => choosePlayer(p)}>
-                <PlayerAvatar player={p} size={36} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="fco-modal-itemname">{cleanName(p.name)}</div>
-                  <div className="fco-modal-itemsub">
-                    <SeasonChip code={p.season} img={p.seasonImg} />
-                    {' '}<PosPill pos={p.primaryPos} />
-                    <span style={{ marginLeft: 6, fontFamily: 'var(--mono)', fontSize: 12, color: statColor(p.ovr) }}>{p.ovr}</span>
-                    {p.club && <span style={{ marginLeft: 6 }}>{p.club}</span>}
+              return (
+                <button key={cardKey || p.id} className="fco-modal-item" disabled={disabled} onClick={() => choosePlayer(p)}>
+                  <PlayerAvatar player={p} size={36} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="fco-modal-itemname">{cleanName(p.name)}</div>
+                    <div className="fco-modal-itemsub">
+                      <SeasonChip code={p.season} img={p.seasonImg} />
+                      {' '}<PosPill pos={p.primaryPos} />
+                      <span style={{ marginLeft: 6, fontFamily: 'var(--mono)', fontSize: 12, color: statColor(p.ovr) }}>{p.ovr}</span>
+                      {p.club && <span style={{ marginLeft: 6 }}>{p.club}</span>}
+                    </div>
                   </div>
-                </div>
-                {allowLevelSelect && !disabled && (
-                  <LevelSelect
-                    value={selectedLevel}
-                    onChange={lv => setLevelById(prev => ({ ...prev, [cardKey]: lv }))}
-                  />
-                )}
-                {disabled && <I.Check size={14} style={{ color: 'var(--accent)', flex: '0 0 14px' }} />}
-              </button>
-            );
-          })}
-          {!loading && results.length === 0 && (
-            <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13 }}>Không tìm thấy cầu thủ</div>
-          )}
+                  {allowLevelSelect && !disabled && (
+                    <LevelSelect
+                      value={selectedLevel}
+                      onChange={lv => setLevelById(prev => ({ ...prev, [cardKey]: lv }))}
+                    />
+                  )}
+                  {disabled && <I.Check size={14} style={{ color: 'var(--accent)', flex: '0 0 14px' }} />}
+                </button>
+              );
+            })}
+            {!loading && !submittedParams && (
+              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13 }}>Nhập ít nhất 2 ký tự hoặc chọn filter rồi nhấn Tìm</div>
+            )}
+            {!loading && submittedParams && results.length === 0 && (
+              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13 }}>Không tìm thấy cầu thủ</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

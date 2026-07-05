@@ -1001,10 +1001,35 @@ button { font-family: inherit; }
   box-shadow: 0 24px 70px rgba(0,0,0,.68), inset 0 1px 0 rgba(255,255,255,.04);
   animation: fco-modal-in .16s ease;
 }
-.fco-modal.picker-wide { width: min(860px, 100%); max-height: min(820px, calc(100vh - 48px)); }
-.fco-picker-filters { padding: 0 12px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
-.fco-picker-filters .fa-form-panel { margin-bottom: 0; }
-.fco-picker-seasons { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; max-height: 96px; overflow-y: auto; }
+.fco-modal.picker-wide { width: min(1180px, 100%); max-height: min(820px, calc(100vh - 48px)); }
+.fco-picker-body { display: flex; gap: 12px; padding: 0 12px 12px; min-height: 0; flex: 1; overflow: hidden; }
+.fco-picker-filters { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; scrollbar-gutter: stable; }
+.fco-picker-filters .fa-form-panel { margin-bottom: 0; padding: 10px; gap: 8px; }
+.fco-picker-filters .fa-search-row { gap: 6px; }
+.fco-picker-filters .fa-btn { padding: 7px 10px; }
+.fco-picker-filters .fa-pos-grid { gap: 6px; }
+.fco-picker-filters .fa-pos-group { flex: 1 1 96px; }
+.fco-picker-filters .fa-expanded-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 8px; }
+.fco-picker-filters .fa-filter-row,
+.fco-picker-filters .fa-foot-work-row,
+.fco-picker-filters .fa-body-filter-grid { display: contents; }
+.fco-picker-filters .fa-filter-group { min-width: 0; }
+.fco-picker-filters .fa-filter-group--wide,
+.fco-picker-filters .fa-stat-range { grid-column: 1 / -1; }
+.fco-picker-filters .fa-stat-range { display: grid; grid-template-columns: 1fr 64px auto 64px; align-items: end; gap: 6px; }
+.fco-picker-seasons { display: flex; flex-wrap: wrap; gap: 4px; padding: 7px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: visible; }
+.fco-picker-seasons .fco-season-opt { padding: 1px; border-width: 1px; border-radius: 5px; }
+.fco-picker-seasons .fco-season-opt-img { height: 18px; max-width: 34px; }
+.fco-picker-seasons .fco-season-opt-sprite { transform: scale(.78); margin: -2px -4px; }
+.fco-picker-seasons .fco-season-opt-badge { min-height: 18px; width: 34px; padding: 1px 3px; }
+.fco-picker-seasons .fco-season-opt-badge span { font-size: 7.5px; }
+.fco-picker-body .fco-modal-list { flex: 1 1 50%; min-width: 0; min-height: 0; padding: 0 0 0 12px; border-left: 1px solid var(--border-soft); scrollbar-gutter: stable; }
+
+@media (max-width: 860px) {
+  .fco-picker-body { flex-direction: column; overflow-y: auto; }
+  .fco-picker-filters { flex: 0 0 auto; overflow-y: visible; }
+  .fco-picker-body .fco-modal-list { border-left: none; padding-left: 0; border-top: 1px solid var(--border-soft); padding-top: 10px; }
+}
 .fco-modal-head {
   display: flex;
   align-items: center;

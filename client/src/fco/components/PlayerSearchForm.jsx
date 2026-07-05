@@ -61,10 +61,13 @@ export default function PlayerSearchForm({
   statMax = '', setStatMax,
   trait = '', setTrait,
   traitOptions = [],
+  defaultExpanded = false,
+  lockExpanded = false,
+  seasonSlot = null,
   onReset,
   onSearch,
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const leagues = leagueOptions.length ? leagueOptions : FALLBACK_LEAGUES;
 
   return (
@@ -95,17 +98,21 @@ export default function PlayerSearchForm({
         <button type="button" className="fa-btn fa-btn-ghost" onClick={onReset} title="Đặt lại">
           <I.Refresh size={14} />
         </button>
-        <button
-          type="button"
-          className={`fa-btn fa-btn-ghost fa-expand-btn${expanded ? ' on' : ''}`}
-          onClick={() => setExpanded(v => !v)}
-        >
-          {expanded ? 'LESS' : 'MORE'}
-          {expanded ? <I.ChevronUp size={12} /> : <I.ChevronDown size={12} />}
-        </button>
+        {!lockExpanded && (
+          <button
+            type="button"
+            className={`fa-btn fa-btn-ghost fa-expand-btn${expanded ? ' on' : ''}`}
+            onClick={() => setExpanded(v => !v)}
+          >
+            {expanded ? 'LESS' : 'MORE'}
+            {expanded ? <I.ChevronUp size={12} /> : <I.ChevronDown size={12} />}
+          </button>
+        )}
       </div>
 
       <PositionGrid positions={positions} setPositions={setPositions} />
+
+      {seasonSlot}
 
       {expanded && (
         <div className="fa-expanded-filters">
