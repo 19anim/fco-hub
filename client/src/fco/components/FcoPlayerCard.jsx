@@ -30,7 +30,8 @@ export function FcoPlayerCard({
   title,
 }) {
   const theme = themeProp || getCardThemeForPlayer(player);
-  const safeGrade = normalizeUpgradeLevel(grade ?? player?.upgradeLevel);
+  const rawGrade = Math.trunc(Number(grade ?? player?.upgradeLevel));
+  const safeGrade = rawGrade === 0 ? 0 : normalizeUpgradeLevel(grade ?? player?.upgradeLevel);
   const displayedOvr = ovr ?? player?.ovr ?? 0;
   const displayedPos = pos || player?.primaryPos || '';
   const displayedSalary = salary ?? player?.salary;

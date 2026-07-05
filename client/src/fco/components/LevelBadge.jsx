@@ -21,7 +21,8 @@ export const LEVEL_SPRITE_CONFIG = Object.freeze(
 );
 
 export default function LevelBadge({ level, scale = 1, className = '', title }) {
-  const safeLevel = normalizeUpgradeLevel(level);
+  const rawLevel = Math.trunc(Number(level));
+  const safeLevel = rawLevel === 0 ? 0 : normalizeUpgradeLevel(level);
   const safeScale = Number.isFinite(Number(scale)) ? Number(scale) : 1;
 
   return (

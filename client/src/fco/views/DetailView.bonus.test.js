@@ -23,7 +23,7 @@ describe('detail bonus math', () => {
     expect(bonuses.ovrBonus).toBe(14);
   });
 
-  it('applies base correction to detailed component stats without changing main stats', () => {
+  it('applies the base +3 correction to OVR, main stats, and detailed component stats', () => {
     const player = {
       ovr: 100,
       pace: 90,
@@ -38,8 +38,8 @@ describe('detail bonus math', () => {
       getDetailBonusModel({ grade: 1, level: 1, teamColorBonus: 0 })
     );
 
-    expect(result.ovr).toBe(100);
-    expect(result.pace).toBe(90);
+    expect(result.ovr).toBe(103);
+    expect(result.pace).toBe(93);
     expect(result.detailed).toEqual({
       pace: [{ label: 'Tăng tốc', value: 94 }],
       gk: { diving: 73 },
@@ -70,12 +70,12 @@ describe('detail bonus math', () => {
       getDetailBonusModel({ grade: 1, level: 5, teamColorBonus: 10 })
     );
 
-    expect(result.ovr).toBe(114);
-    expect(result.pace).toBe(104);
-    expect(result.shooting).toBe(94);
+    expect(result.ovr).toBe(117);
+    expect(result.pace).toBe(107);
+    expect(result.shooting).toBe(97);
     expect(result.positionRatings).toEqual([
-      { label: 'ST', value: 115, recommended: true },
-      { label: 'CF', value: 113, recommended: false },
+      { label: 'ST', value: 118, recommended: true },
+      { label: 'CF', value: 116, recommended: false },
     ]);
     expect(result.detailed).toEqual({
       acceleration: 108,

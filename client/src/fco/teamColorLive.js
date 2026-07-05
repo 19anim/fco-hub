@@ -2,6 +2,11 @@ import axios from 'axios';
 import { API_BASE } from '../config/api.js';
 import { normalizeUpgradeLevel } from './upgradeHelpers.js';
 
+function normalizeReinforceLevel(level) {
+  const numericLevel = Math.trunc(Number(level));
+  return numericLevel === 0 ? 0 : normalizeUpgradeLevel(level);
+}
+
 function getSourceUid(player) {
   return String(player?._raw?.enrichment?.sourceUid || player?.spid || '');
 }
@@ -24,7 +29,7 @@ export function buildTeamColorPayload(slots, bySlotId, { squadLevel = 1 } = {}) 
         uid: getSourceUid(player),
         uic: getUic(player),
         year: String(player.season || ''),
-        reinforceLevel: normalizeUpgradeLevel(player.upgradeLevel),
+        reinforceLevel: normalizeReinforceLevel(player.upgradeLevel),
         bonusLevel: 0,
         previewRoles,
         role: String(slot.pos || '').toUpperCase(),

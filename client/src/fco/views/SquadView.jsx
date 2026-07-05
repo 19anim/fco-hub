@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import PlayerPicker from '../components/PlayerPicker.jsx';
+import PlayerPickerFiltered from '../components/PlayerPickerFiltered.jsx';
 import LevelSelect from '../components/LevelSelect.jsx';
+import LevelBadge from '../components/LevelBadge.jsx';
+import TeamGradePopover from '../components/TeamGradePopover.jsx';
 import { buildTeamColorPayload, getTeamColorPayloadHash, evaluateTeamColorLive } from '../teamColorLive.js';
 import { TeamColorStrip } from '../components/TeamColorStrip.jsx';
 import {
@@ -23,16 +25,22 @@ import { getOvrForSlotPosition } from '../positionOvr.js';
 import { DEFAULT_SALARY_CAP, MAX_SALARY_CAP, getLineAverages, getSquadSalaryTotal, GROUP_LABELS } from '../squadSummary.js';
 import { computeSquadBonuses, getPlayerSquadBonus } from '../teamColor.js';
 import { getPlayerCardKey, getOvrIncreaseForLevel, normalizeUpgradeLevel } from '../upgradeHelpers.js';
-import { Button, IconButton, PlayerCardMini } from '../ui.jsx';
+import { MIN_UPGRADE_LEVEL } from '../upgradeConfig.js';
+import { Button, IconButton, PlayerCardMini, PlayerAvatar, SeasonChip, PosPill } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 
-const QUICK_LEVELS = [1, 5, 8, 10, 13];
 const FORMATION_GROUPS = [
   { label: '3 Back', prefix: '3-' },
   { label: '4 Back', prefix: '4-' },
   { label: '5 Back', prefix: '5-' },
 ];
+const EDIT_GRADE_LEVELS = Array.from({ length: 14 }, (_, index) => index);
 const DRAG_BOUNDS = { left: 5, right: 95, top: 10, bottom: 82 };
+
+function normalizeSquadGrade(level) {
+  const numericLevel = Math.trunc(Number(level));
+  return numericLevel === 0 ? 0 : normalizeUpgradeLevel(level);
+}
 
 const SOURCE_ROLE_MAX_TOP = 115;
 const SOURCE_ROLE_ZONES = {
@@ -155,12 +163,14 @@ function getCustomFormationLabel(slots) {
 export default function SquadView() {
   const [squad, setSquad] = useState(() => loadSquad());
   const [pickerSlotId, setPickerSlotId] = useState(null);
+  const [editSlotId, setEditSlotId] = useState(null);
   const [movingSlotId, setMovingSlotId] = useState(null);
   const [activeSlotId, setActiveSlotId] = useState(null);
   const [dragSlotId, setDragSlotId] = useState(null);
   const [dragOverSlotId, setDragOverSlotId] = useState(null);
   const [layoutDrag, setLayoutDrag] = useState(null);
   const [salaryCap, setSalaryCap] = useState(DEFAULT_SALARY_CAP);
+  const [teamGrade, setTeamGrade] = useState(MIN_UPGRADE_LEVEL);
   const pitchRef = useRef(null);
   const layoutDragRef = useRef(null);
   const suppressClickRef = useRef(false);
@@ -241,10 +251,26 @@ export default function SquadView() {
     if (!pickerSlotId) return;
     persist(assignPlayerToSlot(bySlotId, pickerSlotId, player));
     setPickerSlotId(null);
+    setEditSlotId(null);
+  }
+
+  function openEditModal(slotId) {
+    setActiveSlotId(slotId);
+    setEditSlotId(slotId);
+  }
+
+  function openReplacePicker(slotId) {
+    setEditSlotId(null);
+    setPickerSlotId(slotId);
+  }
+
+  function closeEditModal() {
+    setEditSlotId(null);
   }
 
   function removeFromSlot(slotId) {
     persist(clearSlot(bySlotId, slotId));
+    if (editSlotId === slotId) setEditSlotId(null);
   }
 
   function clearSquad() {
@@ -260,10 +286,11 @@ export default function SquadView() {
   function stepLevel(slotId, delta) {
     const player = bySlotId[slotId];
     if (!player) return;
-    changeLevel(slotId, normalizeUpgradeLevel(player.upgradeLevel) + delta);
+    changeLevel(slotId, normalizeSquadGrade(player.upgradeLevel) + delta);
   }
 
   function applyQuickLevel(level) {
+    setTeamGrade(normalizeSquadGrade(level));
     let next = { ...bySlotId };
     Object.keys(next).forEach((slotId) => {
       next = updateSquadPlayerLevel(next, slotId, level);
@@ -362,8 +389,12 @@ export default function SquadView() {
     clearDragState();
   }
 
-  const existingKeys = Object.values(bySlotId).map((player) => getPlayerCardKey(player));
+  const existingKeys = Object.entries(bySlotId)
+    .filter(([slotId]) => slotId !== pickerSlotId)
+    .map(([, player]) => getPlayerCardKey(player));
   const activePickerSlot = visibleSlots.find((s) => s.id === pickerSlotId) || null;
+  const activeEditSlot = visibleSlots.find((s) => s.id === editSlotId) || null;
+  const activeEditPlayer = editSlotId ? bySlotId[editSlotId] : null;
 
   return (
     <div className="fco-squad-view">
@@ -449,18 +480,7 @@ export default function SquadView() {
         {filledCount > 0 && (
           <div className="fco-squad-toolbar-group">
             <span className="fco-squad-toolbar-label">Cấp nhanh cả đội</span>
-            <div className="fco-squad-formations">
-              {QUICK_LEVELS.map((lv) => (
-                <button
-                  key={lv}
-                  type="button"
-                  className="fco-squad-formation-btn"
-                  onClick={() => applyQuickLevel(lv)}
-                >
-                  +{lv}
-                </button>
-              ))}
-            </div>
+            <TeamGradePopover value={teamGrade} onChange={applyQuickLevel} />
           </div>
         )}
 
@@ -535,7 +555,7 @@ export default function SquadView() {
                         label="Chỉnh thẻ"
                         size={12}
                         className="card-edit-btn"
-                        onClick={() => setPickerSlotId(slot.id)}
+                        onClick={() => openEditModal(slot.id)}
                       />
                       <IconButton
                         icon={I.X}
@@ -589,15 +609,86 @@ export default function SquadView() {
       </div>
 
       {pickerSlotId && (
-        <PlayerPicker
+        <PlayerPickerFiltered
           title={`Chọn cầu thủ · ${activePickerSlot?.pos || ''}`}
           allowLevelSelect
-          showTopPlayers
+          defaultLevel={teamGrade}
           posGroups={getPickerPosGroupsForSlot(activePickerSlot?.pos)}
           existing={existingKeys}
           onAdd={handleAddPlayer}
           onClose={() => setPickerSlotId(null)}
         />
+      )}
+
+      {activeEditPlayer && activeEditSlot && (
+        <div className="fco-modal-overlay" onClick={e => { if (e.target === e.currentTarget) closeEditModal(); }}>
+          <div className="fco-modal player-edit-modal">
+            <div className="fco-modal-head">
+              <div>
+                <div className="fco-modal-title">Chỉnh cầu thủ · {activeEditSlot.pos}</div>
+                <div className="fco-modal-subtitle">Đổi grade, mùa thẻ hoặc xoá riêng cầu thủ này.</div>
+              </div>
+              <button className="player-edit-close" onClick={closeEditModal} aria-label="Đóng">
+                <I.X size={18} />
+              </button>
+            </div>
+
+            <div className="player-edit-body">
+              <div className="player-edit-current">
+                <PlayerAvatar player={activeEditPlayer} size={48} />
+                <div className="player-edit-info">
+                  <div className="player-edit-name">{activeEditPlayer.name}</div>
+                  <div className="player-edit-meta">
+                    <SeasonChip code={activeEditPlayer.season} img={activeEditPlayer.seasonImg} />
+                    <PosPill pos={activeEditPlayer.primaryPos} />
+                    <span className="player-edit-ovr">OVR {activeEditPlayer.ovr}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="player-edit-grade-block">
+                <div className="player-edit-label">Grade</div>
+                <div className="player-edit-grade-grid">
+                  {EDIT_GRADE_LEVELS.map(level => {
+                    const active = level === normalizeSquadGrade(activeEditPlayer.upgradeLevel);
+                    return (
+                      <button
+                        key={level}
+                        type="button"
+                        className={`player-edit-grade-btn${active ? ' active' : ''}`}
+                        onClick={() => changeLevel(editSlotId, level)}
+                        aria-label={`Chọn thẻ +${level}`}
+                        aria-pressed={active}
+                      >
+                        <LevelBadge level={level} scale={0.30} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="player-edit-actions">
+                <Button
+                  variant="default"
+                  icon={I.Search}
+                  onClick={() => openReplacePicker(editSlotId)}
+                  full
+                >
+                  Tìm / đổi mùa thẻ
+                </Button>
+                <Button
+                  variant="outline"
+                  danger
+                  icon={I.X}
+                  onClick={() => removeFromSlot(editSlotId)}
+                  full
+                >
+                  Xoá khỏi đội hình
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

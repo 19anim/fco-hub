@@ -425,7 +425,11 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   const headerRating = positionRatings.find((rating) => rating.label === defaultPosition);
   const displayedOvr = headerRating?.value ?? p.ovr;
   const headerPositions = expandPositionLabel(defaultPosition);
-  const ratingByLabel = new Map((p.positionRatings || []).map((rating) => [rating.label, rating]));
+  const ratingByLabel = new Map();
+  (p.positionRatings || []).forEach((rating) => {
+    const keys = expandPositionLabel(rating.label);
+    (keys.length ? keys : [rating.label]).forEach((key) => ratingByLabel.set(key, rating));
+  });
   const displayedPositions = headerPositions.length
     ? [...headerPositions, ...(p.positions || []).filter((pos) => !headerPositions.includes(pos))]
     : p.positions;

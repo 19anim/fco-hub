@@ -22,6 +22,9 @@ export function normalizeUpgradeLevel(level) {
 }
 
 export function getOvrIncreaseForLevel(level) {
+  const rawLevel = Math.trunc(Number(level));
+  if (rawLevel === 0) return -3;
+
   const safeLevel = normalizeUpgradeLevel(level);
   let increase = 0;
 

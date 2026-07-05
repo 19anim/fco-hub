@@ -44,7 +44,7 @@ export default function PlayerSearchForm({
   leagueOptions = [],
   nation = '', setNation,
   nationOptions = [],
-  careerClub = '', setCareerClub,
+  club = '', setClub,
   clubOptions = [],
   preferredFoot = '', setPreferredFoot,
   weakFoot = '', setWeakFoot,
@@ -136,8 +136,8 @@ export default function PlayerSearchForm({
               <label className="fa-filter-label">Câu lạc bộ</label>
               <select
                 className="fa-select"
-                value={careerClub}
-                onChange={e => setCareerClub(e.target.value)}
+                value={club}
+                onChange={e => setClub(e.target.value)}
                 disabled={!league}
               >
                 <option value="">{league ? '▾ Chọn CLB' : 'Chọn giải đấu trước'}</option>

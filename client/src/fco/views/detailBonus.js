@@ -44,9 +44,9 @@ export function getDetailBonusModel({ grade, level = 1, teamColorBonus = 0 }) {
 export function applyDetailBonuses(player, bonuses) {
   if (!player) return player;
 
-  const ovrBonus = bonuses?.ovrBonus || 0;
-  const statBonus = bonuses?.statBonus || 0;
-  const detailedStatBonus = statBonus + DETAILED_STAT_BASE_CORRECTION;
+  const ovrBonus = (bonuses?.ovrBonus || 0) + DETAILED_STAT_BASE_CORRECTION;
+  const statBonus = (bonuses?.statBonus || 0) + DETAILED_STAT_BASE_CORRECTION;
+  const detailedStatBonus = statBonus;
   const detailed = player.detailed
     ? Object.fromEntries(Object.entries(player.detailed).map(([group, value]) => [
         group,

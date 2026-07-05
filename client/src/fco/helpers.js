@@ -80,6 +80,12 @@ export function getPosVn(pos) {
   return POS_VN[pos] || pos;
 }
 
+function expandCombinedPositionLabel(label) {
+  const value = String(label || '');
+  if (value.startsWith('L/R')) return [`L${value.slice(3)}`, `R${value.slice(3)}`];
+  return [value];
+}
+
 // Normalize a player from server API to FCO Hub format
 export function normalizePlayer(raw) {
   if (!raw) return {};
@@ -107,9 +113,12 @@ export function normalizePlayer(raw) {
   const positionOverallByPos = new Map((e.positions || []).map((p) => [p.position, p.overall]));
   const positionRatingBoost = Math.max(
     0,
-    ...(e.positionRatings || []).map((rating) => {
-      const positionOverall = positionOverallByPos.get(rating.label);
-      return Number.isFinite(positionOverall) ? positionOverall - rating.value : 0;
+    ...(e.positionRatings || []).flatMap((rating) => {
+      const labels = expandCombinedPositionLabel(rating.label);
+      return labels.map((label) => {
+        const positionOverall = positionOverallByPos.get(label);
+        return Number.isFinite(positionOverall) ? positionOverall - rating.value : 0;
+      });
     })
   );
   const positionRatings = (e.positionRatings || []).map((rating) => ({

@@ -8,7 +8,7 @@ const BASE = API_BASE;
 export async function fetchPlayers(params = {}) {
   const {
     search, posGroups, seasons, ovr, salaryMax, priceMax,
-    league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
+    league, nation, club, preferredFoot, weakFoot, skillMoves,
     workRateAttack, workRateDefense, heightMin, heightMax,
     weightMin, weightMax, reputation, statFilter, statMin, statMax,
     traits, sort, page, pageSize,
@@ -27,9 +27,9 @@ export async function fetchPlayers(params = {}) {
   if (salaryMax != null && salaryMax < 999999) q.maxSalary = salaryMax;
   if (priceMax != null && priceMax < 999999) q.maxPrice = priceMax;
   if (traits?.length) q.trait = traits[0];
-  if (league && !careerClub) q.league = league;
+  if (league && !club) q.league = league;
   if (nation) q.nation = nation;
-  if (careerClub) q.careerClub = careerClub;
+  if (club) q.club = club;
   if (preferredFoot) q.preferredFoot = preferredFoot;
   if (weakFoot) q.weakFoot = weakFoot;
   if (skillMoves) q.skillMoves = skillMoves;

@@ -92,7 +92,7 @@ function filtersFromQS() {
     pageSize,
     league: p.get('league') || '',
     nation: p.get('nation') || '',
-    careerClub: p.get('club') || '',
+    club: p.get('club') || '',
     preferredFoot: p.get('foot') || '',
     weakFoot: p.get('wf') || '',
     skillMoves: p.get('sm') || '',
@@ -123,7 +123,7 @@ function filtersToQS(f) {
   if (f.pageSize !== DEFAULT_PAGESIZE) p.set('size', f.pageSize);
   if (f.league) p.set('league', f.league);
   if (f.nation) p.set('nation', f.nation);
-  if (f.careerClub) p.set('club', f.careerClub);
+  if (f.club) p.set('club', f.club);
   if (f.preferredFoot) p.set('foot', f.preferredFoot);
   if (f.weakFoot) p.set('wf', f.weakFoot);
   if (f.skillMoves) p.set('sm', f.skillMoves);
@@ -156,7 +156,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const [priceMax,  setPriceMax]  = useState(init.priceMax);
   const [league,          setLeague]          = useState(init.league || '');
   const [nation,          setNation]          = useState(init.nation || '');
-  const [careerClub,      setCareerClub]      = useState(init.careerClub || '');
+  const [club,            setClub]            = useState(init.club || '');
   const [preferredFoot,   setPreferredFoot]   = useState(init.preferredFoot || '');
   const [weakFoot,        setWeakFoot]        = useState(init.weakFoot || '');
   const [skillMoves,      setSkillMoves]      = useState(init.skillMoves || '');
@@ -206,7 +206,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
       setAllTopClubs([]);
     }
     if (shouldClearCareerClubForLeagueChange(previousLeagueRef.current, league)) {
-      setCareerClub('');
+      setClub('');
       setPage(1);
     }
     previousLeagueRef.current = league;
@@ -216,13 +216,13 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   useEffect(() => {
     writeQS(filtersToQS({
       search, posGroups, seasons, ovr, salaryMax, priceMax,
-      league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
+      league, nation, club, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
       weightMin, weightMax, reputation, statFilter, statMin, statMax,
       sort, page, pageSize,
     }));
   }, [search, posGroups, seasons, ovr, salaryMax, priceMax,
-      league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
+      league, nation, club, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
       weightMin, weightMax, reputation, statFilter, statMin, statMax, trait,
       sort, page, pageSize]);
@@ -234,7 +234,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     try {
       const res = await fetchPlayers({
         search: normalizedSearch, posGroups, seasons, ovr, salaryMax, priceMax,
-        league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
+        league, nation, club, preferredFoot, weakFoot, skillMoves,
         workRateAttack, workRateDefense, heightMin, heightMax,
         weightMin, weightMax, reputation, statFilter, statMin, statMax,
         traits: trait ? [trait] : [],
@@ -249,7 +249,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
       setLoading(false);
     }
   }, [canLoadSearch, normalizedSearch, posGroups, seasons, ovr, salaryMax, priceMax,
-      league, nation, careerClub, preferredFoot, weakFoot, skillMoves,
+      league, nation, club, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
       weightMin, weightMax, reputation, statFilter, statMin, statMax, trait,
       sort, page, pageSize]);
@@ -265,7 +265,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
     setPriceMax(DEFAULT_PRICE);
     setLeague('');
     setNation('');
-    setCareerClub('');
+    setClub('');
     setPreferredFoot('');
     setWeakFoot('');
     setSkillMoves('');
@@ -334,9 +334,9 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
         nation={nation}
         setNation={val => { setNation(val); setPage(1); }}
         nationOptions={allNations}
-        careerClub={careerClub}
+        club={club}
         clubOptions={allTopClubs}
-        setCareerClub={val => { setCareerClub(val); setPage(1); }}
+        setClub={val => { setClub(val); setPage(1); }}
         preferredFoot={preferredFoot}
         setPreferredFoot={val => { setPreferredFoot(val); setPage(1); }}
         weakFoot={weakFoot}

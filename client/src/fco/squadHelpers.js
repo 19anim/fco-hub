@@ -1,6 +1,11 @@
 import { POSITIONS_META, resolvePositionCode } from './constants.js';
 import { normalizeUpgradeLevel } from './upgradeHelpers.js';
 
+function normalizeSquadPlayerLevel(level) {
+  const numericLevel = Math.trunc(Number(level));
+  return numericLevel === 0 ? 0 : normalizeUpgradeLevel(level);
+}
+
 const SQUAD_LS_KEY = 'fco_squad_v1';
 export const DEFAULT_FORMATION_ID = '4-2-3-1';
 
@@ -672,7 +677,7 @@ export function updateSquadPlayerLevel(bySlotId, slotId, level) {
   if (!player) return bySlotId || {};
   return {
     ...(bySlotId || {}),
-    [slotId]: { ...player, upgradeLevel: normalizeUpgradeLevel(level) },
+    [slotId]: { ...player, upgradeLevel: normalizeSquadPlayerLevel(level) },
   };
 }
 

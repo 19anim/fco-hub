@@ -140,6 +140,20 @@ async function selectRepresentativePlayer(page, season) {
   return selected;
 }
 
+const RETRYABLE_REASONS = new Set(['no representative player', 'season filter not found', 'season filter did not activate']);
+
+async function selectRepresentativePlayerWithRetry(page, season, { attempts = 3, delayMs = 2000 } = {}) {
+  let lastResult = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    lastResult = await selectRepresentativePlayer(page, season);
+    if (lastResult.ok || !RETRYABLE_REASONS.has(lastResult.reason) || attempt === attempts) {
+      return lastResult;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
+  }
+  return lastResult;
+}
+
 async function readRenderedCard(page, targetCardId) {
   const selector = targetCardId ? `#${targetCardId}.has-player` : '.player-card.has-player.fc-card';
   await page.waitForSelector(selector, { timeout: 15000 });
@@ -187,7 +201,7 @@ export async function collectFifaAddictCardBackgrounds({ headless = true, season
       onProgress?.({ ...progressBase, status: 'start' });
 
       try {
-        const selected = await selectRepresentativePlayer(page, season);
+        const selected = await selectRepresentativePlayerWithRetry(page, season);
         if (!selected.ok) {
           records.push({ seasonCode, title: season.title || '', reason: selected.reason });
           onProgress?.({ ...progressBase, status: 'unresolved', reason: selected.reason });

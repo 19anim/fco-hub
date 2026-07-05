@@ -190,8 +190,13 @@ function round2(value) {
   return Math.round(value * 100) / 100;
 }
 
+function normalizePositionCode(positionCode) {
+  if (positionCode && positionCode.startsWith('L/R')) return `L${positionCode.slice(3)}`;
+  return positionCode;
+}
+
 export function getTrainingStats(positionCode) {
-  const group = POSITION_TO_GROUP[positionCode];
+  const group = POSITION_TO_GROUP[normalizePositionCode(positionCode)];
   if (!group) return null;
   const stats = TRAINING_POSITIONS[group];
   return stats.map(({ name, coefficient, gk }) => {

@@ -42,7 +42,8 @@ export const UPGRADE_TIERS = Object.freeze([
 ]);
 
 function getUpgradeTierForLevel(level) {
-  const lv = normalizeUpgradeLevel(level);
+  const rawLevel = Math.trunc(Number(level));
+  const lv = rawLevel === 0 ? 0 : normalizeUpgradeLevel(level);
   return UPGRADE_TIERS.find((tier) => lv >= tier.min && lv <= tier.max) || null;
 }
 
