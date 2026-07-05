@@ -1,6 +1,8 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import PlayerPicker from '../components/PlayerPicker.jsx';
 import LevelSelect from '../components/LevelSelect.jsx';
+import { buildTeamColorPayload, getTeamColorPayloadHash, evaluateTeamColorLive } from '../teamColorLive.js';
+import { TeamColorStrip } from '../components/TeamColorStrip.jsx';
 import {
   FORMATION_OPTIONS,
   getFormationSlots,
@@ -182,6 +184,36 @@ export default function SquadView() {
   const overallProgress = lineAverages.overall == null ? 0 : Math.min(100, (lineAverages.overall / 150) * 100);
   const isOverSalaryCap = salaryTotal > salaryCap;
   const filledCount = starters.length;
+
+  const [liveTeamColor, setLiveTeamColor] = useState(null);
+  const [liveTeamColorLoading, setLiveTeamColorLoading] = useState(false);
+  const [liveTeamColorError, setLiveTeamColorError] = useState(false);
+  const lastPayloadHashRef = useRef('');
+
+  useEffect(() => {
+    const payload = buildTeamColorPayload(slots, bySlotId, { squadLevel: 1 });
+    if (!payload) {
+      setLiveTeamColor(null);
+      setLiveTeamColorError(false);
+      lastPayloadHashRef.current = '';
+      return;
+    }
+
+    const hash = getTeamColorPayloadHash(payload);
+    if (hash === lastPayloadHashRef.current) return;
+
+    const timer = setTimeout(() => {
+      lastPayloadHashRef.current = hash;
+      setLiveTeamColorLoading(true);
+      setLiveTeamColorError(false);
+      evaluateTeamColorLive(payload)
+        .then((result) => setLiveTeamColor(result))
+        .catch(() => setLiveTeamColorError(true))
+        .finally(() => setLiveTeamColorLoading(false));
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [slots, bySlotId]);
 
   function persist(nextBySlotId, nextCustomSlots = squad.customSlots) {
     const next = { formationId, bySlotId: nextBySlotId, customSlots: normalizeSquadSlots(nextCustomSlots) };
@@ -547,43 +579,7 @@ export default function SquadView() {
         </div>
 
         <div className="fco-squad-panels">
-          <div className="fco-squad-panel">
-            <div className="fco-squad-panel-title">Team color đội</div>
-            {squadBonuses.club.groups.length === 0 ? (
-              <div className="fco-squad-panel-empty">Chưa có nhóm nào đạt tối thiểu 3 cầu thủ.</div>
-            ) : (
-              <div className="fco-squad-panel-list">
-                {squadBonuses.club.groups.map((group) => (
-                  <div key={`${group.kind}:${group.name}`} className="fco-squad-panel-row">
-                    <div>
-                      <div className="fco-squad-panel-name">{group.name}</div>
-                      <div className="fco-squad-panel-sub">{group.kindLabel} · {group.count} cầu thủ</div>
-                    </div>
-                    <div className="fco-squad-panel-buff">+{group.buff?.up || 0}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="fco-squad-panel">
-            <div className="fco-squad-panel-title">Team color nâng cấp</div>
-            {squadBonuses.upgrade.tiers.length === 0 ? (
-              <div className="fco-squad-panel-empty">Chưa có tier nâng cấp nào đạt tối thiểu 5 cầu thủ.</div>
-            ) : (
-              <div className="fco-squad-panel-list">
-                {squadBonuses.upgrade.tiers.map((tier) => (
-                  <div key={tier.key} className="fco-squad-panel-row">
-                    <div>
-                      <div className="fco-squad-panel-name" style={{ color: tier.color }}>{tier.label}</div>
-                      <div className="fco-squad-panel-sub">+{tier.min}~+{tier.max} · {tier.count} cầu thủ</div>
-                    </div>
-                    <div className="fco-squad-panel-buff">+{tier.buff?.up || 0}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <TeamColorStrip result={liveTeamColor} loading={liveTeamColorLoading} error={liveTeamColorError} />
 
           <div className="fco-squad-panel-note">
             Đã chọn {filledCount}/11 cầu thủ.
