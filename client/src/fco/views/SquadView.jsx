@@ -579,7 +579,7 @@ export default function SquadView() {
         </div>
 
         <div className="fco-squad-panels">
-          <TeamColorStrip result={liveTeamColor} loading={liveTeamColorLoading} error={liveTeamColorError} />
+          <TeamColorStrip result={liveTeamColor} loading={liveTeamColorLoading} error={liveTeamColorError} bySlotId={bySlotId} />
 
           <div className="fco-squad-panel-note">
             Đã chọn {filledCount}/11 cầu thủ.

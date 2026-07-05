@@ -2359,66 +2359,138 @@ span.card-bg-img.fc-bg::after {
 .fco-squad-panels { display: flex; flex-direction: column; gap: 12px; }
 .fco-squad-panel-note { font-size: 11.5px; color: var(--text-faint); line-height: 1.5; padding: 0 2px; }
 
-.fco-teamcolor-strip {
+/* Team color strip — visually matched to fifaaddict.com/vn/fco-squadmaker/ */
+.team-color-strip {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.02)),
+    rgba(8,14,18,.66);
+}
+
+.team-color-items { display: flex; align-items: center; gap: 6px; }
+
+.summary-edit-icon {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-soft);
-  border-radius: 12px;
-  background: rgba(10,12,16,.34);
-}
-
-.fco-teamcolor-strip-btn {
-  display: inline-flex;
-  align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-soft);
-  background: var(--surface-2);
-  color: var(--text-dim);
+  padding: 0 7px;
+  border: 0;
+  background: transparent;
+  color: rgba(242,247,251,.92);
   cursor: pointer;
-  transition: border-color .14s ease, color .14s ease;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 13px;
+  transition: color .14s ease, opacity .14s ease;
 }
 
-.fco-teamcolor-strip-btn img { width: 18px; height: 14px; object-fit: contain; }
+.summary-edit-icon.is-active { color: var(--accent); }
+.summary-edit-icon:disabled { opacity: .45; cursor: default; }
 
-.fco-teamcolor-strip-btn.is-active {
-  border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
-  color: var(--text);
-}
-
-.fco-teamcolor-strip-btn:disabled { opacity: .5; cursor: default; }
+.team-color-item__icon { display: block; width: 21px; height: 21px; object-fit: contain; }
 
 .fco-teamcolor-strip-status { font-size: 12px; color: var(--text-dim); }
 .fco-teamcolor-strip-status.is-error { color: #f5c84b; }
 
-.fco-teamcolor-detail {
-  width: min(420px, 92vw);
-  border-radius: 14px;
-  background: var(--surface-1);
-  border: 1px solid var(--border-soft);
-  padding: 16px;
-  margin: 12px;
+/* Detail modal — visually matched to team-color-detail-overlay/-modal on fifaaddict.com */
+.team-color-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 56px 18px 18px;
+  background: rgba(6,11,16,.62);
+  backdrop-filter: blur(10px);
+  animation: fco-fade .16s ease;
 }
 
-.fco-teamcolor-detail-head { display: flex; align-items: center; gap: 10px; }
-.fco-teamcolor-detail-icon { width: 40px; height: 30px; object-fit: contain; }
-.fco-teamcolor-detail-name { font-weight: 800; }
-.fco-teamcolor-detail-sub { font-size: 12px; color: var(--text-dim); }
+.team-color-detail-modal {
+  width: min(460px, 100%);
+  max-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(rgba(27,36,44,.98), rgba(17,23,29,.98));
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  box-shadow: 0 18px 48px rgba(0,0,0,.42);
+  color: #e6edf3;
+  animation: fco-modal-in .16s ease;
+}
 
-.fco-teamcolor-detail-rewards { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.fco-teamcolor-reward-chip {
-  padding: 3px 8px;
+.team-color-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 12px;
+  background: linear-gradient(rgba(27,36,44,.98), rgba(24,32,39,.98));
+}
+
+.team-color-detail-title { font-size: 18px; font-weight: 700; color: #f2f7fb; margin: 0; }
+
+.team-color-detail-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 16%, var(--surface-2));
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 800;
+  background: transparent;
+  color: rgba(230,237,243,.84);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.team-color-detail-close:hover { background: rgba(255,255,255,.08); }
+
+.team-color-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 18px 18px;
+  overflow: auto;
 }
 
-.fco-teamcolor-detail-slots { margin-top: 10px; font-size: 12px; color: var(--text-dim); }
+.team-color-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  background: rgba(255,255,255,.04);
+}
+
+.team-color-detail-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.team-color-detail-card__identity { display: flex; align-items: center; gap: 12px; }
+.team-color-detail-card__icon-wrap { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex-shrink: 0; }
+.team-color-detail-card__icon { width: 40px; height: 40px; object-fit: contain; }
+.team-color-detail-card__name { font-size: 15px; font-weight: 700; color: #f4f8fb; }
+.team-color-detail-card__meta { margin-top: 2px; font-size: 12.5px; font-weight: 600; color: rgba(223,234,241,.72); }
+
+.team-color-detail-card__rewards { display: flex; flex-direction: column; gap: 7px; }
+.team-color-detail-reward { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.team-color-detail-reward__name { font-weight: 600; color: #edf5fa; font-size: 13px; }
+.team-color-detail-reward__value { font-weight: 700; color: #59bdff; font-size: 14px; }
+
+.team-color-detail-card__players { display: flex; flex-wrap: wrap; gap: 6px; }
+.team-color-detail-player {
+  width: 46px;
+  height: 46px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.05);
+  overflow: hidden;
+}
+.team-color-detail-player__face { width: 100%; height: 100%; object-fit: cover; }
 
 @keyframes fco-role-zone-in {
   from { opacity: 0; transform: scale(.96); }

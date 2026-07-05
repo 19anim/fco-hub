@@ -20,78 +20,129 @@ function getIconUrl(item) {
   return '';
 }
 
-function TeamColorDetailModal({ item, groupKey, onClose }) {
-  if (!item) return null;
+function getPlayerFaceUrl(uid) {
+  return uid ? `https://s1.fifaaddict.com/fo4/players/${uid}.png` : '';
+}
+
+function getSourceUid(player) {
+  return String(player?._raw?.enrichment?.sourceUid || player?.spid || '');
+}
+
+function TeamColorDetailCard({ item, groupKey, bySlotId }) {
   const rewardEntries = Object.entries(item.rewards || {});
+  const matchedSlots = groupKey !== 'grade' ? (item.matched_slots || []) : [];
+  const players = matchedSlots
+    .map((slotId) => {
+      const player = bySlotId?.[slotId];
+      if (!player) return null;
+      return { slotId, uid: getSourceUid(player), name: player.name || '' };
+    })
+    .filter(Boolean);
 
   return (
-    <div className="fco-modal-backdrop" onClick={onClose}>
-      <div className="fco-teamcolor-detail" onClick={(e) => e.stopPropagation()}>
-        <div className="fco-teamcolor-detail-head">
-          {getIconUrl(item) && <img src={getIconUrl(item)} alt="" className="fco-teamcolor-detail-icon" />}
-          <div>
-            <div className="fco-teamcolor-detail-name">{item.name_vn || item.name}</div>
-            <div className="fco-teamcolor-detail-sub">Cấp {item.level} · Yêu cầu {item.required} · Đủ điều kiện {item.matched}</div>
+    <article className="team-color-detail-card">
+      <div className="team-color-detail-card__top">
+        <div className="team-color-detail-card__identity">
+          <div className="team-color-detail-card__icon-wrap">
+            {getIconUrl(item) && <img className="team-color-detail-card__icon" src={getIconUrl(item)} alt="" aria-hidden="true" />}
           </div>
-          <button type="button" className="fco-modal-close" onClick={onClose} aria-label="Đóng">×</button>
+          <div className="team-color-detail-card__text">
+            <div className="team-color-detail-card__name">{item.name_vn || item.name}</div>
+            <div className="team-color-detail-card__meta">Lv {item.level} • {item.matched}/{item.required} cầu thủ</div>
+          </div>
         </div>
-        <div className="fco-teamcolor-detail-rewards">
+      </div>
+
+      {rewardEntries.length > 0 && (
+        <div className="team-color-detail-card__rewards">
           {rewardEntries.map(([stat, value]) => (
-            <span key={stat} className="fco-teamcolor-reward-chip">{stat} +{value}</span>
+            <div key={stat} className="team-color-detail-reward">
+              <span className="team-color-detail-reward__name">{stat}</span>
+              <span className="team-color-detail-reward__value">+{value}</span>
+            </div>
           ))}
         </div>
-        {groupKey !== 'grade' && (
-          <div className="fco-teamcolor-detail-slots">
-            Vị trí thoả điều kiện: {(item.matched_slots || []).join(', ') || '—'}
-          </div>
-        )}
+      )}
+
+      {players.length > 0 && (
+        <div className="team-color-detail-card__players">
+          {players.map((player) => (
+            <div key={player.slotId} className="team-color-detail-player" title={player.name}>
+              {getPlayerFaceUrl(player.uid) && (
+                <img className="team-color-detail-player__face" src={getPlayerFaceUrl(player.uid)} alt={player.name || ''} loading="lazy" draggable="false" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function TeamColorDetailModal({ items, groupKey, title, bySlotId, onClose }) {
+  return (
+    <div className="team-color-detail-overlay active" onClick={onClose}>
+      <div className="team-color-detail-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        <div className="team-color-detail-header">
+          <h2 className="team-color-detail-title">{title}</h2>
+          <button type="button" className="team-color-detail-close" onClick={onClose} aria-label="Đóng">×</button>
+        </div>
+        <div className="team-color-detail-list">
+          {items.map((item) => (
+            <TeamColorDetailCard key={item.tcid} item={item} groupKey={groupKey} bySlotId={bySlotId} />
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-export function TeamColorStrip({ result, loading, error }) {
+export function TeamColorStrip({ result, loading, error, bySlotId }) {
   const [openGroupKey, setOpenGroupKey] = useState(null);
 
   return (
-    <div className="fco-teamcolor-strip">
-      {STRIP_ITEMS.map((item) => {
-        const { active, candidates } = getGroupData(result, item.key);
-        const count = active.length;
-        const hasData = count > 0;
+    <div className="team-color-strip">
+      <div className="team-color-items">
+        {STRIP_ITEMS.map((item) => {
+          const { active, candidates } = getGroupData(result, item.key);
+          const count = active.length;
+          const hasData = count > 0;
 
-        return (
-          <button
-            key={item.key}
-            type="button"
-            className={`fco-teamcolor-strip-btn${hasData ? ' is-active' : ''}`}
-            disabled={!active.length && !candidates.length}
-            onClick={() => setOpenGroupKey(item.key)}
-            title={item.label}
-          >
-            <img src={item.icon} alt="" />
-            <span>{count}</span>
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={item.key}
+              type="button"
+              id={`teamColor${item.key.charAt(0).toUpperCase()}${item.key.slice(1)}Button`}
+              className={`summary-edit-icon${hasData ? ' is-active' : ''}`}
+              disabled={!active.length && !candidates.length}
+              onClick={() => setOpenGroupKey(item.key)}
+              aria-label={item.label}
+              title={item.label}
+            >
+              <img className="team-color-item__icon" src={item.icon} alt="" aria-hidden="true" />
+              <span>{count}</span>
+            </button>
+          );
+        })}
+      </div>
 
       {loading && <span className="fco-teamcolor-strip-status">Đang tính team color…</span>}
       {!loading && error && <span className="fco-teamcolor-strip-status is-error">Team color tạm thời không khả dụng</span>}
 
-      {openGroupKey && (
-        <div className="fco-teamcolor-detail-list">
-          {getGroupData(result, openGroupKey).active.map((item) => (
-            <TeamColorDetailModal key={item.tcid} item={item} groupKey={openGroupKey} onClose={() => setOpenGroupKey(null)} />
-          ))}
-          {getGroupData(result, openGroupKey).active.length === 0 && (
-            <TeamColorDetailModal
-              item={getGroupData(result, openGroupKey).candidates[0]}
-              groupKey={openGroupKey}
-              onClose={() => setOpenGroupKey(null)}
-            />
-          )}
-        </div>
-      )}
+      {openGroupKey && (() => {
+        const { active, candidates } = getGroupData(result, openGroupKey);
+        const items = active.length > 0 ? active : candidates.slice(0, 1);
+        const label = STRIP_ITEMS.find((i) => i.key === openGroupKey)?.label || '';
+        return (
+          <TeamColorDetailModal
+            items={items}
+            groupKey={openGroupKey}
+            title={label}
+            bySlotId={bySlotId}
+            onClose={() => setOpenGroupKey(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
