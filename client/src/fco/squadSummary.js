@@ -1,6 +1,6 @@
 import { POSITIONS_META } from './constants.js';
 import { getOvrForSlotPosition } from './positionOvr.js';
-import { getPlayerCardKey } from './upgradeHelpers.js';
+import { getOvrIncreaseForLevel, getPlayerCardKey } from './upgradeHelpers.js';
 
 export const DEFAULT_SALARY_CAP = 300;
 export const MAX_SALARY_CAP = 9999;
@@ -14,7 +14,17 @@ export function getSquadSalaryTotal(starters) {
   }, 0);
 }
 
-export function getLineAverages(slots, bySlotId, perPlayerBonuses) {
+export function getSlotTeamColorOvrBonus(slot, player, perPlayerBonuses, liveOvrBonusBySlot) {
+  const localBonus = perPlayerBonuses?.get(getPlayerCardKey(player))?.totalBonus || 0;
+  return liveOvrBonusBySlot?.get(slot?.id) ?? localBonus;
+}
+
+export function getSlotDisplayOvr(slot, player, perPlayerBonuses, liveOvrBonusBySlot) {
+  const positionOvr = getOvrForSlotPosition(player, slot?.pos).ovr;
+  return positionOvr + getOvrIncreaseForLevel(player?.upgradeLevel) + getSlotTeamColorOvrBonus(slot, player, perPlayerBonuses, liveOvrBonusBySlot);
+}
+
+export function getLineAverages(slots, bySlotId, perPlayerBonuses, liveOvrBonusBySlot) {
   const buckets = { GK: [], DEF: [], MID: [], FWD: [] };
   const all = [];
 
@@ -23,7 +33,7 @@ export function getLineAverages(slots, bySlotId, perPlayerBonuses) {
     if (!player) return;
     const group = POSITIONS_META[String(slot.pos || '').toUpperCase()]?.group;
     const baseOvr = getOvrForSlotPosition(player, slot.pos).ovr;
-    const bonus = perPlayerBonuses?.get(getPlayerCardKey(player))?.totalBonus || 0;
+    const bonus = getSlotTeamColorOvrBonus(slot, player, perPlayerBonuses, liveOvrBonusBySlot);
     const ovr = baseOvr + bonus;
     if (!Number.isFinite(ovr)) return;
     all.push(ovr);

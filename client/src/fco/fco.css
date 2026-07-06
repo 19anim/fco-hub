@@ -1616,12 +1616,16 @@ button { font-family: inherit; }
 }
 
 /* ── Squad builder ─────────────────────────────────────────────────────────── */
-.fco-squad-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); }
+.fco-squad-controls-bar { display: flex; flex-direction: column; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); }
+.fco-squad-controls-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 .fco-squad-toolbar-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .fco-squad-toolbar-label { font-size: 11px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; }
 .fco-squad-formation-select-wrap { display: inline-flex; align-items: center; gap: 8px; }
-.fco-team-grade-trigger { position: relative; display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px 3px 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); cursor: pointer; transition: border-color .14s; flex-shrink: 0; }
+.fco-team-grade-trigger { position: relative; display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px 3px 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); cursor: pointer; transition: border-color .14s, background .14s, transform .14s; flex-shrink: 0; }
 .fco-team-grade-trigger:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.fco-team-grade-trigger.is-minimal { padding: 0; border: 0; border-radius: 4px; background: transparent; }
+.fco-team-grade-trigger.is-minimal:hover,
+.fco-team-grade-trigger.is-minimal:focus-visible { background: color-mix(in srgb, var(--accent) 10%, transparent); transform: translateY(-1px); outline: none; }
 .fco-team-grade-caret { color: var(--text-faint); flex-shrink: 0; }
 .fco-team-grade-popover { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.65); padding: 8px; }
 .fco-team-grade-popover-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 8px; font-size: 12px; font-weight: 700; color: var(--text-dim); }
@@ -1638,36 +1642,86 @@ button { font-family: inherit; }
 .fco-squad-formation-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
 .fco-squad-custom-formation { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: 11.5px; font-weight: 800; font-family: var(--mono); }
 
-.fco-squad-summary { display: flex; gap: 12px; margin: 14px 0; align-items: stretch; flex-wrap: wrap; }
+.fco-squad-summary-strip { display: grid; grid-template-columns: minmax(150px, 176px) minmax(0, 1fr) minmax(168px, 196px); gap: 8px; }
 .fco-squad-summary-card {
-  min-width: 190px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
-  padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; justify-content: flex-start;
 }
-.fco-squad-summary-card-wide { min-width: 360px; }
 .fco-squad-summary-card.is-over-limit { border-color: rgba(226,86,111,.5); background: rgba(226,86,111,.08); }
-.fco-squad-summary-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.fco-squad-summary-label { font-size: 11.5px; color: var(--text-faint); }
-.fco-squad-summary-value { font-family: var(--mono); font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 4px; }
+.fco-squad-summary-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
+.fco-squad-summary-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--text-faint); }
+.fco-squad-summary-value { font-family: var(--mono); font-weight: 800; font-size: 18px; display: flex; align-items: baseline; gap: 4px; }
 .fco-squad-summary-cap-input {
-  width: 64px; background: transparent; border: 1px solid var(--border); border-radius: 6px;
+  width: 56px; background: transparent; border: 1px solid var(--border); border-radius: 6px;
   color: var(--text); font-family: var(--mono); font-size: 13px; padding: 2px 6px;
 }
 .fco-squad-summary-cap-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); }
-.fco-squad-summary-bar,
-.fco-squad-summary-line-bar { height: 7px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
-.fco-squad-summary-bar > span,
-.fco-squad-summary-line-bar > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--summary-bar-from, #2cc56f), var(--summary-bar-to, #d8f35d)); transition: width .18s ease; }
-.fco-squad-summary-card.is-over-limit .fco-squad-summary-bar > span { --summary-bar-from: #e2566f; --summary-bar-to: #ff9d68; }
-.fco-squad-summary-lines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 12px; font-size: 12.5px; }
-.fco-squad-summary-line { display: grid; grid-template-columns: 28px minmax(72px, 1fr) 28px; align-items: center; gap: 7px; color: var(--text-dim); }
-.fco-squad-summary-line.line-gk { --summary-bar-from: #f59e0b; --summary-bar-to: #f8d568; }
-.fco-squad-summary-line.line-def { --summary-bar-from: #2f8cff; --summary-bar-to: #7cc7ff; }
-.fco-squad-summary-line.line-mid { --summary-bar-from: #24b66d; --summary-bar-to: #8eea78; }
-.fco-squad-summary-line.line-fwd { --summary-bar-from: #e2566f; --summary-bar-to: #ff8a68; }
-.fco-squad-summary-line-label { color: var(--summary-bar-from, var(--text-faint)); font-weight: 800; font-size: 11px; }
-.fco-squad-summary-line b { color: var(--text); font-family: var(--mono); font-weight: 800; font-size: 12px; text-align: right; }
+.fco-squad-summary-bar { height: 7px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.fco-squad-summary-bar > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2cc56f, #d8f35d); transition: width .18s ease; }
+.fco-squad-summary-card.is-over-limit .fco-squad-summary-bar > span { background: linear-gradient(90deg, #e2566f, #ff9d68); }
+.fco-squad-summary-ovr-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.fco-squad-summary-ovr-rows { display: grid; gap: 5px; }
+.fco-squad-summary-ovr-row { display: grid; grid-template-columns: minmax(60px, 1fr) 26px; align-items: center; gap: 7px; }
+.fco-squad-summary-ovr-bar { height: 7px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.fco-squad-summary-ovr-bar > span { display: block; height: 100%; border-radius: inherit; transition: width .18s ease; }
+.fco-squad-summary-ovr-row.line-gk .fco-squad-summary-ovr-bar > span { background: linear-gradient(90deg, #f59e0b, #f8d568); }
+.fco-squad-summary-ovr-row.line-def .fco-squad-summary-ovr-bar > span { background: linear-gradient(90deg, #2f8cff, #7cc7ff); }
+.fco-squad-summary-ovr-row.line-mid .fco-squad-summary-ovr-bar > span { background: linear-gradient(90deg, #24b66d, #8eea78); }
+.fco-squad-summary-ovr-row.line-fwd .fco-squad-summary-ovr-bar > span { background: linear-gradient(90deg, #e2566f, #ff8a68); }
+.fco-squad-summary-ovr-value { text-align: right; font-size: 12px; font-weight: 700; color: var(--text); }
+.fco-squad-summary-ovr-total { font-family: var(--mono); font-weight: 800; font-size: 20px; color: var(--text); text-align: right; }
 
-.fco-squad-layout { display: grid; grid-template-columns: minmax(0, 900px) minmax(260px, 1fr); justify-content: center; align-items: start; gap: 18px; margin-top: 14px; }
+.fco-squad-layout { display: grid; grid-template-columns: minmax(0, 900px) minmax(260px, 336px); justify-content: center; align-items: start; gap: 18px; margin-top: 14px; }
+.fco-squad-maincol { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.fco-squad-rail { display: grid; grid-template-rows: auto 1fr auto; gap: 12px; align-self: start; position: sticky; top: 74px; }
+.fco-squad-rail-ad { min-height: 0; }
+.fco-squad-rail-ad:empty { display: none; }
+.fco-squad-rail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.fco-squad-rail-roster { display: flex; flex-direction: column; }
+.fco-squad-rail-roster-head {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) 46px 32px 40px; align-items: center; gap: 6px;
+  padding: 8px 10px; border-bottom: 1px solid var(--border-soft);
+  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--text-faint);
+}
+.fco-squad-rail-roster-head-fp { display: inline-flex; align-items: center; gap: 3px; }
+.fco-squad-rail-roster-list { display: flex; flex-direction: column; }
+.fco-squad-rail-roster-row {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) 46px 32px 40px; align-items: center; gap: 6px;
+  padding: 6px 10px; border: none; border-bottom: 1px solid var(--border-soft); background: transparent;
+  color: var(--text); font-size: 12.5px; text-align: left; cursor: pointer; transition: background .12s ease;
+}
+.fco-squad-rail-roster-row:last-child { border-bottom: none; }
+.fco-squad-rail-roster-row:hover,
+.fco-squad-rail-roster-row:focus-visible { background: var(--surface-2); outline: none; }
+.fco-squad-rail-roster-row.is-empty { color: var(--text-dim); }
+.fco-squad-rail-roster-row.is-empty:hover,
+.fco-squad-rail-roster-row.is-empty:focus-visible { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.fco-squad-rail-roster-row.is-empty:hover .fco-squad-rail-roster-name,
+.fco-squad-rail-roster-row.is-empty:focus-visible .fco-squad-rail-roster-name { color: var(--text); }
+.fco-squad-rail-roster-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.fco-squad-rail-roster-name.is-empty { color: var(--text-dim); font-weight: 700; }
+.fco-squad-rail-roster-fp, .fco-squad-rail-roster-ovr { font-size: 12px; color: var(--text-dim); }
+.fco-squad-rail-roster-grade { display: flex; align-items: center; }
+.fco-squad-rail-roster-grade .fco-team-grade-trigger { padding: 1px 4px 1px 2px; border-radius: 8px; }
+.fco-squad-rail-roster-grade .fco-team-grade-trigger.is-minimal { padding: 1px; border-radius: 5px; }
+.fco-squad-rail-roster-grade.is-add {
+  justify-content: center;
+  min-width: 32px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1;
+}
+.fco-squad-rail-roster-row.is-empty:hover .fco-squad-rail-roster-grade.is-add,
+.fco-squad-rail-roster-row.is-empty:focus-visible .fco-squad-rail-roster-grade.is-add { background: var(--accent); color: #06120d; }
+
+@media (max-width: 1160px) {
+  .fco-squad-layout { grid-template-columns: minmax(0, 900px); }
+  .fco-squad-rail { position: static; }
+}
 .fco-squad-pitch {
   position: relative;
   width: min(100%, 900px);
@@ -2501,23 +2555,12 @@ span.card-bg-img.fc-bg::after {
   color: var(--accent);
 }
 
-.fco-squad-panels { display: flex; flex-direction: column; gap: 12px; }
 .fco-squad-panel-note { font-size: 11.5px; color: var(--text-faint); line-height: 1.5; padding: 0 2px; }
 
 /* Team color strip — visually matched to fifaaddict.com/vn/fco-squadmaker/ */
-.team-color-strip {
-  display: flex;
-  align-items: stretch;
-  gap: 4px;
-  padding: 8px 10px;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 10px;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.02)),
-    rgba(8,14,18,.66);
-}
+.team-color-strip { min-width: 0; }
 
-.team-color-items { display: flex; align-items: center; gap: 6px; }
+.team-color-items { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; }
 
 .summary-edit-icon {
   display: flex;
@@ -2653,17 +2696,16 @@ span.card-bg-img.fc-bg::after {
 }
 
 @media (max-width: 1240px) {
-  .fco-squad-layout { grid-template-columns: 1fr; }
-  .fco-squad-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .fco-squad-panel-note { grid-column: 1 / -1; }
+  .fco-squad-summary-strip { grid-template-columns: 1fr 1fr; }
+  .team-color-strip { grid-column: 1 / -1; }
 }
 
 @media (max-width: 860px) {
-  .fco-squad-toolbar { flex-direction: column; align-items: flex-start; }
+  .fco-squad-controls-actions { flex-direction: column; align-items: flex-start; }
   .fco-squad-formation-select-wrap { width: 100%; flex-wrap: wrap; }
   .fco-squad-formation-select { width: 100%; }
   .fco-squad-pitch { width: 100%; }
-  .fco-squad-panels { grid-template-columns: 1fr; }
+  .fco-squad-summary-strip { grid-template-columns: 1fr; }
   .fco-player-card-mini-wrap,
   .player-card.fc-card { width: 84px; height: 92px; }
   .fco-squad-empty { width: 84px; height: 92px; }

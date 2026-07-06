@@ -1,9 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import PlayerPickerFiltered from '../components/PlayerPickerFiltered.jsx';
-import LevelSelect from '../components/LevelSelect.jsx';
 import LevelBadge from '../components/LevelBadge.jsx';
 import TeamGradePopover from '../components/TeamGradePopover.jsx';
-import { buildTeamColorPayload, getTeamColorPayloadHash, evaluateTeamColorLive } from '../teamColorLive.js';
+import { buildTeamColorPayload, getLiveTeamColorOvrBonusBySlot, getTeamColorPayloadHash, evaluateTeamColorLive } from '../teamColorLive.js';
 import { TeamColorStrip } from '../components/TeamColorStrip.jsx';
 import {
   FORMATION_OPTIONS,
@@ -22,12 +21,13 @@ import {
   getPickerPosGroupsForSlot,
 } from '../squadHelpers.js';
 import { getOvrForSlotPosition } from '../positionOvr.js';
-import { DEFAULT_SALARY_CAP, MAX_SALARY_CAP, getLineAverages, getSquadSalaryTotal, GROUP_LABELS } from '../squadSummary.js';
+import { DEFAULT_SALARY_CAP, MAX_SALARY_CAP, getLineAverages, getSlotDisplayOvr, getSquadSalaryTotal } from '../squadSummary.js';
 import { computeSquadBonuses, getPlayerSquadBonus } from '../teamColor.js';
-import { getPlayerCardKey, getOvrIncreaseForLevel, normalizeUpgradeLevel } from '../upgradeHelpers.js';
+import { getPlayerCardKey, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import { MIN_UPGRADE_LEVEL } from '../upgradeConfig.js';
 import { Button, IconButton, PlayerCardMini, PlayerAvatar, SeasonChip, PosPill } from '../ui.jsx';
 import * as I from '../Icons.jsx';
+import MonetizationSlot from '../../components/monetization/MonetizationSlot.jsx';
 
 const FORMATION_GROUPS = [
   { label: '3 Back', prefix: '3-' },
@@ -189,16 +189,16 @@ export default function SquadView() {
   const starters = useMemo(() => getStartersFromSquad(bySlotId, slots), [bySlotId, slots]);
   const squadBonuses = useMemo(() => computeSquadBonuses(starters), [starters]);
   const salaryTotal = useMemo(() => getSquadSalaryTotal(starters), [starters]);
-  const lineAverages = useMemo(() => getLineAverages(slots, bySlotId, squadBonuses.perPlayer), [slots, bySlotId, squadBonuses.perPlayer]);
-  const salaryProgress = salaryCap > 0 ? Math.min(100, (salaryTotal / salaryCap) * 100) : 100;
-  const overallProgress = lineAverages.overall == null ? 0 : Math.min(100, (lineAverages.overall / 150) * 100);
-  const isOverSalaryCap = salaryTotal > salaryCap;
-  const filledCount = starters.length;
 
   const [liveTeamColor, setLiveTeamColor] = useState(null);
   const [liveTeamColorLoading, setLiveTeamColorLoading] = useState(false);
   const [liveTeamColorError, setLiveTeamColorError] = useState(false);
   const lastPayloadHashRef = useRef('');
+  const liveOvrBonusBySlot = useMemo(() => getLiveTeamColorOvrBonusBySlot(liveTeamColor), [liveTeamColor]);
+  const lineAverages = useMemo(() => getLineAverages(slots, bySlotId, squadBonuses.perPlayer, liveOvrBonusBySlot), [slots, bySlotId, squadBonuses.perPlayer, liveOvrBonusBySlot]);
+  const salaryProgress = salaryCap > 0 ? Math.min(100, (salaryTotal / salaryCap) * 100) : 100;
+  const isOverSalaryCap = salaryTotal > salaryCap;
+  const filledCount = starters.length;
 
   useEffect(() => {
     const payload = buildTeamColorPayload(slots, bySlotId, { squadLevel: 1 });
@@ -283,12 +283,6 @@ export default function SquadView() {
     persist(updateSquadPlayerLevel(bySlotId, slotId, level));
   }
 
-  function stepLevel(slotId, delta) {
-    const player = bySlotId[slotId];
-    if (!player) return;
-    changeLevel(slotId, normalizeSquadGrade(player.upgradeLevel) + delta);
-  }
-
   function applyQuickLevel(level) {
     setTeamGrade(normalizeSquadGrade(level));
     let next = { ...bySlotId };
@@ -313,6 +307,12 @@ export default function SquadView() {
     }
     if (player) return;
     setPickerSlotId(slotId);
+  }
+
+  function handleRosterEditKey(event, slotId) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openEditModal(slotId);
   }
 
   function clearDragState() {
@@ -395,6 +395,7 @@ export default function SquadView() {
   const activePickerSlot = visibleSlots.find((s) => s.id === pickerSlotId) || null;
   const activeEditSlot = visibleSlots.find((s) => s.id === editSlotId) || null;
   const activeEditPlayer = editSlotId ? bySlotId[editSlotId] : null;
+  const rosterSlots = useMemo(() => [...visibleSlots].sort((a, b) => a.y - b.y || a.x - b.x), [visibleSlots]);
 
   return (
     <div className="fco-squad-view">
@@ -405,10 +406,14 @@ export default function SquadView() {
         </div>
       </div>
 
-      <div className="fco-squad-summary">
-        <div className={`fco-squad-summary-card${isOverSalaryCap ? ' is-over-limit' : ''}`}>
-          <div className="fco-squad-summary-head">
-            <div className="fco-squad-summary-label">Tổng lương</div>
+      <div className="fco-squad-layout">
+        <div className="fco-squad-maincol">
+          <div className="fco-squad-controls-bar">
+        <div className="fco-squad-summary-strip">
+          <div className={`fco-squad-summary-card fco-squad-summary-card--fp${isOverSalaryCap ? ' is-over-limit' : ''}`}>
+            <div className="fco-squad-summary-head">
+              <span className="fco-squad-summary-eyebrow">Tổng lương</span>
+            </div>
             <div className="fco-squad-summary-value">
               {salaryTotal} /
               <input
@@ -423,38 +428,36 @@ export default function SquadView() {
                 className="fco-squad-summary-cap-input"
               />
             </div>
+            <div className="fco-squad-summary-bar" aria-label={`Tổng lương ${salaryTotal} trên ${salaryCap}`}>
+              <span style={{ width: `${salaryProgress}%` }} />
+            </div>
           </div>
-          <div className="fco-squad-summary-bar" aria-label={`Tổng lương ${salaryTotal} trên ${salaryCap}`}>
-            <span style={{ width: `${salaryProgress}%` }} />
-          </div>
-        </div>
-        <div className="fco-squad-summary-card fco-squad-summary-card-wide">
-          <div className="fco-squad-summary-head">
-            <div className="fco-squad-summary-label">OVR trung bình</div>
-            <div className="fco-squad-summary-value">{lineAverages.overall ?? '—'}</div>
-          </div>
-          <div className="fco-squad-summary-bar" aria-label={`OVR trung bình ${lineAverages.overall ?? 0} trên 150`}>
-            <span style={{ width: `${overallProgress}%` }} />
-          </div>
-          <div className="fco-squad-summary-lines">
-            {['GK', 'DEF', 'MID', 'FWD'].map((key) => {
-              const value = lineAverages[key];
-              const progress = value == null ? 0 : Math.min(100, (value / 150) * 100);
-              return (
-                <div key={key} className={`fco-squad-summary-line line-${key.toLowerCase()}`}>
-                  <span className="fco-squad-summary-line-label">{GROUP_LABELS[key]}</span>
-                  <span className="fco-squad-summary-line-bar"><span style={{ width: `${progress}%` }} /></span>
-                  <b>{value ?? '—'}</b>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
 
-      <div className="fco-squad-toolbar">
-        <div className="fco-squad-toolbar-group">
-          <label className="fco-squad-toolbar-label" htmlFor="fco-squad-formation-select">Sơ đồ</label>
+          <div className="fco-squad-summary-card fco-squad-summary-card--ovr">
+            <div className="fco-squad-summary-head">
+              <span className="fco-squad-summary-eyebrow">OVR trung bình</span>
+            </div>
+            <div className="fco-squad-summary-ovr-grid">
+              <div className="fco-squad-summary-ovr-rows">
+                {['GK', 'DEF', 'MID', 'FWD'].map((key) => {
+                  const value = lineAverages[key];
+                  const progress = value == null ? 0 : Math.min(100, (value / 150) * 100);
+                  return (
+                    <div key={key} className={`fco-squad-summary-ovr-row line-${key.toLowerCase()}`}>
+                      <span className="fco-squad-summary-ovr-bar"><span style={{ width: `${progress}%` }} /></span>
+                      <span className="fco-squad-summary-ovr-value">{value ?? '—'}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="fco-squad-summary-ovr-total">{lineAverages.overall ?? '—'}</div>
+            </div>
+          </div>
+
+          <TeamColorStrip result={liveTeamColor} loading={liveTeamColorLoading} error={liveTeamColorError} bySlotId={bySlotId} />
+        </div>
+
+        <div className="fco-squad-controls-actions">
           <div className="fco-squad-formation-select-wrap">
             {isCustomLayout && <span className="fco-squad-custom-formation">Custom · {customFormationLabel}</span>}
             <select
@@ -475,24 +478,23 @@ export default function SquadView() {
               ))}
             </select>
           </div>
+
+          {filledCount > 0 && (
+            <div className="fco-squad-toolbar-group">
+              <span className="fco-squad-toolbar-label">Cấp nhanh cả đội</span>
+              <TeamGradePopover value={teamGrade} onChange={applyQuickLevel} />
+            </div>
+          )}
+
+          {filledCount > 0 && (
+            <Button variant="ghost" size="sm" icon={I.Refresh} onClick={clearSquad}>
+              Xoá đội hình
+            </Button>
+          )}
+          </div>
         </div>
 
-        {filledCount > 0 && (
-          <div className="fco-squad-toolbar-group">
-            <span className="fco-squad-toolbar-label">Cấp nhanh cả đội</span>
-            <TeamGradePopover value={teamGrade} onChange={applyQuickLevel} />
-          </div>
-        )}
-
-        {filledCount > 0 && (
-          <Button variant="ghost" size="sm" icon={I.Refresh} onClick={clearSquad}>
-            Xoá đội hình
-          </Button>
-        )}
-      </div>
-
-      <div className="fco-squad-layout">
-        <div className="fco-squad-pitch" ref={pitchRef}>
+          <div className="fco-squad-pitch" ref={pitchRef}>
           <div className="fco-pitch-lines" aria-hidden="true">
             <span className="fco-pitch-halfway" />
             <span className="fco-pitch-circle" />
@@ -529,7 +531,7 @@ export default function SquadView() {
             const player = bySlotId[slot.id];
             const bonus = getPlayerSquadBonus(squadBonuses.perPlayer, player);
             const positionOvr = getOvrForSlotPosition(player, slot.pos);
-            const boostedOvr = positionOvr.ovr + getOvrIncreaseForLevel(player?.upgradeLevel) + (bonus?.totalBonus || 0);
+            const boostedOvr = getSlotDisplayOvr(slot, player, squadBonuses.perPlayer, liveOvrBonusBySlot);
             const isMovingSource = movingSlotId === slot.id;
             const isMoveTarget = movingSlotId && movingSlotId !== slot.id;
             const isDropTarget = dragSlotId && dragSlotId !== slot.id;
@@ -596,16 +598,75 @@ export default function SquadView() {
               </div>
             );
           })}
-        </div>
-
-        <div className="fco-squad-panels">
-          <TeamColorStrip result={liveTeamColor} loading={liveTeamColorLoading} error={liveTeamColorError} bySlotId={bySlotId} />
+          </div>
 
           <div className="fco-squad-panel-note">
             Đã chọn {filledCount}/11 cầu thủ.
             {movingSlotId ? ' Bấm vào một vị trí khác để đổi chỗ, hoặc bấm lại icon đổi vị trí để huỷ.' : ' Kéo vị trí trên sân để tạo sơ đồ custom; thả vào vùng đã có vị trí sẽ đổi chỗ.'}
           </div>
         </div>
+
+        <aside className="fco-squad-rail">
+          <MonetizationSlot placement="squad_top" limit={1} className="fco-squad-rail-ad" />
+
+          <section className="fco-squad-rail-panel fco-squad-rail-roster">
+            <div className="fco-squad-rail-roster-head">
+              <span>Pos</span>
+              <span>Tên</span>
+              <span className="fco-squad-rail-roster-head-fp">
+                <I.Coins size={12} />
+                <span>Lương</span>
+              </span>
+              <span>OVR</span>
+              <span>Grade</span>
+            </div>
+            <div className="fco-squad-rail-roster-list">
+              {rosterSlots.map((slot) => {
+                const player = bySlotId[slot.id];
+                if (!player) {
+                  return (
+                    <button
+                      key={slot.id}
+                      type="button"
+                      className="fco-squad-rail-roster-row is-empty"
+                      onClick={() => handleSlotClick(slot.id)}
+                      aria-label={`Chọn cầu thủ vị trí ${slot.pos}`}
+                    >
+                      <span className="fco-squad-rail-roster-pos"><PosPill pos={slot.pos} faded /></span>
+                      <span className="fco-squad-rail-roster-name is-empty">Thêm cầu thủ</span>
+                      <span className="fco-squad-rail-roster-fp">—</span>
+                      <span className="fco-squad-rail-roster-ovr">—</span>
+                      <span className="fco-squad-rail-roster-grade is-add">Thêm</span>
+                    </button>
+                  );
+                }
+                const bonus = getPlayerSquadBonus(squadBonuses.perPlayer, player);
+                const boostedOvr = getSlotDisplayOvr(slot, player, squadBonuses.perPlayer, liveOvrBonusBySlot);
+                return (
+                  <div
+                    key={slot.id}
+                    role="button"
+                    tabIndex={0}
+                    className="fco-squad-rail-roster-row"
+                    onClick={() => openEditModal(slot.id)}
+                    onKeyDown={(event) => handleRosterEditKey(event, slot.id)}
+                    aria-label={`Chỉnh cầu thủ ${player.name} vị trí ${slot.pos}`}
+                  >
+                    <span className="fco-squad-rail-roster-pos"><PosPill pos={slot.pos} /></span>
+                    <span className="fco-squad-rail-roster-name">{player.name}</span>
+                    <span className="fco-squad-rail-roster-fp fco-num">{Number(player.salary) || 0}</span>
+                    <span className="fco-squad-rail-roster-ovr fco-num">{boostedOvr}</span>
+                    <span className="fco-squad-rail-roster-grade">
+                      <TeamGradePopover minimal value={player.upgradeLevel} onChange={(level) => changeLevel(slot.id, level)} />
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <MonetizationSlot placement="squad_bottom" limit={1} className="fco-squad-rail-ad" />
+        </aside>
       </div>
 
       {pickerSlotId && (

@@ -49,6 +49,25 @@ export function getTeamColorPayloadHash(payload) {
   return JSON.stringify(payload || {});
 }
 
+export function getLiveTeamColorOvrBonusBySlot(result) {
+  const bonusBySlot = new Map();
+  const groups = result?.groups || {};
+
+  Object.values(groups).forEach((group) => {
+    const active = Array.isArray(group?.active) ? group.active : [];
+    active.forEach((item) => {
+      const ovr = Number(item?.rewards?.ovr) || 0;
+      if (!ovr) return;
+      const matchedSlots = Array.isArray(item?.matched_slots) ? item.matched_slots : [];
+      matchedSlots.forEach((slotId) => {
+        bonusBySlot.set(slotId, (bonusBySlot.get(slotId) || 0) + ovr);
+      });
+    });
+  });
+
+  return bonusBySlot;
+}
+
 export async function evaluateTeamColorLive(payload) {
   const res = await axios.post(`${API_BASE}/team-colors/evaluate`, payload);
   return res.data;

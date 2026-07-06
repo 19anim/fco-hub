@@ -111,7 +111,10 @@ export function TeamColorStrip({ result, loading, error, bySlotId }) {
   const [openGroupKey, setOpenGroupKey] = useState(null);
 
   return (
-    <div className="team-color-strip">
+    <div className="fco-squad-summary-card team-color-strip">
+      <div className="fco-squad-summary-head">
+        <span className="fco-squad-summary-eyebrow">Team Color</span>
+      </div>
       <div className="team-color-items">
         {STRIP_ITEMS.map((item) => {
           const { active, candidates } = getGroupData(result, item.key);

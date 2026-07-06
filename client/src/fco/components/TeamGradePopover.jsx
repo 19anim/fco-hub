@@ -11,7 +11,7 @@ function normalizeTeamGrade(level) {
   return numericLevel === 0 ? 0 : normalizeUpgradeLevel(level);
 }
 
-export default function TeamGradePopover({ value, onChange }) {
+export default function TeamGradePopover({ value, onChange, minimal = false }) {
   const [open, setOpen] = useState(false);
   const [gridStyle, setGridStyle] = useState({});
   const triggerRef = useRef(null);
@@ -20,12 +20,14 @@ export default function TeamGradePopover({ value, onChange }) {
   useEffect(() => {
     if (!open || !triggerRef.current) return;
     const r = triggerRef.current.getBoundingClientRect();
+    const margin = 8;
     const gridW = 240;
-    const left = Math.min(r.left, window.innerWidth - gridW - 8);
+    const maxLeft = Math.max(margin, window.innerWidth - gridW - margin);
+    const left = Math.min(Math.max(r.right - gridW, margin), maxLeft);
     setGridStyle({
       position: 'fixed',
       top: r.bottom + 6,
-      left: Math.max(8, left),
+      left,
       zIndex: 9999,
       width: gridW,
     });
@@ -48,11 +50,11 @@ export default function TeamGradePopover({ value, onChange }) {
   return (
     <div
       ref={triggerRef}
-      className="fco-team-grade-trigger"
+      className={`fco-team-grade-trigger${minimal ? ' is-minimal' : ''}`}
       onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
     >
       <LevelBadge level={safeValue} scale={0.3} />
-      <I.ChevronDown size={10} className="fco-team-grade-caret" />
+      {!minimal && <I.ChevronDown size={10} className="fco-team-grade-caret" />}
       {open && createPortal(
         <div
           ref={gridRef}

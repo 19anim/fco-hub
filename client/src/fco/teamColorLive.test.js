@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTeamColorPayload, getTeamColorPayloadHash } from './teamColorLive.js';
+import { buildTeamColorPayload, getLiveTeamColorOvrBonusBySlot, getTeamColorPayloadHash } from './teamColorLive.js';
 
 const PLAYER_A = {
   spid: 1, name: 'Matheus Cunha', season: '844', ovr: 116, upgradeLevel: 8,
@@ -47,5 +47,19 @@ describe('getTeamColorPayloadHash', () => {
     const a = getTeamColorPayloadHash({ players: [{ slot_id: 'st', uid: 'x' }], selection: {} });
     const b = getTeamColorPayloadHash({ players: [{ slot_id: 'st', uid: 'y' }], selection: {} });
     expect(a).not.toBe(b);
+  });
+});
+
+describe('getLiveTeamColorOvrBonusBySlot', () => {
+  it('maps active grade OVR rewards to matched slots', () => {
+    const result = {
+      groups: {
+        grade: {
+          active: [{ matched_slots: ['st'], rewards: { ovr: 1 } }],
+        },
+      },
+    };
+
+    expect(getLiveTeamColorOvrBonusBySlot(result).get('st')).toBe(1);
   });
 });

@@ -7,6 +7,8 @@ const DEFAULTS = [
   { key: 'videos_bottom', label: 'Videos – Dưới cùng', page: 'videos', supportedTypes: ['sponsor_banner', 'ad_slot', 'custom_cta', 'affiliate_link'], defaultLimit: 1 },
   { key: 'calculator_bottom', label: 'Calculator – Dưới cùng', page: 'calculator', supportedTypes: ['affiliate_link', 'custom_cta'], defaultLimit: 2 },
   { key: 'player_detail_sidebar', label: 'Player Detail – Sidebar', page: 'player', supportedTypes: ['affiliate_link', 'custom_cta', 'youtube_video'], defaultLimit: 2 },
+  { key: 'squad_top', label: 'Squad Maker – Rail trên', page: 'squad', supportedTypes: ['sponsor_banner', 'ad_slot', 'custom_cta', 'affiliate_link', 'youtube_video'], defaultLimit: 1 },
+  { key: 'squad_bottom', label: 'Squad Maker – Rail dưới', page: 'squad', supportedTypes: ['sponsor_banner', 'ad_slot', 'custom_cta', 'affiliate_link', 'youtube_video'], defaultLimit: 1 },
 ];
 
 const LEGACY_KEYS = [
