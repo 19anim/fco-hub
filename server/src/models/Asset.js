@@ -52,7 +52,17 @@ const assetSchema = new mongoose.Schema(
       default: 'draft',
       required: true,
     },
-    sourcePath: { type: String, trim: true, default: null },
+    sourcePath: {
+      type: String,
+      trim: true,
+      default: null,
+      validate: {
+        validator(value) {
+          return value == null || value.startsWith('/');
+        },
+        message: 'Source path must be a former public path beginning with /',
+      },
+    },
     activeVersion: { type: Number, min: 1 },
     versions: [assetVersionSchema],
   },

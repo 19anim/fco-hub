@@ -62,6 +62,20 @@ test('active asset validates with a nullable sourcePath and complete version met
   await assert.doesNotReject(() => validAsset({ sourcePath: null }).validate());
 });
 
+test('sourcePath accepts former public paths beginning with a slash', async () => {
+  await assert.doesNotReject(() => validAsset({ sourcePath: '/upgrade.png' }).validate());
+  await assert.doesNotReject(() => validAsset({ sourcePath: '/assets/upgrade.png' }).validate());
+});
+
+test('sourcePath rejects absolute filesystem paths with the sourcePath field', async () => {
+  await assertValidationError('sourcePath', { sourcePath: 'D:/ReactJS/fco-hub/public/upgrade.png' });
+  await assertValidationError('sourcePath', { sourcePath: 'C:\\assets\\upgrade.png' });
+});
+
+test('sourcePath rejects paths that are not former public paths with the sourcePath field', async () => {
+  await assertValidationError('sourcePath', { sourcePath: 'upgrade.png' });
+});
+
 test('asset status is limited to draft, active, archived, and disabled', async () => {
   await assertValidationError('status', { status: 'published' });
 });
@@ -70,11 +84,34 @@ test('active assets require at least one version', async () => {
   await assertValidationError('versions', { versions: [], activeVersion: undefined });
 });
 
-test('version metadata fields are required', async () => {
-  const version = validVersion();
-  delete version.secureUrl;
+test('version metadata fields are required with exact version field paths', async () => {
+  const requiredFields = [
+    'version',
+    'cloudinaryPublicId',
+    'secureUrl',
+    'width',
+    'height',
+    'format',
+    'bytes',
+    'uploadedBy',
+    'uploadedAt',
+    'source',
+  ];
 
-  await assertValidationError('versions.0.secureUrl', { versions: [version] });
+  for (const field of requiredFields) {
+    const version = validVersion();
+    delete version[field];
+
+    await assertValidationError(`versions.0.${field}`, {
+      status: 'draft',
+      activeVersion: undefined,
+      versions: [version],
+    });
+  }
+});
+
+test('version source rejects invalid values with the exact source path', async () => {
+  await assertValidationError('versions.0.source', { versions: [validVersion({ source: 'batch' })] });
 });
 
 test('version numbers must be positive and unique within an asset', async () => {
