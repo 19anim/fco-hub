@@ -1,4 +1,7 @@
 import { getSeason } from './helpers.js';
+import { getAssetUrl } from './assets/assetMap.js';
+
+const LOCAL_FIFAADDICT_SPRITE_URL = '/fifaaddict-season-sprite.png';
 
 const seasonVisuals = new Map();
 
@@ -6,10 +9,15 @@ function normalizeKey(value) {
   return String(value || '').trim().toUpperCase();
 }
 
-function toLocalSpriteUrl(url) {
-  if (!url) return '';
-  if (url.includes('f14371f.png')) return '/fifaaddict-season-sprite.png';
-  return url;
+function resolveAssetUrl(assetMapOrLookup, category, key) {
+  if (typeof assetMapOrLookup === 'function') return assetMapOrLookup(category, key);
+  return getAssetUrl(assetMapOrLookup, category, key);
+}
+
+export function normalizeSeasonSpriteAsset(sprite = {}) {
+  const spriteUrl = String(sprite.spriteUrl || sprite.url || '').trim();
+  if (!/fifaaddict\.com\/ffaddv2\/img\/.*\.png/i.test(spriteUrl)) return null;
+  return { category: 'seasonSprite', key: 'fifaaddict' };
 }
 
 function pickFirst(...values) {
@@ -32,7 +40,8 @@ export function registerSeasonSprites(seasons = []) {
     if (sprite?.backgroundPosition) {
       visual.sprite = {
         ...sprite,
-        spriteUrl: toLocalSpriteUrl(sprite.spriteUrl),
+        spriteUrl: null,
+        asset: normalizeSeasonSpriteAsset(sprite),
         width: Number(sprite.width) || 30,
         height: Number(sprite.height) || 24,
       };
@@ -57,6 +66,17 @@ export function getSeasonVisual(code) {
   };
 }
 
-export function getSeasonSprite(code) {
-  return getSeasonVisual(code).sprite;
+export function resolveSeasonSprite(sprite, assetMapOrLookup) {
+  if (!sprite) return null;
+
+  const asset = sprite.asset || normalizeSeasonSpriteAsset(sprite);
+  if (!asset) return null;
+
+  const spriteUrl = resolveAssetUrl(assetMapOrLookup, asset.category, asset.key) || LOCAL_FIFAADDICT_SPRITE_URL;
+
+  return { ...sprite, spriteUrl, asset };
+}
+
+export function getSeasonSprite(code, assetMapOrLookup) {
+  return resolveSeasonSprite(getSeasonVisual(code).sprite, assetMapOrLookup);
 }

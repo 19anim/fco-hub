@@ -1,47 +1,66 @@
 import { describe, expect, it } from 'vitest';
 import { CARD_THEME_FALLBACK_ID, formatCardThemeCoverage, getCardThemeCoverage, getCardThemeForPlayer } from './cardThemes.js';
 
+const assetMap = {
+  cardTheme: {
+    ng: 'https://res.cloudinary.com/demo/card-themes/ng-v1.svg',
+    865: 'https://res.cloudinary.com/demo/card-themes/865-v1.png',
+  },
+};
+
 describe('getCardThemeForPlayer', () => {
   it('returns a stable fallback theme for an unknown season', () => {
-    expect(getCardThemeForPlayer({ season: 'UNKNOWN_SEASON' })).toEqual({
+    expect(getCardThemeForPlayer({ season: 'UNKNOWN_SEASON' }, assetMap)).toEqual({
       seasonCode: 'UNKNOWN_SEASON',
       themeId: CARD_THEME_FALLBACK_ID,
       className: 'card-theme-fallback',
-      backgroundImage: '',
-      hasLocalAsset: false,
+      backgroundImage: null,
+      hasAsset: false,
       source: 'fallback',
     });
   });
 
-  it('uses an explicit local registry entry when available', () => {
-    expect(getCardThemeForPlayer({ season: 'NG' })).toMatchObject({
+  it('resolves a registry theme through the asset map', () => {
+    expect(getCardThemeForPlayer({ season: 'NG' }, assetMap)).toMatchObject({
       seasonCode: 'NG',
       themeId: 'ng',
       className: 'card-theme-ng',
-      hasLocalAsset: true,
-      source: 'local',
+      backgroundImage: 'https://res.cloudinary.com/demo/card-themes/ng-v1.svg',
+      hasAsset: true,
+      source: 'asset-map',
     });
   });
 
-  it('accepts a raw season string', () => {
-    expect(getCardThemeForPlayer('NG')).toMatchObject({
+  it('uses null when the asset map is missing the theme URL', () => {
+    expect(getCardThemeForPlayer('NG', {})).toMatchObject({
       seasonCode: 'NG',
       themeId: 'ng',
       className: 'card-theme-ng',
+      backgroundImage: null,
+      hasAsset: false,
+    });
+  });
+
+  it('accepts a raw season string and lookup function', () => {
+    expect(getCardThemeForPlayer('NG', (category, key) => assetMap[category]?.[key] || null)).toMatchObject({
+      seasonCode: 'NG',
+      themeId: 'ng',
+      className: 'card-theme-ng',
+      backgroundImage: 'https://res.cloudinary.com/demo/card-themes/ng-v1.svg',
     });
   });
 });
 
 describe('getCardThemeCoverage', () => {
-  it('deduplicates seasons and groups cloned and fallback themes', () => {
+  it('deduplicates seasons and groups asset-map and fallback themes', () => {
     const coverage = getCardThemeCoverage([
       { season: 'NG', name: 'A' },
       { season: 'NG', name: 'B' },
       { season: 'UNKNOWN_SEASON', name: 'C' },
-    ]);
+    ], assetMap);
 
     expect(coverage.cloned).toEqual([
-      expect.objectContaining({ seasonCode: 'NG', themeId: 'ng', count: 2 }),
+      expect.objectContaining({ seasonCode: 'NG', themeId: 'ng', count: 2, backgroundImage: assetMap.cardTheme.ng }),
     ]);
     expect(coverage.fallback).toEqual([
       expect.objectContaining({ seasonCode: 'UNKNOWN_SEASON', themeId: CARD_THEME_FALLBACK_ID, count: 1 }),
@@ -52,22 +71,23 @@ describe('getCardThemeCoverage', () => {
 
 describe('FIFAAddict-compatible class names', () => {
   it('returns card-theme classes without spaces', () => {
-    const theme = getCardThemeForPlayer({ season: 'NG' });
+    const theme = getCardThemeForPlayer({ season: 'NG' }, assetMap);
     expect(theme.className).toBe('card-theme-ng');
     expect(theme.className).not.toMatch(/\s/);
   });
 });
 
 describe('formatCardThemeCoverage', () => {
-  it('formats cloned and fallback themes as markdown', () => {
+  it('formats asset-map and fallback themes as markdown', () => {
     const markdown = formatCardThemeCoverage({
-      cloned: [{ seasonCode: 'NG', themeId: 'ng', count: 2, backgroundImage: '/fco/card-themes/card-theme-ng.svg' }],
+      cloned: [{ seasonCode: 'NG', themeId: 'ng', count: 2, backgroundImage: assetMap.cardTheme.ng }],
       seasonVisual: [],
       fallback: [{ seasonCode: 'UNKNOWN', themeId: 'fallback', count: 1 }],
     });
 
     expect(markdown).toContain('## Card theme coverage');
-    expect(markdown).toContain('- NG / ng — 2 player(s) — `/fco/card-themes/card-theme-ng.svg`');
+    expect(markdown).toContain('- NG / ng — 2 player(s) — `https://res.cloudinary.com/demo/card-themes/ng-v1.svg`');
     expect(markdown).toContain('- UNKNOWN / fallback — 1 player(s) — fallback');
+    expect(markdown).not.toContain('/fco/card-themes');
   });
 });

@@ -148,7 +148,7 @@ button { font-family: inherit; }
   width: var(--season-sprite-width, 30px);
   height: var(--season-sprite-height, 24px);
   max-width: 38px;
-  background-image: var(--season-sprite-url, url('/fifaaddict-season-sprite.png'));
+  background-image: var(--season-sprite-url, none);
   background-position: var(--season-sprite-position, 0 0);
   background-size: var(--season-sprite-size, auto);
   background-repeat: no-repeat;
@@ -772,7 +772,7 @@ button { font-family: inherit; }
 .fco-up-sequence-screen.fail .fco-up-burst-bg { opacity: 1; background: radial-gradient(ellipse at 50% 28%, rgba(231,76,60,.34), rgba(80,20,28,.12) 44%, transparent 74%); animation: fco-up-fail-flash .68s ease-out both; }
 .fco-up-sequence-screen.fail .fco-up-card { animation: fco-up-card-impact .58s ease-in-out both; filter: grayscale(.82) brightness(.58); }
 .fco-up-sequence-screen.fail .fco-up-card::before { content: ''; position: absolute; inset: 8%; z-index: 3; opacity: .8; pointer-events: none; background: linear-gradient(112deg, transparent 44%, rgba(255,255,255,.9) 45%, transparent 47%), linear-gradient(48deg, transparent 38%, rgba(255,255,255,.48) 39%, transparent 40%), linear-gradient(156deg, transparent 58%, rgba(255,255,255,.42) 59%, transparent 60%); mix-blend-mode: screen; filter: drop-shadow(0 0 8px rgba(255,255,255,.8)); }
-.fco-up-shatter-effect { left: 50%; top: 45%; right: auto; bottom: auto; width: 256px; height: 256px; z-index: 6; background-image: url('/upgrade-effects/shatter_sprite.webp'); background-size: 2048px auto; background-repeat: no-repeat; mix-blend-mode: screen; filter: brightness(2) contrast(1.2) drop-shadow(0 0 25px rgba(255,255,255,.9)); animation: fco-up-shatter-play .8s step-end forwards, fco-up-shatter-scale .8s ease-out forwards; }
+.fco-up-shatter-effect { left: 50%; top: 45%; right: auto; bottom: auto; width: 256px; height: 256px; z-index: 6; background-image: var(--fco-upgrade-shatter-url, none); background-size: 2048px auto; background-repeat: no-repeat; mix-blend-mode: screen; filter: brightness(2) contrast(1.2) drop-shadow(0 0 25px rgba(255,255,255,.9)); animation: fco-up-shatter-play .8s step-end forwards, fco-up-shatter-scale .8s ease-out forwards; }
 @keyframes fco-up-burst-breathe { from { transform: scale(.96); opacity: .62; } to { transform: scale(1.06); opacity: 1; } }
 @keyframes fco-up-spotlight-sweep { 0% { transform: translateY(-24px) scaleX(.58); opacity: 0; } 32% { opacity: .86; } 100% { transform: translateY(0) scaleX(1); opacity: .58; } }
 @keyframes fco-up-beam-drop { from { transform: translateY(-10px) skewX(-8deg); opacity: .08; } to { transform: translateY(10px) skewX(-8deg); opacity: .78; } }
@@ -812,7 +812,8 @@ button { font-family: inherit; }
 .fco-up-machine-orbit { display: none; }
 .fco-up-machine-core { position: relative; z-index: 1; display: flex; justify-content: center; }
 .fco-up-machine-console { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
-.fco-level-badge { display: inline-block; background-repeat: no-repeat; filter: drop-shadow(0 8px 16px rgba(0,0,0,.36)); pointer-events: none; }
+.fco-level-badge { display: inline-flex; align-items: center; justify-content: center; background-repeat: no-repeat; filter: drop-shadow(0 8px 16px rgba(0,0,0,.36)); pointer-events: none; }
+.fco-level-badge--fallback { border: 1px solid rgba(255,255,255,.16); border-radius: 10px; background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.03)); color: var(--text); font-family: var(--mono); font-size: 18px; font-weight: 900; letter-spacing: -.04em; }
 .fco-level-badge.mini { position: absolute; left: -10px; top: -10px; z-index: 2; filter: drop-shadow(0 4px 8px rgba(0,0,0,.36)); }
 .fco-up-result-strip { width: min(560px, 100%); display: block; }
 .fco-up-gauge-panel .fco-up-summary-grid { width: 100%; }
@@ -1050,7 +1051,7 @@ button { font-family: inherit; }
 .fco-lvl-dropdown-item.active { background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
 /* Badge trong card nâng cấp */
 .fco-up-card-badge-row { display: flex; justify-content: center; margin-bottom: 14px; }
-.fco-level-badge { display: inline-block; background-repeat: no-repeat; filter: drop-shadow(0 6px 14px rgba(0,0,0,.4)); pointer-events: none; }
+.fco-level-badge { display: inline-flex; align-items: center; justify-content: center; background-repeat: no-repeat; filter: drop-shadow(0 6px 14px rgba(0,0,0,.4)); pointer-events: none; }
 .fco-level-badge.mini { position: absolute; left: -10px; top: -10px; z-index: 2; filter: drop-shadow(0 4px 8px rgba(0,0,0,.36)); }
 .fco-modal-search {
   display: flex;
@@ -2224,28 +2225,16 @@ span.card-bg-img.fc-bg::after {
   bottom: 5px;
   z-index: 4;
   transform: translateX(-50%);
-  width: 22px;
-  height: 20px;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.55));
+  width: 23px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.fc-grade.enchant_0 { background-image: url(/upgrade-badges/grade_0.png); }
-.fc-grade.enchant_1 { background-image: url(/upgrade-badges/grade_1.png); }
-.fc-grade.enchant_2 { background-image: url(/upgrade-badges/grade_2.png); }
-.fc-grade.enchant_3 { background-image: url(/upgrade-badges/grade_3.png); }
-.fc-grade.enchant_4 { background-image: url(/upgrade-badges/grade_4.png); }
-.fc-grade.enchant_5 { background-image: url(/upgrade-badges/grade_5.png); }
-.fc-grade.enchant_6 { background-image: url(/upgrade-badges/grade_6.png); }
-.fc-grade.enchant_7 { background-image: url(/upgrade-badges/grade_7.png); }
-.fc-grade.enchant_8 { background-image: url(/upgrade-badges/grade_8.png); }
-.fc-grade.enchant_9 { background-image: url(/upgrade-badges/grade_9.png); }
-.fc-grade.enchant_10 { background-image: url(/upgrade-badges/grade_10.png); }
-.fc-grade.enchant_11 { background-image: url(/upgrade-badges/grade_11.png); }
-.fc-grade.enchant_12 { background-image: url(/upgrade-badges/grade_12.png); }
-.fc-grade.enchant_13 { background-image: url(/upgrade-badges/grade_13.png); }
+.fc-grade .fco-level-badge { filter: drop-shadow(0 1px 2px rgba(0,0,0,.55)); }
+.fc-grade .fco-level-badge--fallback { border-radius: 3px; font-size: 7px; }
+
 
 .card-player-name.fc-name-area {
   position: absolute;
@@ -2580,7 +2569,9 @@ span.card-bg-img.fc-bg::after {
 .summary-edit-icon.is-active { color: var(--accent); }
 .summary-edit-icon:disabled { opacity: .45; cursor: default; }
 
-.team-color-item__icon { display: block; width: 21px; height: 21px; object-fit: contain; }
+.team-color-item__icon,
+.team-color-item__icon-placeholder { display: block; width: 21px; height: 21px; object-fit: contain; }
+.team-color-item__icon-placeholder { border-radius: 7px; background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.03)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
 
 .fco-teamcolor-strip-status { font-size: 12px; color: var(--text-dim); }
 .fco-teamcolor-strip-status.is-error { color: #f5c84b; }

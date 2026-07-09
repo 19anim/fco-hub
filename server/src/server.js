@@ -4,7 +4,9 @@ import cors from 'cors';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import cron from 'node-cron';
+import { v2 as cloudinary } from 'cloudinary';
 import connectDB from './config/db.js';
+import { configureCloudinary } from './config/cloudinary.js';
 import eventRoutes from './routes/event.routes.js';
 import enrichmentRoutes from './routes/enrichment.routes.js';
 import playerRoutes from './routes/player.routes.js';
@@ -18,6 +20,8 @@ import publicMonetizationRoutes from './routes/publicMonetization.routes.js';
 import adminAnalyticsRoutes from './routes/adminAnalytics.routes.js';
 import adminAuditLogRoutes from './routes/adminAuditLog.routes.js';
 import teamColorEvaluationRoutes from './routes/teamColorEvaluation.routes.js';
+import publicAssetsRoutes from './routes/publicAssets.routes.js';
+import adminAssetsRoutes from './routes/adminAssets.routes.js';
 import FCOCrawler from './services/fcoCrawler.js';
 import { syncScannedEvents } from './services/eventScanSync.js';
 import { syncFifaAddict } from './services/fifaAddictSource.js';
@@ -36,6 +40,7 @@ const app = express();
 connectDB();
 bootstrapOwner();
 seedPlacements();
+configureCloudinary(cloudinary);
 
 // Middleware
 const allowedOrigins = new Set([
@@ -83,6 +88,8 @@ app.use('/api/admin/search', adminSearchRoutes);
 app.use('/api/monetization', publicMonetizationRoutes);
 app.use('/api/admin/analytics', adminAnalyticsRoutes);
 app.use('/api/admin/audit-log', adminAuditLogRoutes);
+app.use('/api/assets', publicAssetsRoutes);
+app.use('/api/admin/assets', adminAssetsRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/enrichment', enrichmentRoutes);
 app.use('/api/players', playerRoutes);

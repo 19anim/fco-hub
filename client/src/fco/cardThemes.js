@@ -1,13 +1,12 @@
-import { getSeasonVisual } from './seasonSprites.js';
 import collectedCardThemes from './cardThemeRegistry.json';
+import { getAssetUrl } from './assets/assetMap.js';
 
 export const CARD_THEME_FALLBACK_ID = 'fallback';
 
-const LOCAL_CARD_THEMES = {
+const CARD_THEMES = {
   NG: {
     themeId: 'ng',
     className: 'card-theme-ng',
-    backgroundImage: '/fco/card-themes/card-theme-ng.svg',
   },
   ...collectedCardThemes,
 };
@@ -27,55 +26,47 @@ function normalizeThemeId(value) {
     .replace(/^-+|-+$/g, '') || CARD_THEME_FALLBACK_ID;
 }
 
+function resolveAssetUrl(assetMapOrLookup, category, key) {
+  if (typeof assetMapOrLookup === 'function') return assetMapOrLookup(category, key);
+  return getAssetUrl(assetMapOrLookup, category, key);
+}
+
 function getFallbackTheme(seasonCode) {
   return {
     seasonCode,
     themeId: CARD_THEME_FALLBACK_ID,
     className: 'card-theme-fallback',
-    backgroundImage: '',
-    hasLocalAsset: false,
+    backgroundImage: null,
+    hasAsset: false,
     source: 'fallback',
   };
 }
 
-export function getCardThemeForPlayer(playerOrSeason) {
+export function getCardThemeForPlayer(playerOrSeason, assetMapOrLookup) {
   const seasonCode = normalizeSeasonCode(playerOrSeason);
   if (!seasonCode) return getFallbackTheme('');
 
-  const localTheme = LOCAL_CARD_THEMES[seasonCode];
-  if (localTheme) {
-    const themeId = normalizeThemeId(localTheme.themeId || seasonCode);
-    return {
-      seasonCode,
-      themeId,
-      className: localTheme.className || `card-theme-${themeId}`,
-      backgroundImage: localTheme.backgroundImage || '',
-      hasLocalAsset: Boolean(localTheme.backgroundImage),
-      source: 'local',
-    };
-  }
+  const theme = CARD_THEMES[seasonCode];
+  if (!theme) return getFallbackTheme(seasonCode);
 
-  const seasonVisual = getSeasonVisual(seasonCode);
-  if (seasonVisual.cardImage) {
-    const themeId = normalizeThemeId(seasonCode);
-    return {
-      seasonCode,
-      themeId,
-      className: `card-theme-${themeId}`,
-      backgroundImage: seasonVisual.cardImage,
-      hasLocalAsset: false,
-      source: 'season-visual',
-    };
-  }
+  const themeId = normalizeThemeId(theme.themeId || seasonCode);
+  const backgroundImage = resolveAssetUrl(assetMapOrLookup, 'cardTheme', themeId);
 
-  return getFallbackTheme(seasonCode);
+  return {
+    seasonCode,
+    themeId,
+    className: theme.className || `card-theme-${themeId}`,
+    backgroundImage,
+    hasAsset: Boolean(backgroundImage),
+    source: 'asset-map',
+  };
 }
 
-export function getCardThemeCoverage(players = []) {
+export function getCardThemeCoverage(players = [], assetMapOrLookup) {
   const bySeason = new Map();
 
   for (const player of players) {
-    const theme = getCardThemeForPlayer(player);
+    const theme = getCardThemeForPlayer(player, assetMapOrLookup);
     const key = `${theme.source}:${theme.seasonCode}:${theme.themeId}`;
     const existing = bySeason.get(key) || { ...theme, count: 0 };
     existing.count += 1;
@@ -84,8 +75,7 @@ export function getCardThemeCoverage(players = []) {
 
   const coverage = { cloned: [], fallback: [], seasonVisual: [] };
   for (const theme of bySeason.values()) {
-    if (theme.source === 'local') coverage.cloned.push(theme);
-    else if (theme.source === 'season-visual') coverage.seasonVisual.push(theme);
+    if (theme.source === 'asset-map') coverage.cloned.push(theme);
     else coverage.fallback.push(theme);
   }
 

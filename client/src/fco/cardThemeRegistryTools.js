@@ -11,9 +11,8 @@ function normalizeThemeId(value) {
     .replace(/^-+|-+$/g, '');
 }
 
-function normalizeLocalPath(value, themeId) {
-  const path = String(value || '').trim();
-  return path || `/fco/card-themes/card-theme-${themeId}.png`;
+function normalizeLocalPath(value) {
+  return String(value || '').trim();
 }
 
 function normalizeTitle(value) {
@@ -63,11 +62,10 @@ export function buildLocalCardThemeEntries(records = []) {
       continue;
     }
 
-    const localPath = normalizeLocalPath(record?.localPath, themeId);
+    const localPath = normalizeLocalPath(record?.localPath);
     entries[seasonCode] = {
       themeId,
       className: `card-theme-${themeId}`,
-      backgroundImage: localPath,
     };
 
     const existing = themeUsage.get(themeId) || { themeId, seasons: [], localPath };
@@ -117,6 +115,7 @@ export function reconcileCardThemeCoverage({
       .map((season) => [season.classId, season]),
   );
 
+  const sharedThemeById = new Map(sharedThemes.map((theme) => [theme.themeId, theme]));
   const cloned = Object.entries(entries)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([seasonCode, theme]) => {
@@ -126,7 +125,7 @@ export function reconcileCardThemeCoverage({
         seasonCode,
         title: getRecordTitle(record) || fifaSeason.title || '',
         themeId: theme.themeId,
-        localPath: theme.backgroundImage,
+        localPath: record.localPath || theme.localPath || sharedThemeById.get(theme.themeId)?.localPath || '',
       };
     });
   const clonedByCode = new Map(cloned.map((item) => [item.seasonCode, item]));
@@ -212,7 +211,7 @@ export function mergeCardThemeRegistry(existingRegistry = {}, newEntries = {}) {
     const previous = merged[seasonCode];
     if (!previous) {
       added.push(seasonCode);
-    } else if (previous.backgroundImage !== theme.backgroundImage || previous.themeId !== theme.themeId) {
+    } else if (previous.themeId !== theme.themeId || previous.className !== theme.className) {
       updated.push(seasonCode);
     }
     merged[seasonCode] = theme;
@@ -233,7 +232,6 @@ export function formatLocalCardThemeEntries(entries = {}) {
       `  '${seasonCode}': {`,
       `    themeId: '${theme.themeId}',`,
       `    className: '${theme.className}',`,
-      `    backgroundImage: '${theme.backgroundImage}',`,
       '  },',
     ].join('\n'))
     .join('\n');

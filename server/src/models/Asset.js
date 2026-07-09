@@ -6,12 +6,12 @@ const assetVersionSchema = new mongoose.Schema(
     version: { type: Number, required: true, min: 1 },
     cloudinaryPublicId: { type: String, required: true, trim: true },
     secureUrl: { type: String, required: true, trim: true },
-    width: { type: Number, required: true, min: 1 },
-    height: { type: Number, required: true, min: 1 },
+    width: { type: Number, required: true, min: 0 },
+    height: { type: Number, required: true, min: 0 },
     format: { type: String, required: true, trim: true },
-    bytes: { type: Number, required: true, min: 1 },
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminUser', required: true },
-    uploadedAt: { type: Date, required: true },
+    bytes: { type: Number, required: true, min: 0 },
+    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminUser', default: null },
+    uploadedAt: { type: Date, required: true, default: Date.now },
     source: { type: String, enum: ['migration', 'admin'], required: true },
   },
   { _id: false }
@@ -22,84 +22,57 @@ const assetSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      trim: true,
       enum: Object.keys(ASSET_CATEGORIES),
-    },
-    key: {
-      type: String,
-      required: true,
       trim: true,
-      lowercase: true,
-      validate: {
-        validator(value) {
-          if (!ASSET_CATEGORIES[this.category]) {
-            return true;
-          }
-          try {
-            normalizeAssetIdentity(this.category, value);
-            return true;
-          } catch {
-            return false;
-          }
+    },
+    key: { type: String, required: true, trim: true, lowercase: true },
+    label: { type: String, trim: true, default: '' },
+    sourcePath: { type: String, trim: true, default: null },
+    status: { type: String, enum: ['active', 'archived'], default: 'active', required: true },
+    activeVersion: { type: Number, required: true, min: 1 },
+    versions: {
+      type: [assetVersionSchema],
+      default: [],
+      validate: [
+        {
+          validator(versions) {
+            const seen = new Set();
+            return versions.every((item) => {
+              if (!Number.isInteger(item.version) || item.version < 1) {
+                return true;
+              }
+              if (seen.has(item.version)) {
+                return false;
+              }
+              seen.add(item.version);
+              return true;
+            });
+          },
+          message: 'Asset version numbers must be unique positive integers',
         },
-        message: 'Invalid asset category or key',
-      },
+      ],
     },
-    label: { type: String, trim: true },
-    status: {
-      type: String,
-      enum: ['draft', 'active', 'archived', 'disabled'],
-      default: 'draft',
-      required: true,
-    },
-    sourcePath: {
-      type: String,
-      trim: true,
-      default: null,
-      validate: {
-        validator(value) {
-          return value == null || value.startsWith('/');
-        },
-        message: 'Source path must be a former public path beginning with /',
-      },
-    },
-    activeVersion: { type: Number, min: 1 },
-    versions: [assetVersionSchema],
   },
   { timestamps: true }
 );
 
 assetSchema.index({ category: 1, key: 1 }, { unique: true });
 assetSchema.index({ status: 1, category: 1, updatedAt: -1 });
-assetSchema.index({
-  key: 'text',
-  label: 'text',
-  sourcePath: 'text',
-  'versions.cloudinaryPublicId': 'text',
-});
+assetSchema.index({ key: 'text', label: 'text', sourcePath: 'text', 'versions.cloudinaryPublicId': 'text' });
 
-assetSchema.pre('validate', function validateActiveAsset(next) {
-  if (this.category && this.key) {
-    try {
-      const normalized = normalizeAssetIdentity(this.category, this.key);
-      this.category = normalized.category;
-      this.key = normalized.key;
-    } catch {
-      // Let field validators report exact category/key paths.
-    }
+assetSchema.pre('validate', function validateAssetIdentity(next) {
+  try {
+    const normalized = normalizeAssetIdentity(this.category, this.key);
+    this.category = normalized.category;
+    this.key = normalized.key;
+  } catch (error) {
+    this.invalidate('key', error.message, this.key);
   }
 
-  const versionNumbers = this.versions.map((entry) => entry.version).filter((value) => value != null);
-  if (new Set(versionNumbers).size !== versionNumbers.length) {
-    this.invalidate('versions', 'Asset versions must have unique version numbers');
-  }
-
-  if (this.status === 'active') {
-    if (this.versions.length === 0) {
-      this.invalidate('versions', 'Active assets must have at least one version');
-    } else if (!versionNumbers.includes(this.activeVersion)) {
-      this.invalidate('activeVersion', 'Active version must reference an existing version');
-    }
+  if (!this.versions?.length) {
+    this.invalidate('versions', 'Assets require at least one version', this.versions);
+  } else if (!this.versions.some((item) => item.version === this.activeVersion)) {
+    this.invalidate('activeVersion', 'Active version must exist in versions', this.activeVersion);
   }
 
   next();

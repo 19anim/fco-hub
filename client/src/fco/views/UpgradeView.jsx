@@ -6,20 +6,23 @@ import {
   MAX_GAUGE,
   MAX_UPGRADE_LEVEL,
   MIN_UPGRADE_LEVEL,
+  UPGRADE_ASSETS,
   UPGRADE_EFFECT_OPTIONS,
-  UPGRADE_MASCOT_IMAGES,
 } from '../upgradeConfig.js';
 import {
   calculateEffectGaugeBonus,
   calculateUpgradeGauge,
   getDisplayedOvrForPlayer,
+  getMascotAssetIdentity,
   getSelectedMainUpgradeLevel,
+  getUpgradeAssetUrl,
   isUpgradeLevelSelectDisabled,
   normalizeMaterialOvr,
   normalizeUpgradeLevel,
   rollUpgrade,
   withUpgradeLevel,
 } from '../upgradeHelpers.js';
+import { useAssets } from '../assets/AssetProvider.jsx';
 import { Button, PlayerAvatar, SeasonChip, OvrBox } from '../ui.jsx';
 import { cleanName } from '../helpers.js';
 import * as I from '../Icons.jsx';
@@ -39,6 +42,7 @@ const BURST_PARTICLES = [
 ];
 
 export default function UpgradeView() {
+  const { getAssetUrl } = useAssets();
   const [mainPlayer, setMainPlayer] = useState(null);
   const [level, setLevel] = useState(MIN_UPGRADE_LEVEL);
   const [materialOvrInputs, setMaterialOvrInputs] = useState(['200']);
@@ -73,9 +77,9 @@ export default function UpgradeView() {
     });
   }, [mainPlayer, targetOvr, level, materialOvrs, effectGaugeBonus]);
 
-  const mascotSrc = upgradeGauge.totalGauge >= MAX_GAUGE
-    ? UPGRADE_MASCOT_IMAGES.happy
-    : UPGRADE_MASCOT_IMAGES.sad;
+  const mascotSrc = getUpgradeAssetUrl(getAssetUrl, getMascotAssetIdentity(upgradeGauge.totalGauge));
+  const baseUrl = getUpgradeAssetUrl(getAssetUrl, UPGRADE_ASSETS.base);
+  const shatterUrl = getUpgradeAssetUrl(getAssetUrl, UPGRADE_ASSETS.shatter);
 
   const nextLevel = Math.min(MAX_UPGRADE_LEVEL, level + 1);
   const sessionPercent = Math.min(100, upgradeGauge.gaugeRatio * 100);
@@ -137,7 +141,13 @@ export default function UpgradeView() {
   }
 
   return (
-    <div className="fco-up-view fco-up-machine-view">
+    <div
+      className="fco-up-view fco-up-machine-view"
+      style={{
+        ...(baseUrl ? { '--fco-upgrade-base-url': `url(${baseUrl})` } : {}),
+        ...(shatterUrl ? { '--fco-upgrade-shatter-url': `url(${shatterUrl})` } : {}),
+      }}
+    >
       <div className="fco-up-machine-head">
         <div>
           <h2 className="fco-h2">Giả lập nâng cấp</h2>
@@ -224,7 +234,9 @@ export default function UpgradeView() {
             <div className="fco-up-main">
               {mainPlayer && (
                 <div className="fco-up-mascot-card floating">
-                  <img src={mascotSrc} alt={upgradeGauge.totalGauge >= MAX_GAUGE ? 'Thần Tài vui khi đủ 5 vạch' : 'Thần Tài buồn khi chưa đủ 5 vạch'} />
+                  {mascotSrc && (
+                    <img src={mascotSrc} alt={upgradeGauge.totalGauge >= MAX_GAUGE ? 'Thần Tài vui khi đủ 5 vạch' : 'Thần Tài buồn khi chưa đủ 5 vạch'} />
+                  )}
                   <span>{upgradeGauge.totalGauge >= MAX_GAUGE ? 'Đủ 5 vạch, Thần Tài vui' : 'Chưa đủ 5 vạch, Thần Tài buồn'}</span>
                 </div>
               )}

@@ -11,8 +11,9 @@ import {
 } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 import { SEASONS_META } from '../constants.js';
-import { getSeasonSprite } from '../seasonSprites.js';
+import { getSeasonSprite, resolveSeasonSprite } from '../seasonSprites.js';
 import { shouldClearCareerClubForLeagueChange, shouldLoadClubsForLeague } from './DatabaseView.filters.js';
+import { useAssets } from '../assets/AssetProvider.jsx';
 
 const MAIN_STATS = [
   { key: 'pace',      label: 'PAC' },
@@ -142,6 +143,7 @@ function filtersToQS(f) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }) {
+  const { getAssetUrl } = useAssets();
 
   // Init from URL query string
   const init = filtersFromQS();
@@ -384,7 +386,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
               {allSeasons.map(s => {
                 const isSelected = seasons.includes(String(s.seasonId));
                 const seasonCode = String(s.seasonId || '');
-                const seasonSprite = getSeasonSprite(seasonCode) || s.seasonSprite;
+                const seasonSprite = getSeasonSprite(seasonCode, getAssetUrl) || resolveSeasonSprite(s.seasonSprite, getAssetUrl);
                 const seasonMeta = s.seasonImg || seasonSprite ? null : (SEASONS_META[seasonCode] || SEASONS_META[seasonCode.toUpperCase()] || SEASONS_META.NG);
                 return (
                   <button key={s.seasonId}
@@ -400,7 +402,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
                         className="fco-season-sprite fco-season-opt-sprite"
                         aria-hidden="true"
                         style={{
-                          '--season-sprite-url': `url(${seasonSprite.spriteUrl || '/fifaaddict-season-sprite.png'})`,
+                          ...(seasonSprite.spriteUrl ? { '--season-sprite-url': `url(${seasonSprite.spriteUrl})` } : {}),
                           '--season-sprite-position': seasonSprite.backgroundPosition,
                           '--season-sprite-size': seasonSprite.backgroundSize || 'auto',
                           '--season-sprite-width': `${seasonSprite.width || 30}px`,

@@ -3,6 +3,8 @@ import { useAdminAuth } from '../contexts/AdminAuthContext';
 import './fco.css';
 import { LS_KEY } from './constants.js';
 import { fetchMeta } from './api.js';
+import { AssetProvider } from './assets/AssetProvider.jsx';
+import FaviconAsset from './assets/FaviconAsset.jsx';
 import DatabaseView from './views/DatabaseView.jsx';
 import EventsView from './views/EventsView.jsx';
 import UpgradeView from './views/UpgradeView.jsx';
@@ -190,8 +192,10 @@ export default function FcoApp() {
   const activeView = (view === 'detail' && decodedParam) ? 'detail' : (view || 'db');
 
   return (
-    <div className="fco-app">
-      <nav className="fco-nav">
+    <AssetProvider>
+      <FaviconAsset />
+      <div className="fco-app">
+        <nav className="fco-nav">
         <div className="fco-brand">
           <div className="fco-brand-mark">F</div>
           <div className="fco-brand-name">FCO <span>Hub</span></div>
@@ -252,14 +256,15 @@ export default function FcoApp() {
         )}
       </main>
 
-      {toast && (
-        <div className="fco-toast">
-          {toast.variant === 'success'
-            ? <I.Check size={16} style={{ color: 'var(--accent)' }} />
-            : <I.Info size={16} />}
-          {toast.msg}
-        </div>
-      )}
-    </div>
+        {toast && (
+          <div className="fco-toast">
+            {toast.variant === 'success'
+              ? <I.Check size={16} style={{ color: 'var(--accent)' }} />
+              : <I.Info size={16} />}
+            {toast.msg}
+          </div>
+        )}
+      </div>
+    </AssetProvider>
   );
 }

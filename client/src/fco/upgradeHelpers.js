@@ -5,6 +5,7 @@ import {
   MAX_GAUGE,
   MAX_UPGRADE_LEVEL,
   MIN_UPGRADE_LEVEL,
+  UPGRADE_ASSETS,
   UPGRADE_OUTCOMES_BY_LEVEL,
 } from './upgradeConfig.js';
 
@@ -19,6 +20,22 @@ function clamp(value, min, max) {
 
 export function normalizeUpgradeLevel(level) {
   return clamp(Math.trunc(Number(level) || MIN_UPGRADE_LEVEL), MIN_UPGRADE_LEVEL, MAX_UPGRADE_LEVEL);
+}
+
+export function getLevelBadgeAssetIdentity(level) {
+  const rawLevel = Math.trunc(Number(level));
+  const safeLevel = rawLevel === 0 ? 0 : normalizeUpgradeLevel(level);
+  return ['upgradeBadge', String(safeLevel)];
+}
+
+export function getMascotAssetIdentity(totalGauge) {
+  return Number(totalGauge) >= MAX_GAUGE ? UPGRADE_ASSETS.mascot.happy : UPGRADE_ASSETS.mascot.sad;
+}
+
+export function getUpgradeAssetUrl(getAssetUrl, identity) {
+  if (typeof getAssetUrl !== 'function' || !Array.isArray(identity)) return null;
+  const [category, key] = identity;
+  return getAssetUrl(category, key) || null;
 }
 
 export function getOvrIncreaseForLevel(level) {

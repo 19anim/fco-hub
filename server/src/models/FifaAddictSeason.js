@@ -11,6 +11,7 @@ const fifaAddictSeasonSchema = new mongoose.Schema(
     backgroundSize: { type: String, default: '' },
     width: { type: Number, default: null },
     height: { type: Number, default: null },
+    sortOrder: { type: Number, default: null },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

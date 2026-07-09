@@ -6,9 +6,13 @@ export const MAX_UPGRADE_LEVEL = 13;
 export const QUICK_ADD_GAUGE_TARGETS = Object.freeze([1, 2, 3, 4, 5]);
 export const UPGRADE_EFFECT_OPTIONS = Object.freeze([0, 10, 15, 20, 25, 30, 35, 40, 45, 50]);
 
-export const UPGRADE_MASCOT_IMAGES = Object.freeze({
-  sad: '/upgrade-sad.png',
-  happy: '/upgrade-happy.png',
+export const UPGRADE_ASSETS = Object.freeze({
+  base: ['upgradeBase', 'default'],
+  mascot: Object.freeze({
+    happy: ['upgradeMascot', 'happy'],
+    sad: ['upgradeMascot', 'sad'],
+  }),
+  shatter: ['upgradeEffect', 'shatter'],
 });
 
 export const BASE_GAUGE_BY_LEVEL = Object.freeze({

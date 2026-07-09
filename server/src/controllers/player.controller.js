@@ -384,36 +384,46 @@ export const getPlayerMeta = async (req, res) => {
         .filter(([classId]) => classId)
     );
 
+    const seasons = dbSeasons.map((season) => {
+      const seasonCode = String(season._id || '');
+      const metaSeason = seasonMetaById.get(seasonCode);
+      const fifaAddictSeason = fifaAddictSeasonByValue.get(seasonCode.toUpperCase())
+        || fifaAddictSeasonByClassId.get(seasonCode);
+      const seasonName = isWeakSeasonLabel(season.seasonName) && metaSeason?.seasonName
+        ? metaSeason.seasonName
+        : season.seasonName || fifaAddictSeason?.title || metaSeason?.seasonName || `Season ${seasonCode}`;
+      const seasonImg = season.seasonImg || metaSeason?.seasonImg || '';
+      return {
+        // seasonId is what the client sends back as ?seasonId= → matched against seasonCode
+        seasonId: seasonCode,
+        seasonName,
+        seasonLabel: seasonName,
+        seasonShortName: seasonName.split(/\s+/)[0] || seasonCode,
+        seasonImg,
+        seasonSprite: fifaAddictSeason ? {
+          className: fifaAddictSeason.className,
+          spriteUrl: fifaAddictSeason.spriteUrl,
+          backgroundPosition: fifaAddictSeason.backgroundPosition,
+          backgroundSize: fifaAddictSeason.backgroundSize,
+          width: fifaAddictSeason.width,
+          height: fifaAddictSeason.height,
+        } : null,
+        sortOrder: Number.isFinite(fifaAddictSeason?.sortOrder) ? fifaAddictSeason.sortOrder : null,
+        seasonSort: season.seasonSort,
+        count: season.count,
+      };
+    }).sort((a, b) => {
+      const aOrder = Number.isFinite(a.sortOrder) ? a.sortOrder : Number.POSITIVE_INFINITY;
+      const bOrder = Number.isFinite(b.sortOrder) ? b.sortOrder : Number.POSITIVE_INFINITY;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      if (a.seasonSort !== b.seasonSort) return b.seasonSort - a.seasonSort;
+      return b.count - a.count;
+    }).map(({ sortOrder, seasonSort, ...season }) => season);
+
     res.json({
       success: true,
       totalPlayers: count,
-      seasons: dbSeasons.map((season) => {
-        const seasonCode = String(season._id || '');
-        const metaSeason = seasonMetaById.get(seasonCode);
-        const fifaAddictSeason = fifaAddictSeasonByValue.get(seasonCode.toUpperCase())
-          || fifaAddictSeasonByClassId.get(seasonCode);
-        const seasonName = isWeakSeasonLabel(season.seasonName) && metaSeason?.seasonName
-          ? metaSeason.seasonName
-          : season.seasonName || fifaAddictSeason?.title || metaSeason?.seasonName || `Season ${seasonCode}`;
-        const seasonImg = season.seasonImg || metaSeason?.seasonImg || '';
-        return {
-          // seasonId is what the client sends back as ?seasonId= → matched against seasonCode
-          seasonId: seasonCode,
-          seasonName,
-          seasonLabel: seasonName,
-          seasonShortName: seasonName.split(/\s+/)[0] || seasonCode,
-          seasonImg,
-          seasonSprite: fifaAddictSeason ? {
-            className: fifaAddictSeason.className,
-            spriteUrl: fifaAddictSeason.spriteUrl,
-            backgroundPosition: fifaAddictSeason.backgroundPosition,
-            backgroundSize: fifaAddictSeason.backgroundSize,
-            width: fifaAddictSeason.width,
-            height: fifaAddictSeason.height,
-          } : null,
-          count: season.count,
-        };
-      }),
+      seasons,
       availablePositions: dbPositions.sort(),
       nations: (dbNations || []).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),
       leagues: (dbLeagues || []).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),

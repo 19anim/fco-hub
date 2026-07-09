@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { getSeason, getPos, getTrust, initials, statColor, cleanName } from './helpers.js';
 import { SEASONS_META } from './constants.js';
-import { getSeasonSprite, getSeasonVisual } from './seasonSprites.js';
+import { getSeasonSprite, getSeasonVisual, resolveSeasonSprite } from './seasonSprites.js';
 import { normalizeUpgradeLevel } from './upgradeHelpers.js';
 import * as I from './Icons.jsx';
 import { FcoPlayerCard } from './components/FcoPlayerCard.jsx';
 import { getCardThemeForPlayer } from './cardThemes.js';
+import { useAssets } from './assets/AssetProvider.jsx';
 
 // ── Player Avatar ──────────────────────────────────────────────────────────────
 export function PlayerAvatar({ player, size = 40, bare = false }) {
@@ -64,7 +65,8 @@ export function PlayerAvatar({ player, size = 40, bare = false }) {
 }
 
 export function PlayerCardMini({ player, slotPos, ovr, ovrIsFallback = false, level, className = '', onClick, title }) {
-  const theme = getCardThemeForPlayer(player);
+  const { getAssetUrl } = useAssets();
+  const theme = getCardThemeForPlayer(player, getAssetUrl);
 
   return (
     <span className="fco-player-card-mini-wrap">
@@ -121,8 +123,9 @@ export function PosPill({ pos, faded }) {
 // ── Season Chip ────────────────────────────────────────────────────────────────
 export function SeasonChip({ code, name, full = false, img, sprite }) {
   const [imgError, setImgError] = useState(false);
+  const { getAssetUrl } = useAssets();
   const s = getSeason(code);
-  const resolvedSprite = sprite || getSeasonSprite(code);
+  const resolvedSprite = resolveSeasonSprite(sprite, getAssetUrl) || getSeasonSprite(code, getAssetUrl);
   const label = full ? (name || s.name || code) : (name || code || 'NG');
 
   const showImg = img && !imgError;
@@ -139,7 +142,7 @@ export function SeasonChip({ code, name, full = false, img, sprite }) {
             className="fco-season-sprite"
             aria-hidden="true"
             style={{
-              '--season-sprite-url': `url(${resolvedSprite.spriteUrl || '/fifaaddict-season-sprite.png'})`,
+              ...(resolvedSprite.spriteUrl ? { '--season-sprite-url': `url(${resolvedSprite.spriteUrl})` } : {}),
               '--season-sprite-position': resolvedSprite.backgroundPosition,
               '--season-sprite-size': resolvedSprite.backgroundSize || 'auto',
               '--season-sprite-width': `${resolvedSprite.width || 30}px`,

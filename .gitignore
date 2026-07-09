@@ -35,6 +35,7 @@ playwright-scraper.log
 .playwright-mcp/
 .cache/
 coverage/
+server/reports/assets/
 
 # OS/editor
 .DS_Store

@@ -14,6 +14,7 @@ import DataOpsPage from './pages/admin/DataOpsPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import AuditLogPage from './pages/admin/AuditLogPage';
 import SettingsPage from './pages/admin/SettingsPage';
+import AssetsPage from './pages/admin/AssetsPage';
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="monetization/:id" element={<MonetizationEditPage />} />
             <Route path="placements" element={<PlacementsPage />} />
             <Route path="data-ops" element={<DataOpsPage />} />
+            <Route path="assets" element={<AssetsPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
             <Route path="settings" element={<SettingsPage />} />

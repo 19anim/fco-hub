@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useAssets } from '../assets/AssetProvider.jsx';
 
 const STRIP_ITEMS = [
-  { key: 'club', label: 'Team Color CLB', icon: '/fco/teamcolor-icons/strip/club.png' },
-  { key: 'grade', label: 'Team Color thẻ cộng', icon: '/fco/teamcolor-icons/strip/grade.png' },
-  { key: 'relation', label: 'Team Color liên kết', icon: '/fco/teamcolor-icons/strip/relation.png' },
+  { key: 'club', label: 'Team Color CLB' },
+  { key: 'grade', label: 'Team Color thẻ cộng' },
+  { key: 'relation', label: 'Team Color liên kết' },
 ];
 
 function getGroupData(result, key) {
@@ -109,6 +110,7 @@ function TeamColorDetailModal({ items, title, bySlotId, onClose }) {
 
 export function TeamColorStrip({ result, loading, error, bySlotId }) {
   const [openGroupKey, setOpenGroupKey] = useState(null);
+  const { getAssetUrl } = useAssets();
 
   return (
     <div className="fco-squad-summary-card team-color-strip">
@@ -120,6 +122,7 @@ export function TeamColorStrip({ result, loading, error, bySlotId }) {
           const { active, candidates } = getGroupData(result, item.key);
           const count = active.length;
           const hasData = count > 0;
+          const iconUrl = getAssetUrl('teamColorIcon', item.key);
 
           return (
             <button
@@ -132,7 +135,11 @@ export function TeamColorStrip({ result, loading, error, bySlotId }) {
               aria-label={item.label}
               title={item.label}
             >
-              <img className="team-color-item__icon" src={item.icon} alt="" aria-hidden="true" />
+              {iconUrl ? (
+                <img className="team-color-item__icon" src={iconUrl} alt="" aria-hidden="true" />
+              ) : (
+                <span className="team-color-item__icon-placeholder" aria-hidden="true" />
+              )}
               <span>{count}</span>
             </button>
           );

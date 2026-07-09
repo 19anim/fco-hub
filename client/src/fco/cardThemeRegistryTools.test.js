@@ -32,12 +32,10 @@ describe('buildLocalCardThemeEntries', () => {
       ICONTMB: {
         themeId: '865',
         className: 'card-theme-865',
-        backgroundImage: '/fco/card-themes/card-theme-865.png',
       },
       ICONTM: {
         themeId: '865',
         className: 'card-theme-865',
-        backgroundImage: '/fco/card-themes/card-theme-865.png',
       },
     });
     expect(result.unresolved).toEqual([
@@ -52,13 +50,13 @@ describe('buildLocalCardThemeEntries', () => {
 describe('mergeCardThemeRegistry', () => {
   it('adds new seasons, updates changed ones, and keeps untouched entries', () => {
     const existing = {
-      ICONTM: { themeId: '865', className: 'card-theme-865', backgroundImage: '/fco/card-themes/card-theme-865.png' },
-      OLD: { themeId: '100', className: 'card-theme-100', backgroundImage: '/fco/card-themes/card-theme-100.png' },
+      ICONTM: { themeId: '865', className: 'card-theme-865' },
+      OLD: { themeId: '100', className: 'card-theme-100' },
     };
     const newEntries = {
-      ICONTM: { themeId: '865', className: 'card-theme-865', backgroundImage: '/fco/card-themes/card-theme-865.png' },
-      NEWSEASON: { themeId: '999', className: 'card-theme-999', backgroundImage: '/fco/card-themes/card-theme-999.png' },
-      OLD: { themeId: '101', className: 'card-theme-101', backgroundImage: '/fco/card-themes/card-theme-101.png' },
+      ICONTM: { themeId: '865', className: 'card-theme-865' },
+      NEWSEASON: { themeId: '999', className: 'card-theme-999' },
+      OLD: { themeId: '101', className: 'card-theme-101' },
     };
 
     const { registry, added, updated } = mergeCardThemeRegistry(existing, newEntries);
@@ -78,11 +76,11 @@ describe('formatLocalCardThemeEntries', () => {
       ICONTMB: {
         themeId: '865',
         className: 'card-theme-865',
-        backgroundImage: '/fco/card-themes/card-theme-865.png',
       },
     });
 
-    expect(text).toBe(`  'ICONTMB': {\n    themeId: '865',\n    className: 'card-theme-865',\n    backgroundImage: '/fco/card-themes/card-theme-865.png',\n  },`);
+    expect(text).toBe(`  'ICONTMB': {\n    themeId: '865',\n    className: 'card-theme-865',\n  },`);
+    expect(text).not.toContain('/fco/card-themes');
   });
 });
 
@@ -94,12 +92,10 @@ describe('formatCollectionCoverage', () => {
         ICONTMB: {
           themeId: '865',
           className: 'card-theme-865',
-          backgroundImage: '/fco/card-themes/card-theme-865.png',
         },
         ICONTM: {
           themeId: '865',
           className: 'card-theme-865',
-          backgroundImage: '/fco/card-themes/card-theme-865.png',
         },
       },
       sharedThemes: [{ themeId: '865', seasons: ['ICONTMB', 'ICONTM'], localPath: '/fco/card-themes/card-theme-865.png' }],

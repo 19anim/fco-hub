@@ -6,12 +6,12 @@ import Asset from './Asset.js';
 function validVersion(overrides = {}) {
   return {
     version: 1,
-    cloudinaryPublicId: 'assets/card-themes/ng/v1',
-    secureUrl: 'https://res.cloudinary.com/demo/image/upload/assets/card-themes/ng/v1.png',
-    width: 120,
-    height: 160,
+    cloudinaryPublicId: 'fco/general/hero-v1',
+    secureUrl: 'https://res.cloudinary.com/demo/image/upload/fco/general/hero-v1.png',
+    width: 100,
+    height: 80,
     format: 'png',
-    bytes: 4096,
+    bytes: 1234,
     uploadedBy: new mongoose.Types.ObjectId(),
     uploadedAt: new Date('2026-07-07T00:00:00.000Z'),
     source: 'admin',
@@ -21,127 +21,114 @@ function validVersion(overrides = {}) {
 
 function validAsset(overrides = {}) {
   return new Asset({
-    category: 'cardTheme',
-    key: 'ng',
-    label: 'New Generation Theme',
-    status: 'active',
+    category: 'general',
+    key: 'hero-banner',
+    label: 'Hero banner',
     sourcePath: null,
+    status: 'active',
     activeVersion: 1,
     versions: [validVersion()],
     ...overrides,
   });
 }
 
-async function assertValidationError(path, overrides) {
-  await assert.rejects(
-    () => validAsset(overrides).validate(),
-    (error) => {
-      assert.ok(error.errors);
-      assert.deepEqual(Object.keys(error.errors), [path]);
-      return true;
-    }
-  );
+async function assertInvalidField(asset, field) {
+  await assert.rejects(() => asset.validate(), (error) => Boolean(error.errors?.[field]));
 }
 
-test('asset schema defines required indexes for uniqueness, list search, and text search', () => {
+test('schema defines required indexes', () => {
   const indexes = Asset.schema.indexes();
-
-  assert.ok(indexes.some(([fields, options]) => (
-    fields.category === 1 && fields.key === 1 && options.unique === true
-  )));
-  assert.ok(indexes.some(([fields]) => (
-    fields.status === 1 && fields.category === 1 && fields.updatedAt === -1
-  )));
-  assert.ok(indexes.some(([fields]) => (
-    fields.key === 'text' && fields.label === 'text' && fields.sourcePath === 'text'
-      && fields['versions.cloudinaryPublicId'] === 'text'
-  )));
+  assert.ok(indexes.some(([fields, options]) => fields.category === 1 && fields.key === 1 && options.unique === true));
+  assert.ok(indexes.some(([fields]) => fields.status === 1 && fields.category === 1 && fields.updatedAt === -1));
+  assert.ok(indexes.some(([fields]) => fields.key === 'text' && fields.label === 'text' && fields.sourcePath === 'text' && fields['versions.cloudinaryPublicId'] === 'text'));
 });
 
-test('active asset validates with a nullable sourcePath and complete version metadata', async () => {
-  await assert.doesNotReject(() => validAsset({ sourcePath: null }).validate());
+test('valid active asset passes validation and preserves nullable sourcePath', async () => {
+  const asset = validAsset();
+  await assert.doesNotReject(() => asset.validate());
+  assert.equal(asset.sourcePath, null);
 });
 
-test('sourcePath accepts former public paths beginning with a slash', async () => {
-  await assert.doesNotReject(() => validAsset({ sourcePath: '/upgrade.png' }).validate());
-  await assert.doesNotReject(() => validAsset({ sourcePath: '/assets/upgrade.png' }).validate());
+test('status is restricted to active or archived', async () => {
+  await assertInvalidField(validAsset({ status: 'draft' }), 'status');
 });
 
-test('sourcePath rejects absolute filesystem paths with the sourcePath field', async () => {
-  await assertValidationError('sourcePath', { sourcePath: 'D:/ReactJS/fco-hub/public/upgrade.png' });
-  await assertValidationError('sourcePath', { sourcePath: 'C:\\assets\\upgrade.png' });
+test('active assets require a non-empty versions array', async () => {
+  await assertInvalidField(validAsset({ versions: [] }), 'versions');
 });
 
-test('sourcePath rejects paths that are not former public paths with the sourcePath field', async () => {
-  await assertValidationError('sourcePath', { sourcePath: 'upgrade.png' });
+test('activeVersion must exist in versions', async () => {
+  await assertInvalidField(validAsset({ activeVersion: 2 }), 'activeVersion');
 });
 
-test('asset status is limited to draft, active, archived, and disabled', async () => {
-  await assertValidationError('status', { status: 'published' });
-});
-
-test('active assets require at least one version', async () => {
-  await assertValidationError('versions', { versions: [], activeVersion: undefined });
-});
-
-test('version metadata fields are required with exact version field paths', async () => {
-  const requiredFields = [
-    'version',
-    'cloudinaryPublicId',
-    'secureUrl',
-    'width',
-    'height',
-    'format',
-    'bytes',
-    'uploadedBy',
-    'uploadedAt',
-    'source',
-  ];
-
+test('embedded version metadata is required', async () => {
+  const requiredFields = ['version', 'cloudinaryPublicId', 'secureUrl', 'width', 'height', 'format', 'bytes', 'source'];
   for (const field of requiredFields) {
     const version = validVersion();
     delete version[field];
-
-    await assertValidationError(`versions.0.${field}`, {
-      status: 'draft',
-      activeVersion: undefined,
-      versions: [version],
-    });
+    await assertInvalidField(validAsset({ versions: [version] }), `versions.0.${field}`);
   }
 });
 
-test('version source rejects invalid values with the exact source path', async () => {
-  await assertValidationError('versions.0.source', { versions: [validVersion({ source: 'batch' })] });
+test('version source is restricted to migration or admin', async () => {
+  await assertInvalidField(validAsset({ versions: [validVersion({ source: 'api' })] }), 'versions.0.source');
 });
 
-test('version numbers must be positive and unique within an asset', async () => {
-  await assertValidationError('versions.0.version', { status: 'draft', activeVersion: undefined, versions: [validVersion({ version: 0 })] });
-  await assertValidationError('versions', { versions: [validVersion(), validVersion({ cloudinaryPublicId: 'assets/card-themes/ng/v1-copy' })] });
+test('version numbers must be unique positive integers', async () => {
+  await assertInvalidField(validAsset({ versions: [validVersion({ version: 0 })] }), 'versions.0.version');
+  await assertInvalidField(
+    validAsset({
+      versions: [validVersion({ version: 1 }), validVersion({ version: 1, cloudinaryPublicId: 'fco/general/hero-v1-copy' })],
+    }),
+    'versions'
+  );
 });
 
-test('activeVersion must reference an existing version', async () => {
-  await assertValidationError('activeVersion', { activeVersion: 2 });
+test('category allowlist is enforced', async () => {
+  await assertInvalidField(validAsset({ category: 'misc' }), 'category');
 });
 
-test('category must be in the asset category allowlist', async () => {
-  await assertValidationError('category', { status: 'draft', category: 'unknown', activeVersion: undefined });
-});
-
-test('category-specific key validation rejects invalid keys with the key field', async () => {
-  const cases = [
-    ['cardTheme', 'bad_theme'],
-    ['upgradeBadge', '14'],
-    ['upgradeMascot', 'angry'],
-    ['upgradeBase', 'alternate'],
-    ['upgradeEffect', 'sparkle'],
-    ['seasonSprite', 'other'],
-    ['badgeSprite', 'other'],
-    ['siteAsset', 'logo'],
-    ['teamColorIcon', 'tier'],
-    ['general', 'Bad Key'],
+test('per-category key validation is enforced', async () => {
+  const validIdentities = [
+    ['cardTheme', 'ng'],
+    ['cardTheme', '865'],
+    ['upgradeBadge', '0'],
+    ['upgradeBadge', '13'],
+    ['upgradeMascot', 'happy'],
+    ['upgradeMascot', 'sad'],
+    ['upgradeBase', 'default'],
+    ['upgradeEffect', 'shatter'],
+    ['seasonSprite', 'fifaaddict'],
+    ['badgeSprite', 'fc-online'],
+    ['siteAsset', 'favicon'],
+    ['teamColorIcon', 'relation'],
+    ['general', 'hero-banner'],
   ];
 
-  for (const [category, key] of cases) {
-    await assertValidationError('key', { category, key });
+  for (const [category, key] of validIdentities) {
+    await assert.doesNotReject(() => validAsset({ category, key }).validate());
   }
+
+  const invalidIdentities = [
+    ['cardTheme', 'bad key'],
+    ['upgradeBadge', '14'],
+    ['upgradeMascot', 'neutral'],
+    ['upgradeBase', 'new'],
+    ['upgradeEffect', 'flash'],
+    ['seasonSprite', 'other'],
+    ['badgeSprite', 'fc_online'],
+    ['siteAsset', 'logo'],
+    ['teamColorIcon', 'league'],
+    ['general', 'hero_banner'],
+  ];
+
+  for (const [category, key] of invalidIdentities) {
+    await assertInvalidField(validAsset({ category, key }), 'key');
+  }
+});
+
+test('general keys are trimmed and lowercased', async () => {
+  const asset = validAsset({ category: 'general', key: ' Legal-Notice ' });
+  await asset.validate();
+  assert.equal(asset.key, 'legal-notice');
 });

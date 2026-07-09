@@ -31,6 +31,7 @@ async function extractVnSeasonsFromPage(page) {
         backgroundSize: style ? style.backgroundSize : '',
         width: img ? Math.round(img.getBoundingClientRect().width) : null,
         height: img ? Math.round(img.getBoundingClientRect().height) : null,
+        sortOrder: result.length,
       });
     }
     return result;
@@ -111,6 +112,7 @@ export async function scrapeFifaAddictSeasons({ headless = true } = {}) {
             backgroundSize: season.backgroundSize,
             width: season.width,
             height: season.height,
+            sortOrder: season.sortOrder,
             isActive: true
           }
         },

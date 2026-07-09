@@ -1,6 +1,8 @@
 import { cleanName, statColor } from '../helpers.js';
 import { getCardThemeForPlayer } from '../cardThemes.js';
+import { useAssets } from '../assets/AssetProvider.jsx';
 import { normalizeUpgradeLevel } from '../upgradeHelpers.js';
+import LevelBadge from './LevelBadge.jsx';
 import { getClubCrest, getLeagueLogo, getNationFlag } from '../flagAssets.js';
 
 function getPlayerImage(player) {
@@ -29,7 +31,8 @@ export function FcoPlayerCard({
   onClick,
   title,
 }) {
-  const theme = themeProp || getCardThemeForPlayer(player);
+  const { getAssetUrl } = useAssets();
+  const theme = themeProp || getCardThemeForPlayer(player, getAssetUrl);
   const rawGrade = Math.trunc(Number(grade ?? player?.upgradeLevel));
   const safeGrade = rawGrade === 0 ? 0 : normalizeUpgradeLevel(grade ?? player?.upgradeLevel);
   const displayedOvr = ovr ?? player?.ovr ?? 0;
@@ -88,7 +91,9 @@ export function FcoPlayerCard({
         {playerImage ? <img src={playerImage} alt="" draggable="false" /> : <span className="fc-player-media-placeholder" aria-hidden="true" />}
       </span>
 
-      <span className={`fc-grade enchant_${safeGrade}`} aria-label={`Reinforce ${safeGrade}`} />
+      <span className="fc-grade" aria-label={`Reinforce ${safeGrade}`}>
+        <LevelBadge level={safeGrade} scale={0.19} />
+      </span>
 
       <span className="card-player-name fc-name-area">
         <span className="fc-name">
