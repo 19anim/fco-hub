@@ -236,9 +236,15 @@ export function Button({ variant = 'default', size = 'md', icon: Ico, iconRight:
   );
 }
 
-export function IconButton({ icon: Ico, label, onClick, active, size = 16, ...rest }) {
+export function IconButton({ icon: Ico, label, onClick, active, size = 16, className, ...rest }) {
   return (
-    <button onClick={onClick} title={label} aria-label={label} className={`fco-iconbtn${active ? ' active' : ''}`} {...rest}>
+    <button
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className={`fco-iconbtn${active ? ' active' : ''}${className ? ` ${className}` : ''}`}
+      {...rest}
+    >
       <Ico size={size} />
     </button>
   );

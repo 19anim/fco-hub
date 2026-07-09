@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import PlayerPickerFiltered from '../components/PlayerPickerFiltered.jsx';
 import LevelBadge from '../components/LevelBadge.jsx';
 import TeamGradePopover from '../components/TeamGradePopover.jsx';
+import { fetchPlayerDetail } from '../api.js';
 import { buildTeamColorPayload, getLiveTeamColorOvrBonusBySlot, getTeamColorPayloadHash, evaluateTeamColorLive } from '../teamColorLive.js';
 import { PitchTeamColorList, TeamColorStrip } from '../components/TeamColorStrip.jsx';
 import {
@@ -171,6 +172,8 @@ export default function SquadView() {
   const [layoutDrag, setLayoutDrag] = useState(null);
   const [salaryCap, setSalaryCap] = useState(DEFAULT_SALARY_CAP);
   const [teamGrade, setTeamGrade] = useState(MIN_UPGRADE_LEVEL);
+  const [editPlayerSeasons, setEditPlayerSeasons] = useState([]);
+  const [editPlayerSeasonsLoading, setEditPlayerSeasonsLoading] = useState(false);
   const pitchRef = useRef(null);
   const layoutDragRef = useRef(null);
   const suppressClickRef = useRef(false);
@@ -233,6 +236,32 @@ export default function SquadView() {
     return () => clearTimeout(timer);
   }, [slots, bySlotId]);
 
+  useEffect(() => {
+    if (!editSlotId) {
+      setEditPlayerSeasons([]);
+      setEditPlayerSeasonsLoading(false);
+      return;
+    }
+    const player = bySlotId[editSlotId];
+    if (!player?.id) {
+      setEditPlayerSeasons([]);
+      return;
+    }
+    let ignore = false;
+    setEditPlayerSeasonsLoading(true);
+    fetchPlayerDetail(player.id)
+      .then((res) => {
+        if (!ignore) setEditPlayerSeasons(res.related || []);
+      })
+      .catch(() => {
+        if (!ignore) setEditPlayerSeasons([]);
+      })
+      .finally(() => {
+        if (!ignore) setEditPlayerSeasonsLoading(false);
+      });
+    return () => { ignore = true; };
+  }, [editSlotId]);
+
   function persist(nextBySlotId, nextCustomSlots = squad.customSlots) {
     const next = { formationId, bySlotId: nextBySlotId, customSlots: normalizeSquadSlots(nextCustomSlots) };
     setActiveTeamColorFocus(null);
@@ -271,6 +300,14 @@ export default function SquadView() {
   function openReplacePicker(slotId) {
     setEditSlotId(null);
     setPickerSlotId(slotId);
+  }
+
+  function switchPlayerSeason(slotId, seasonPlayer) {
+    const current = bySlotId[slotId];
+    persist(assignPlayerToSlot(bySlotId, slotId, {
+      ...seasonPlayer,
+      upgradeLevel: current?.upgradeLevel ?? MIN_UPGRADE_LEVEL,
+    }));
   }
 
   function closeEditModal() {
@@ -750,21 +787,43 @@ export default function SquadView() {
                 </div>
               </div>
 
+              {(editPlayerSeasonsLoading || editPlayerSeasons.length > 0) && (
+                <div className="player-edit-grade-block">
+                  <div className="player-edit-label">Đổi mùa thẻ</div>
+                  {editPlayerSeasonsLoading ? (
+                    <div className="player-edit-seasons-loading"><I.Spinner size={16} className="fco-spin" /></div>
+                  ) : (
+                    <div className="player-edit-seasons-grid">
+                      {[...editPlayerSeasons].sort((a, b) => (b.ovr ?? 0) - (a.ovr ?? 0)).map((seasonPlayer) => (
+                        <button
+                          key={seasonPlayer.id}
+                          type="button"
+                          className="player-edit-season-btn"
+                          onClick={() => switchPlayerSeason(editSlotId, seasonPlayer)}
+                          aria-label={`Đổi sang mùa thẻ ${seasonPlayer.seasonName || seasonPlayer.season}`}
+                        >
+                          <SeasonChip code={seasonPlayer.season} name={seasonPlayer.seasonName} img={seasonPlayer.seasonImg} />
+                          <span className="player-edit-season-ovr">{seasonPlayer.ovr}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="player-edit-actions">
                 <Button
                   variant="default"
                   icon={I.Search}
                   onClick={() => openReplacePicker(editSlotId)}
-                  full
                 >
-                  Tìm / đổi mùa thẻ
+                  Tìm
                 </Button>
                 <Button
                   variant="outline"
                   danger
                   icon={I.X}
                   onClick={() => removeFromSlot(editSlotId)}
-                  full
                 >
                   Xoá khỏi đội hình
                 </Button>
