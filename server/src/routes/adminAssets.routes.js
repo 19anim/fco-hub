@@ -13,6 +13,7 @@ export function createAdminAssetsRouter(controller = assetsController, upload = 
   router.get('/:id', requirePermission('assets.view'), controller.detail);
   router.patch('/:id/active-version', requirePermission('assets.edit'), controller.rollback);
   router.patch('/:id/archive', requirePermission('assets.archive'), controller.archive);
+  router.delete('/:id', requirePermission('assets.delete'), controller.delete);
 
   router.use(controller.error);
 

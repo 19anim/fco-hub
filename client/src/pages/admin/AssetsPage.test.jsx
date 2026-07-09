@@ -87,6 +87,7 @@ function makeService(overrides = {}) {
     replace: vi.fn(async () => ({ success: true, data: { ...activeAsset, activeVersion: 3, versionCount: 3 } })),
     setActiveVersion: vi.fn(async () => ({ success: true, data: { ...activeAsset, activeVersion: 1 } })),
     archive: vi.fn(async () => ({ success: true, data: { ...activeAsset, status: 'archived' } })),
+    deleteAsset: vi.fn(async () => ({})),
     ...overrides,
   };
 }
@@ -135,6 +136,7 @@ beforeEach(() => {
   vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:local-preview');
   vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
   vi.spyOn(window, 'confirm').mockReturnValue(true);
+  Element.prototype.scrollIntoView = vi.fn();
 });
 
 afterEach(() => {
@@ -249,10 +251,63 @@ describe('AssetsPage', () => {
     await mounted.unmount();
   });
 
-  it('creates instead of replacing when the upload identity does not match the selected detail', async () => {
+  it('starts a blank create flow while an asset is selected and focuses the upload form', async () => {
     const service = makeService();
     const mounted = await render(<AssetsPage service={service} />);
 
+    await click([...mounted.container.querySelectorAll('button')].find((button) => button.textContent.includes('Add new')));
+    await act(async () => new Promise((resolve) => requestAnimationFrame(resolve)));
+    const selects = mounted.container.querySelectorAll('select');
+    await change(selects[2], 'general');
+    const labelInput = mounted.container.querySelector('input[placeholder="Human-readable label"]');
+    expect(document.activeElement).toBe(labelInput);
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    await change(labelInput, 'Fresh Asset');
+    await chooseFile(mounted.container.querySelector('input[type="file"]'), file('fresh.png'));
+
+    expect(mounted.container.textContent).toContain('Create asset');
+    expect(mounted.container.textContent).not.toContain('Existing asset found');
+    await click(mounted.container.querySelector('button[type="submit"]'));
+
+    const formData = service.upload.mock.calls[0][0];
+    expect(service.upload).toHaveBeenCalledWith(expect.any(FormData));
+    expect(service.replace).not.toHaveBeenCalled();
+    expect(formData.get('category')).toBe('general');
+    expect(formData.get('key')).toBe('fresh-asset');
+    await mounted.unmount();
+  });
+
+  it('adds a new key inside a fixed-key player detail category from the Add new tab', async () => {
+    const service = makeService();
+    const mounted = await render(<AssetsPage service={service} />);
+
+    await click([...mounted.container.querySelectorAll('button')].find((button) => button.textContent.includes('Add new')));
+    const selects = mounted.container.querySelectorAll('select');
+    await change(selects[2], 'playerDetailAsset');
+    const keyInput = mounted.container.querySelector('input[placeholder="asset-slug"]');
+    await change(keyInput, 'body');
+    await change(mounted.container.querySelector('input[placeholder="Human-readable label"]'), 'Player body image');
+    await chooseFile(mounted.container.querySelector('input[type="file"]'), file('body.png'));
+
+    expect(mounted.container.textContent).toContain('Create asset');
+    expect(keyInput.getAttribute('list')).toBeTruthy();
+    await click(mounted.container.querySelector('button[type="submit"]'));
+
+    const formData = service.upload.mock.calls[0][0];
+    expect(service.upload).toHaveBeenCalledWith(expect.any(FormData));
+    expect(service.replace).not.toHaveBeenCalled();
+    expect(formData.get('category')).toBe('playerDetailAsset');
+    expect(formData.get('key')).toBe('body');
+    expect(formData.get('label')).toBe('Player body image');
+    expect(formData.get('file').name).toBe('body.png');
+    await mounted.unmount();
+  });
+
+  it('creates instead of replacing when Add new uses a different identity than the selected detail', async () => {
+    const service = makeService();
+    const mounted = await render(<AssetsPage service={service} />);
+
+    await click([...mounted.container.querySelectorAll('button')].find((button) => button.textContent.includes('Add new')));
     const selects = mounted.container.querySelectorAll('select');
     await change(selects[2], 'general');
     const labelInput = mounted.container.querySelector('input[placeholder="Human-readable label"]');
@@ -316,6 +371,37 @@ describe('AssetsPage', () => {
     expect(mounted.container.textContent).toContain('Permission required: assets.archive');
     expect(mounted.container.textContent).toContain('missing the required asset permission');
     expect(mounted.container.textContent).toContain('Active version v2');
+    await mounted.unmount();
+  });
+
+  it('shows Delete permanently button only after clicking the initial delete trigger on an archived asset', async () => {
+    const archivedAsset = { ...activeAsset, status: 'archived' };
+    const service = makeService({
+      list: vi.fn(async () => ({ success: true, data: { data: [archivedAsset], pagination: { page: 1, limit: 24, total: 1, pages: 1 } } })),
+      getById: vi.fn(async () => ({ success: true, data: archivedAsset })),
+    });
+    const mounted = await render(<AssetsPage service={service} />);
+
+    expect(mounted.container.textContent).not.toContain('Delete permanently');
+    await click([...mounted.container.querySelectorAll('button')].find((b) => b.textContent.includes('Delete permanently') === false && b.textContent.includes('Delete')));
+    expect(mounted.container.textContent).toContain('Delete permanently');
+    await mounted.unmount();
+  });
+
+  it('permanently deletes an archived asset, reloads the list, and clears the detail panel', async () => {
+    const archivedAsset = { ...activeAsset, status: 'archived' };
+    const service = makeService({
+      list: vi.fn(async () => ({ success: true, data: { data: [archivedAsset], pagination: { page: 1, limit: 24, total: 1, pages: 1 } } })),
+      getById: vi.fn(async () => ({ success: true, data: archivedAsset })),
+    });
+    const mounted = await render(<AssetsPage service={service} />);
+
+    await click([...mounted.container.querySelectorAll('button')].find((b) => b.textContent.includes('Delete')));
+    await click([...mounted.container.querySelectorAll('button')].find((b) => b.textContent.includes('Delete permanently')));
+
+    expect(service.deleteAsset).toHaveBeenCalledWith('asset-1');
+    expect(service.list).toHaveBeenCalled();
+    expect(mounted.container.textContent).toContain('deleted permanently');
     await mounted.unmount();
   });
 });

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
 import { AssetProvider } from '../assets/AssetProvider.jsx';
-import { TeamColorStrip } from './TeamColorStrip.jsx';
+import { PitchTeamColorList, TeamColorStrip } from './TeamColorStrip.jsx';
 
 async function renderWithAssets(element, map = {}) {
   const container = document.createElement('div');
@@ -63,5 +63,44 @@ describe('TeamColorStrip', () => {
     expect(mounted.container.querySelectorAll('.team-color-item__icon-placeholder')).toHaveLength(3);
 
     await mounted.unmount();
+  });
+
+  it('renders country icons for live team-color country references', async () => {
+    const result = {
+      groups: {
+        relation: {
+          active: [{
+            tcid: 'country-54',
+            name: 'Brazil',
+            ref_type: 'country',
+            ref_id: '54',
+            matched: 3,
+            required: 3,
+            matched_slots: ['player-1', 'player-2', 'player-3'],
+            rewards: { ovr: 1 },
+          }],
+        },
+      },
+    };
+
+    const strip = await renderWithAssets(
+      <>
+        <PitchTeamColorList result={result} />
+        <TeamColorStrip result={result} bySlotId={{}} />
+      </>,
+      {},
+    );
+
+    const pitchIcon = strip.container.querySelector('.pitch-teamcolor-badge__icon');
+    expect(pitchIcon?.getAttribute('src')).toBe('https://s1.fifaaddict.com/fo4/countries/54.png');
+
+    await act(async () => {
+      strip.container.querySelector('#teamColorRelationButton').click();
+    });
+
+    const detailIcon = strip.container.querySelector('.team-color-detail-card__icon');
+    expect(detailIcon?.getAttribute('src')).toBe('https://s1.fifaaddict.com/fo4/countries/54.png');
+
+    await strip.unmount();
   });
 });

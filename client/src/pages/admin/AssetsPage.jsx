@@ -51,14 +51,19 @@ export default function AssetsPage({ service = adminAssetsService }) {
   const [detailError, setDetailError] = useState('');
   const [identity, setIdentity] = useState({ category: 'cardTheme', key: 'ng' });
   const [identityAsset, setIdentityAsset] = useState(null);
+  const [uploadMode, setUploadMode] = useState('replace');
   const [uploading, setUploading] = useState(false);
   const [mutation, setMutation] = useState('');
   const [notice, setNotice] = useState('');
   const detailRequestRef = useRef(0);
   const identityRequestRef = useRef(0);
+  const uploadPanelRef = useRef(null);
 
   const selectedId = assetId(selectedSummary || detail);
-  const uploadTarget = useMemo(() => (sameIdentity(detail, identity) ? detail : identityAsset), [detail, identity, identityAsset]);
+  const uploadTarget = useMemo(() => {
+    if (uploadMode === 'create') return null;
+    return sameIdentity(detail, identity) ? detail : identityAsset;
+  }, [detail, identity, identityAsset, uploadMode]);
 
   const loadList = useCallback(async (nextFilters, preferredId = '') => {
     try {
@@ -145,6 +150,24 @@ export default function AssetsPage({ service = adminAssetsService }) {
     }
   };
 
+  const changeUploadMode = (nextMode) => {
+    setUploadMode(nextMode);
+    setNotice('');
+    if (nextMode === 'create') {
+      setIdentity({ category: 'general', key: '' });
+      setIdentityAsset(null);
+      requestAnimationFrame(() => {
+        uploadPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        uploadPanelRef.current?.querySelector('input[placeholder="Human-readable label"]')?.focus();
+      });
+    }
+  };
+
+  const handleSelectAsset = (asset) => {
+    setUploadMode('replace');
+    setSelectedSummary(asset);
+  };
+
   const handleUpload = async ({ formData, asset, resetFile }) => {
     setUploading(true);
     setNotice('');
@@ -194,6 +217,22 @@ export default function AssetsPage({ service = adminAssetsService }) {
     }
   };
 
+  const handleDelete = async (asset) => {
+    setMutation('delete');
+    setNotice('');
+    try {
+      await service.deleteAsset(assetId(asset));
+      setNotice('Asset deleted permanently.');
+      await loadList(filters, '');
+      setDetail(null);
+      setSelectedSummary(null);
+    } catch (error) {
+      setNotice(apiMessage(error));
+    } finally {
+      setMutation('');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -215,26 +254,30 @@ export default function AssetsPage({ service = adminAssetsService }) {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="space-y-5">
+          <div ref={uploadPanelRef}>
+            <AssetUploadPanel
+              key={uploadMode === 'create' ? 'create-asset' : assetId(detail) || 'new-asset'}
+              selectedAsset={uploadMode === 'create' ? null : detail}
+              existingAsset={uploadTarget}
+              mode={uploadMode}
+              onModeChange={changeUploadMode}
+              onIdentityChange={(nextIdentity) => setIdentity((current) => (
+                current.category === nextIdentity.category && current.key === nextIdentity.key ? current : nextIdentity
+              ))}
+              onSubmit={handleUpload}
+              submitting={uploading}
+              message={notice}
+            />
+          </div>
           <AssetLibrary
             items={items}
             loading={listLoading}
             error={listError}
             selectedId={selectedId}
             pagination={pagination}
-            onSelect={setSelectedSummary}
+            onSelect={handleSelectAsset}
             onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
             onRetry={() => loadList(filters, selectedId)}
-          />
-          <AssetUploadPanel
-            key={assetId(detail) || 'new-asset'}
-            selectedAsset={detail}
-            existingAsset={uploadTarget}
-            onIdentityChange={(nextIdentity) => setIdentity((current) => (
-              current.category === nextIdentity.category && current.key === nextIdentity.key ? current : nextIdentity
-            ))}
-            onSubmit={handleUpload}
-            submitting={uploading}
-            message={notice}
           />
         </div>
         <AssetDetailPanel
@@ -244,6 +287,7 @@ export default function AssetsPage({ service = adminAssetsService }) {
           mutation={mutation}
           onRollback={handleRollback}
           onArchive={handleArchive}
+          onDelete={handleDelete}
         />
       </div>
     </div>

@@ -6,6 +6,7 @@ export const FIXED_KEYS = Object.freeze({
   badgeSprite: ['fc-online'],
   siteAsset: ['icons', 'favicon'],
   teamColorIcon: ['club', 'grade', 'relation'],
+  playerDetailAsset: ['foot'],
 });
 
 export const CATEGORY_LABELS = Object.freeze({
@@ -18,6 +19,7 @@ export const CATEGORY_LABELS = Object.freeze({
   badgeSprite: 'Badge sprite',
   siteAsset: 'Site asset',
   teamColorIcon: 'Team color icon',
+  playerDetailAsset: 'Player detail asset',
   general: 'General',
 });
 
@@ -32,6 +34,7 @@ export const CATEGORY_OPTIONS = Object.freeze([
   ['badgeSprite', 'Badge sprite'],
   ['siteAsset', 'Site assets'],
   ['teamColorIcon', 'Team color icons'],
+  ['playerDetailAsset', 'Player detail assets'],
   ['general', 'General'],
 ]);
 

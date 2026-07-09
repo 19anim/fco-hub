@@ -2,13 +2,11 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { normalizeBackendSearch } from '../../utils/backendSearch.js';
 import { fetchPlayers, fetchMeta, fetchClubsByLeague } from '../api.js';
 import { shouldClearCareerClubForLeagueChange, shouldLoadClubsForLeague } from '../views/DatabaseView.filters.js';
-import { cleanName, statColor } from '../helpers.js';
 import { getPlayerCardKey, isSamePlayerCard, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import { SEASONS_META } from '../constants.js';
 import { getSeasonSprite, resolveSeasonSprite } from '../seasonSprites.js';
-import { PlayerAvatar, SeasonChip, PosPill } from '../ui.jsx';
-import LevelSelect from './LevelSelect.jsx';
 import PlayerSearchForm from './PlayerSearchForm.jsx';
+import PlayerPickerItem from './PlayerPickerItem.jsx';
 import * as I from '../Icons.jsx';
 import { useAssets } from '../assets/AssetProvider.jsx';
 
@@ -62,7 +60,9 @@ export default function PlayerPickerFiltered({
 
   const previousLeagueRef = useRef(undefined);
   const normalizedSearch = normalizeBackendSearch(search);
-  const [submittedParams, setSubmittedParams] = useState(null);
+  const [submittedParams, setSubmittedParams] = useState(() => (
+    posGroups?.length ? { posGroups, sort: 'ovr_desc', pageSize } : null
+  ));
 
   useEffect(() => {
     fetchMeta().then(res => {
@@ -126,7 +126,11 @@ export default function PlayerPickerFiltered({
     }
 
     if (!normalizedSearch && !hasNonSearchFilter) {
-      setSubmittedParams(null);
+      if (posGroups?.length) {
+        setSubmittedParams({ posGroups, sort: 'ovr_desc', pageSize });
+      } else {
+        setSubmittedParams(null);
+      }
       setResults([]);
       return;
     }
@@ -168,7 +172,11 @@ export default function PlayerPickerFiltered({
     setStatMin('');
     setStatMax('');
     setTrait('');
-    setSubmittedParams(null);
+    if (posGroups?.length) {
+      setSubmittedParams({ posGroups, sort: 'ovr_desc', pageSize });
+    } else {
+      setSubmittedParams(null);
+    }
     setResults([]);
   }
 
@@ -280,25 +288,15 @@ export default function PlayerPickerFiltered({
               const selectedLevel = getLevel(cardKey);
 
               return (
-                <button key={cardKey || p.id} className="fco-modal-item" disabled={disabled} onClick={() => choosePlayer(p)}>
-                  <PlayerAvatar player={p} size={36} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="fco-modal-itemname">{cleanName(p.name)}</div>
-                    <div className="fco-modal-itemsub">
-                      <SeasonChip code={p.season} img={p.seasonImg} />
-                      {' '}<PosPill pos={p.primaryPos} />
-                      <span style={{ marginLeft: 6, fontFamily: 'var(--mono)', fontSize: 12, color: statColor(p.ovr) }}>{p.ovr}</span>
-                      {p.club && <span style={{ marginLeft: 6 }}>{p.club}</span>}
-                    </div>
-                  </div>
-                  {allowLevelSelect && !disabled && (
-                    <LevelSelect
-                      value={selectedLevel}
-                      onChange={lv => setLevelById(prev => ({ ...prev, [cardKey]: lv }))}
-                    />
-                  )}
-                  {disabled && <I.Check size={14} style={{ color: 'var(--accent)', flex: '0 0 14px' }} />}
-                </button>
+                <PlayerPickerItem
+                  key={cardKey || p.id}
+                  player={p}
+                  disabled={disabled}
+                  allowLevelSelect={allowLevelSelect}
+                  level={selectedLevel}
+                  onLevelChange={lv => setLevelById(prev => ({ ...prev, [cardKey]: lv }))}
+                  onChoose={choosePlayer}
+                />
               );
             })}
             {!loading && !submittedParams && (

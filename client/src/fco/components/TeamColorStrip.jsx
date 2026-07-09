@@ -18,6 +18,7 @@ function getGroupData(result, key) {
 function getIconUrl(item) {
   if (item?.image) return `https://s1.fifaaddict.com/fo4/teamcolor/${item.image}`;
   if (item?.ref_type === 'team' && item?.ref_id) return `https://s1.fifaaddict.com/fo4/crests/light/l${item.ref_id}.png`;
+  if ((item?.ref_type === 'country' || item?.ref_type === 'nation') && item?.ref_id) return `https://s1.fifaaddict.com/fo4/countries/${item.ref_id}.png`;
   return '';
 }
 
@@ -104,6 +105,76 @@ function TeamColorDetailModal({ items, title, bySlotId, onClose }) {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function getItemSlots(item) {
+  const matchedSlots = Array.isArray(item?.matched_slots) ? item.matched_slots : [];
+  const qualifiedSlots = Array.isArray(item?.qualified_slots) && item.qualified_slots.length
+    ? item.qualified_slots
+    : matchedSlots;
+  return { matchedSlots, qualifiedSlots };
+}
+
+function buildPitchTeamColorEntries(result) {
+  return STRIP_ITEMS.flatMap((group) => {
+    const { active } = getGroupData(result, group.key);
+    return active.map((item, index) => {
+      const { matchedSlots, qualifiedSlots } = getItemSlots(item);
+      const fallbackId = item?.name_vn || item?.name || index;
+      return {
+        id: `${group.key}:${item?.tcid || fallbackId}`,
+        groupKey: group.key,
+        tone: group.key,
+        label: group.label,
+        item,
+        matchedSlots,
+        qualifiedSlots,
+      };
+    });
+  });
+}
+
+export function PitchTeamColorList({ result, activeFocus, onToggleFocus }) {
+  const entries = buildPitchTeamColorEntries(result);
+  if (!entries.length) return null;
+
+  return (
+    <div className="pitch-teamcolor-list" aria-label="Team color đang kích hoạt">
+      {entries.map((entry) => {
+        const isActive = activeFocus?.id === entry.id;
+        const iconUrl = getIconUrl(entry.item);
+        const name = entry.item?.name_vn || entry.item?.name || entry.label;
+
+        return (
+          <button
+            key={entry.id}
+            type="button"
+            className={`pitch-teamcolor-badge pitch-teamcolor-badge--${entry.tone}${isActive ? ' is-active' : ''}`}
+            onClick={() => onToggleFocus(isActive ? null : entry)}
+            aria-pressed={isActive}
+            aria-label={name}
+            title={name}
+            data-group-name={entry.groupKey}
+            data-team-color-tone={entry.tone}
+            data-matched-slots={entry.matchedSlots.join(',')}
+            data-qualified-slots={entry.qualifiedSlots.join(',')}
+          >
+            <span className="pitch-teamcolor-badge__icon-wrap">
+              {iconUrl ? (
+                <img className="pitch-teamcolor-badge__icon" src={iconUrl} alt="" aria-hidden="true" />
+              ) : (
+                <span className="pitch-teamcolor-badge__icon-placeholder" aria-hidden="true" />
+              )}
+            </span>
+            <span className="pitch-teamcolor-badge__text">
+              <span className="pitch-teamcolor-badge__name">{name}</span>
+              <span className="pitch-teamcolor-badge__meta">{entry.item?.matched ?? entry.matchedSlots.length}/{entry.item?.required ?? entry.qualifiedSlots.length}</span>
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

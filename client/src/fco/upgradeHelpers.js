@@ -57,6 +57,21 @@ export function getOvrForLevel(baseOvr, level) {
   return safeBaseOvr + getOvrIncreaseForLevel(level);
 }
 
+const MAX_SKILL_MOVES = 6;
+
+export function getSkillMovesBonusForLevel(level) {
+  const safeLevel = normalizeUpgradeLevel(level);
+  if (safeLevel >= 8) return 2;
+  if (safeLevel >= 5) return 1;
+  return 0;
+}
+
+export function getSkillMovesForLevel(baseSkillMoves, level) {
+  if (baseSkillMoves == null) return baseSkillMoves;
+  const safeBaseSkillMoves = Number(baseSkillMoves) || 0;
+  return Math.min(MAX_SKILL_MOVES, safeBaseSkillMoves + getSkillMovesBonusForLevel(level));
+}
+
 export function getDisplayedOvrForPlayer(player, fallbackLevel = MIN_UPGRADE_LEVEL) {
   if (!player) return 0;
   return getOvrForLevel(player.ovr, player.upgradeLevel ?? fallbackLevel);

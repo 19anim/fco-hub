@@ -17,6 +17,15 @@ function getStatBonusForGrade(grade) {
   return getOvrIncreaseForLevel(grade);
 }
 
+const MAX_SKILL_MOVES = 6;
+
+export function getSkillMovesBonusForGrade(grade) {
+  const safeGrade = Math.trunc(Number(grade) || 0);
+  if (safeGrade >= 8) return 2;
+  if (safeGrade >= 5) return 1;
+  return 0;
+}
+
 function addBonus(value, bonus) {
   if (value == null) return value;
   const number = Number(value);
@@ -29,6 +38,7 @@ export function getDetailBonusModel({ grade, level = 1, teamColorBonus = 0 }) {
   const levelStatBonus = clampInteger(level, 1, 5) - 1;
   const bonusStatBonus = clampInteger(teamColorBonus, 0, 10);
   const flatBonus = levelStatBonus + bonusStatBonus;
+  const skillMovesBonus = getSkillMovesBonusForGrade(grade);
 
   return {
     gradeOvrBonus,
@@ -38,15 +48,16 @@ export function getDetailBonusModel({ grade, level = 1, teamColorBonus = 0 }) {
     flatBonus,
     statBonus: gradeStatBonus + flatBonus,
     ovrBonus: gradeOvrBonus + flatBonus,
+    skillMovesBonus,
   };
 }
 
 export function applyDetailBonuses(player, bonuses) {
   if (!player) return player;
 
-  const ovrBonus = (bonuses?.ovrBonus || 0) + DETAILED_STAT_BASE_CORRECTION;
-  const statBonus = (bonuses?.statBonus || 0) + DETAILED_STAT_BASE_CORRECTION;
-  const detailedStatBonus = statBonus;
+  const ovrBonus = bonuses?.ovrBonus || 0;
+  const statBonus = bonuses?.statBonus || 0;
+  const detailedStatBonus = statBonus + DETAILED_STAT_BASE_CORRECTION;
   const detailed = player.detailed
     ? Object.fromEntries(Object.entries(player.detailed).map(([group, value]) => [
         group,
@@ -58,12 +69,18 @@ export function applyDetailBonuses(player, bonuses) {
       ]))
     : player.detailed;
 
+  const skillMovesBonus = bonuses?.skillMovesBonus || 0;
+  const skillMoves = player.skillMoves != null
+    ? Math.min(MAX_SKILL_MOVES, Number(player.skillMoves) + skillMovesBonus)
+    : player.skillMoves;
+
   return {
     ...player,
     [OVR_STAT_KEY]: addBonus(player[OVR_STAT_KEY], ovrBonus),
     ...Object.fromEntries(GRADE_STAT_KEYS.map((key) => [key, addBonus(player[key], statBonus)])),
     positionRatings: player.positionRatings?.map((rating) => ({ ...rating, value: addBonus(rating.value, ovrBonus) })) || [],
     detailed,
+    skillMoves,
     boost: bonuses?.statBonus || 0,
     ovrBoost: ovrBonus,
   };

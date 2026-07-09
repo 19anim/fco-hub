@@ -5,6 +5,8 @@ import {
   getLevelBadgeAssetIdentity,
   getMascotAssetIdentity,
   getSelectedMainUpgradeLevel,
+  getSkillMovesBonusForLevel,
+  getSkillMovesForLevel,
   getUpgradeAssetUrl,
   isUpgradeLevelSelectDisabled,
   normalizeMaterialOvr,
@@ -100,5 +102,19 @@ describe('upgrade asset identities', () => {
   it('returns null for missing upgrade assets instead of synthesizing local URLs', () => {
     expect(getUpgradeAssetUrl(() => null, ['upgradeBase', 'default'])).toBeNull();
     expect(getUpgradeAssetUrl(() => null, getLevelBadgeAssetIdentity(13))).toBeNull();
+  });
+
+  it('bumps skillMoves by upgrade level tier and caps at 6', () => {
+    expect(getSkillMovesBonusForLevel(4)).toBe(0);
+    expect(getSkillMovesBonusForLevel(5)).toBe(1);
+    expect(getSkillMovesBonusForLevel(7)).toBe(1);
+    expect(getSkillMovesBonusForLevel(8)).toBe(2);
+    expect(getSkillMovesBonusForLevel(13)).toBe(2);
+
+    expect(getSkillMovesForLevel(4, 4)).toBe(4);
+    expect(getSkillMovesForLevel(4, 5)).toBe(5);
+    expect(getSkillMovesForLevel(5, 8)).toBe(6);
+    expect(getSkillMovesForLevel(2, 8)).toBe(4);
+    expect(getSkillMovesForLevel(null, 8)).toBeNull();
   });
 });

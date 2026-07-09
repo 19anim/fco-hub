@@ -1,8 +1,11 @@
-import { Archive, RotateCcw } from 'lucide-react';
+import { Archive, RotateCcw, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import AssetPreview from './AssetPreview.jsx';
 import { formatBytes, formatDate } from './assetUtils.js';
 
-export default function AssetDetailPanel({ asset, loading, error, mutation, onRollback, onArchive }) {
+export default function AssetDetailPanel({ asset, loading, error, mutation, onRollback, onArchive, onDelete }) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   if (loading) {
     return <div className="rounded-xl border border-hairline bg-surface-1 p-5 text-sm text-ink-muted">Loading asset detail...</div>;
   }
@@ -16,6 +19,7 @@ export default function AssetDetailPanel({ asset, loading, error, mutation, onRo
   }
 
   const activeVersion = asset.versions?.find((version) => version.version === asset.activeVersion);
+  const isArchived = asset.status === 'archived';
 
   return (
     <div className="space-y-4 rounded-xl border border-hairline bg-surface-1 p-4">
@@ -25,15 +29,51 @@ export default function AssetDetailPanel({ asset, loading, error, mutation, onRo
           <h2 className="truncate text-lg font-semibold text-ink">{asset.label || 'Untitled asset'}</h2>
           <p className="text-xs text-ink-muted">Active version v{asset.activeVersion} · {asset.versionCount} total versions</p>
         </div>
-        <button
-          type="button"
-          disabled={mutation === 'archive'}
-          onClick={() => onArchive(asset)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/15 disabled:cursor-wait disabled:opacity-50"
-        >
-          <Archive className="h-3.5 w-3.5" /> {mutation === 'archive' ? 'Archiving...' : 'Archive'}
-        </button>
+        <div className="flex flex-col items-end gap-2">
+          <button
+            type="button"
+            disabled={mutation === 'archive'}
+            onClick={() => onArchive(asset)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/15 disabled:cursor-wait disabled:opacity-50"
+          >
+            <Archive className="h-3.5 w-3.5" /> {mutation === 'archive' ? 'Archiving...' : 'Archive'}
+          </button>
+          {isArchived && !confirmDelete && (
+            <button
+              type="button"
+              disabled={mutation === 'delete'}
+              onClick={() => setConfirmDelete(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-red-700/40 bg-red-900/20 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-900/30 disabled:cursor-wait disabled:opacity-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </button>
+          )}
+        </div>
       </div>
+
+      {isArchived && confirmDelete && (
+        <div className="rounded-lg border border-red-700/40 bg-red-900/20 p-3 text-xs text-red-300">
+          <p className="font-semibold">Delete permanently?</p>
+          <p className="mt-1 text-red-400">This removes all {asset.versionCount} version{asset.versionCount !== 1 ? 's' : ''} from Cloudinary and the database. This cannot be undone.</p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={mutation === 'delete'}
+              onClick={() => { setConfirmDelete(false); onDelete(asset); }}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-red-700/60 px-3 py-1.5 font-semibold text-red-100 hover:bg-red-700/80 disabled:cursor-wait disabled:opacity-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> {mutation === 'delete' ? 'Deleting...' : 'Delete permanently'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(false)}
+              className="rounded-lg border border-hairline bg-surface-2 px-3 py-1.5 text-ink-muted hover:text-ink"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <AssetPreview title="Active preview" asset={activeVersion || asset.active} />
 

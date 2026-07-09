@@ -3,7 +3,7 @@ import PlayerPickerFiltered from '../components/PlayerPickerFiltered.jsx';
 import LevelBadge from '../components/LevelBadge.jsx';
 import TeamGradePopover from '../components/TeamGradePopover.jsx';
 import { buildTeamColorPayload, getLiveTeamColorOvrBonusBySlot, getTeamColorPayloadHash, evaluateTeamColorLive } from '../teamColorLive.js';
-import { TeamColorStrip } from '../components/TeamColorStrip.jsx';
+import { PitchTeamColorList, TeamColorStrip } from '../components/TeamColorStrip.jsx';
 import {
   FORMATION_OPTIONS,
   getFormationSlots,
@@ -193,8 +193,11 @@ export default function SquadView() {
   const [liveTeamColor, setLiveTeamColor] = useState(null);
   const [liveTeamColorLoading, setLiveTeamColorLoading] = useState(false);
   const [liveTeamColorError, setLiveTeamColorError] = useState(false);
+  const [activeTeamColorFocus, setActiveTeamColorFocus] = useState(null);
   const lastPayloadHashRef = useRef('');
   const liveOvrBonusBySlot = useMemo(() => getLiveTeamColorOvrBonusBySlot(liveTeamColor), [liveTeamColor]);
+  const activeTeamColorMatchedSlots = useMemo(() => new Set(activeTeamColorFocus?.matchedSlots || []), [activeTeamColorFocus]);
+  const activeTeamColorQualifiedSlots = useMemo(() => new Set(activeTeamColorFocus?.qualifiedSlots || []), [activeTeamColorFocus]);
   const lineAverages = useMemo(() => getLineAverages(slots, bySlotId, squadBonuses.perPlayer, liveOvrBonusBySlot), [slots, bySlotId, squadBonuses.perPlayer, liveOvrBonusBySlot]);
   const salaryProgress = salaryCap > 0 ? Math.min(100, (salaryTotal / salaryCap) * 100) : 100;
   const isOverSalaryCap = salaryTotal > salaryCap;
@@ -203,10 +206,12 @@ export default function SquadView() {
   useEffect(() => {
     const payload = buildTeamColorPayload(slots, bySlotId, { squadLevel: 1 });
     if (!payload) {
-      setLiveTeamColor(null);
-      setLiveTeamColorError(false);
       lastPayloadHashRef.current = '';
-      return;
+      const timer = setTimeout(() => {
+        setLiveTeamColor(null);
+        setLiveTeamColorError(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     const hash = getTeamColorPayloadHash(payload);
@@ -217,7 +222,10 @@ export default function SquadView() {
       setLiveTeamColorLoading(true);
       setLiveTeamColorError(false);
       evaluateTeamColorLive(payload)
-        .then((result) => setLiveTeamColor(result))
+        .then((result) => {
+          setLiveTeamColor(result);
+          setActiveTeamColorFocus(null);
+        })
         .catch(() => setLiveTeamColorError(true))
         .finally(() => setLiveTeamColorLoading(false));
     }, 400);
@@ -227,6 +235,7 @@ export default function SquadView() {
 
   function persist(nextBySlotId, nextCustomSlots = squad.customSlots) {
     const next = { formationId, bySlotId: nextBySlotId, customSlots: normalizeSquadSlots(nextCustomSlots) };
+    setActiveTeamColorFocus(null);
     setSquad(next);
     saveSquad(next);
   }
@@ -494,7 +503,17 @@ export default function SquadView() {
           </div>
         </div>
 
-          <div className="fco-squad-pitch" ref={pitchRef}>
+        <PitchTeamColorList
+          result={liveTeamColor}
+          activeFocus={activeTeamColorFocus}
+          onToggleFocus={setActiveTeamColorFocus}
+        />
+
+          <div
+            className={`fco-squad-pitch${activeTeamColorFocus ? ' pitch--teamcolor-focus' : ''}`}
+            data-teamcolor-tone={activeTeamColorFocus?.tone || undefined}
+            ref={pitchRef}
+          >
           <div className="fco-pitch-lines" aria-hidden="true">
             <span className="fco-pitch-halfway" />
             <span className="fco-pitch-circle" />
@@ -536,11 +555,14 @@ export default function SquadView() {
             const isMoveTarget = movingSlotId && movingSlotId !== slot.id;
             const isDropTarget = dragSlotId && dragSlotId !== slot.id;
             const isDragOver = dragOverSlotId === slot.id;
+            const isTeamColorMatched = activeTeamColorMatchedSlots.has(slot.id);
+            const isTeamColorQualified = activeTeamColorQualifiedSlots.has(slot.id);
+            const isTeamColorDimmed = activeTeamColorFocus && player && !isTeamColorQualified;
 
             return (
               <div
                 key={slot.id}
-                className={`fco-squad-slot ${player ? 'has-player' : 'empty-slot'}${activeSlotId === slot.id ? ' is-active' : ''}${isDropTarget ? ' drop-target' : ''}${isDragOver ? ' drag-over' : ''}${layoutDrag?.slotId === slot.id ? ' layout-dragging' : ''}`}
+                className={`fco-squad-slot ${player ? 'has-player' : 'empty-slot'}${activeSlotId === slot.id ? ' is-active' : ''}${isDropTarget ? ' drop-target' : ''}${isDragOver ? ' drag-over' : ''}${layoutDrag?.slotId === slot.id ? ' layout-dragging' : ''}${isTeamColorMatched ? ' teamcolor-matched' : ''}${isTeamColorQualified ? ' teamcolor-qualified' : ''}${isTeamColorDimmed ? ' teamcolor-dimmed' : ''}`}
                 style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
                 onPointerDown={(e) => handleSlotPointerDown(slot, e)}
                 onPointerMove={handleSlotPointerMove}
@@ -549,6 +571,7 @@ export default function SquadView() {
               >
                 {player ? (
                   <div
+                    key={isTeamColorQualified ? activeTeamColorFocus?.id : undefined}
                     className={`fco-squad-card${isMovingSource ? ' moving' : ''}${isMoveTarget ? ' move-target' : ''}${dragSlotId === slot.id ? ' dragging' : ''}`}
                   >
                     <div className="fco-squad-card-actions">
@@ -640,7 +663,6 @@ export default function SquadView() {
                     </button>
                   );
                 }
-                const bonus = getPlayerSquadBonus(squadBonuses.perPlayer, player);
                 const boostedOvr = getSlotDisplayOvr(slot, player, squadBonuses.perPlayer, liveOvrBonusBySlot);
                 return (
                   <div

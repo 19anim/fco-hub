@@ -10,4 +10,5 @@ export const adminAssetsService = {
   replace: (id, formData) => api.post(`/${id}/upload`, formData).then((r) => r.data),
   setActiveVersion: (id, version) => api.patch(`/${id}/active-version`, { version }).then((r) => r.data),
   archive: (id) => api.patch(`/${id}/archive`).then((r) => r.data),
+  deleteAsset: (id) => api.delete(`/${id}`).then((r) => r.data),
 };

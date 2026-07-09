@@ -8,16 +8,18 @@ function keyOptions(category) {
   return FIXED_KEYS[category] || [];
 }
 
-export default function AssetUploadPanel({ selectedAsset, existingAsset, onIdentityChange, onSubmit, submitting, message }) {
-  const [category, setCategory] = useState(selectedAsset?.category || 'cardTheme');
-  const [key, setKey] = useState(selectedAsset?.key || 'ng');
+export default function AssetUploadPanel({ selectedAsset, existingAsset, mode, onModeChange, onIdentityChange, onSubmit, submitting, message }) {
+  const isCreateMode = mode === 'create';
+  const [category, setCategory] = useState(selectedAsset?.category || 'general');
+  const [key, setKey] = useState(selectedAsset?.key || '');
   const [label, setLabel] = useState(selectedAsset?.label || '');
   const [keyEdited, setKeyEdited] = useState(Boolean(selectedAsset));
   const [file, setFile] = useState(null);
 
-  const replacementAsset = existingAsset;
+  const replacementAsset = isCreateMode ? existingAsset : selectedAsset || existingAsset;
   const isReplacing = Boolean(replacementAsset?.id || replacementAsset?._id);
   const options = useMemo(() => keyOptions(category), [category]);
+  const keyListId = `asset-key-options-${category}`;
 
   useEffect(() => {
     onIdentityChange?.({ category, key });
@@ -31,6 +33,11 @@ export default function AssetUploadPanel({ selectedAsset, existingAsset, onIdent
 
   const changeCategory = (nextCategory) => {
     setCategory(nextCategory);
+    if (isCreateMode) {
+      setKey(nextCategory === 'general' ? slugify(label) : '');
+      setKeyEdited(nextCategory !== 'general');
+      return;
+    }
     if (nextCategory === 'cardTheme') setKey('ng');
     if (nextCategory === 'general') setKey(slugify(label));
     const nextOptions = keyOptions(nextCategory);
@@ -58,13 +65,23 @@ export default function AssetUploadPanel({ selectedAsset, existingAsset, onIdent
 
   return (
     <form onSubmit={submit} className="space-y-4 rounded-xl border border-hairline bg-surface-1 p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-blue/15">
-          <Upload className="h-4 w-4 text-brand-blue" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-blue/15">
+            <Upload className="h-4 w-4 text-brand-blue" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-ink">Asset upload</h2>
+            <p className="text-xs text-ink-muted">Create a new logical asset or replace the selected asset version.</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-base font-semibold text-ink">Asset upload</h2>
-          <p className="text-xs text-ink-muted">Create a new logical asset or replace the selected asset version.</p>
+        <div className="grid grid-cols-2 rounded-lg border border-hairline bg-canvas-dark p-1 text-xs font-semibold">
+          <button type="button" onClick={() => onModeChange?.('replace')} className={`rounded-md px-3 py-1.5 ${isCreateMode ? 'text-ink-muted hover:text-ink' : 'bg-surface-2 text-ink shadow-sm'}`}>
+            Replace existing
+          </button>
+          <button type="button" onClick={() => onModeChange?.('create')} className={`rounded-md px-3 py-1.5 ${isCreateMode ? 'bg-brand-blue/15 text-brand-blue shadow-sm' : 'text-ink-muted hover:text-ink'}`}>
+            Add new
+          </button>
         </div>
       </div>
 
@@ -77,12 +94,19 @@ export default function AssetUploadPanel({ selectedAsset, existingAsset, onIdent
         </label>
         <label className="space-y-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Key</span>
-          {options.length ? (
+          {options.length && !isCreateMode ? (
             <select value={key} onChange={(event) => { setKey(event.target.value); setKeyEdited(true); }} className="h-10 w-full rounded-lg border border-hairline bg-canvas-dark px-3 text-sm text-ink outline-none focus:border-brand-blue">
               {options.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           ) : (
-            <input value={key} onChange={(event) => { setKey(event.target.value); setKeyEdited(true); }} placeholder={category === 'cardTheme' ? 'ng or numeric theme ID' : 'asset-slug'} className="h-10 w-full rounded-lg border border-hairline bg-canvas-dark px-3 text-sm text-ink outline-none focus:border-brand-blue" />
+            <>
+              <input value={key} list={options.length ? keyListId : undefined} onChange={(event) => { setKey(event.target.value); setKeyEdited(true); }} placeholder={category === 'cardTheme' ? 'ng or numeric theme ID' : 'asset-slug'} className="h-10 w-full rounded-lg border border-hairline bg-canvas-dark px-3 text-sm text-ink outline-none focus:border-brand-blue" />
+              {options.length ? (
+                <datalist id={keyListId}>
+                  {options.map((option) => <option key={option} value={option} />)}
+                </datalist>
+              ) : null}
+            </>
           )}
         </label>
       </div>

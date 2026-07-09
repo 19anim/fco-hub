@@ -5,6 +5,7 @@ import { uploadAssetBuffer } from '../services/cloudinaryAssets.js';
 import {
   archiveAsset,
   createAssetUpload,
+  deleteAsset,
   getAssetDetail,
   getPublicAssetMap,
   listAssets,
@@ -20,6 +21,7 @@ const DEFAULT_SERVICES = Object.freeze({
   replaceAssetUpload,
   rollbackAssetVersion,
   archiveAsset,
+  deleteAsset,
 });
 
 function canonicalJson(value) {
@@ -182,6 +184,16 @@ export function createAssetsController({ services = DEFAULT_SERVICES } = {}) {
       try {
         const data = await services.archiveAsset({ id: req.params.id });
         res.json({ success: true, data });
+      } catch (error) {
+        sendError(res, error);
+      }
+    },
+
+    async delete(req, res) {
+      try {
+        const destroyer = (publicId) => cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+        await services.deleteAsset({ id: req.params.id }, { destroyer });
+        res.status(204).end();
       } catch (error) {
         sendError(res, error);
       }

@@ -5,6 +5,7 @@ import { buildAssetPublicId, uploadAssetBuffer, uploadAssetPath } from './cloudi
 
 test('buildAssetPublicId returns versioned filename', () => {
   assert.equal(buildAssetPublicId('upgradeMascot', 'happy', 2), 'happy-v2');
+  assert.equal(buildAssetPublicId('playerDetailAsset', 'foot', 1), 'foot-v1');
 });
 
 test('buildAssetPublicId validates identity and positive integer version', () => {

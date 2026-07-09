@@ -181,6 +181,7 @@ test('admin routes require the expected permissions', async () => {
       ['POST', '/api/admin/assets/asset-1/upload', 'assets.edit'],
       ['PATCH', '/api/admin/assets/asset-1/active-version', 'assets.edit'],
       ['PATCH', '/api/admin/assets/asset-1/archive', 'assets.archive'],
+      ['DELETE', '/api/admin/assets/asset-1', 'assets.delete'],
     ];
 
     for (const [method, path, permission] of expectations) {
@@ -275,6 +276,21 @@ test('admin upload reports missing category or key as validation errors', async 
     assert.equal(response.status, 400);
     assert.equal(body.message, 'Validation failed');
     assert.deepEqual(body.errors, { key: 'Asset key is required' });
+  });
+});
+
+test('admin delete permanently removes the asset and returns 204', async () => {
+  const services = makeServices({
+    async deleteAsset(input) {
+      services.calls.push({ method: 'deleteAsset', input });
+    },
+  });
+  await withServer({ services, user: { id: 'admin-1', role: 'manager', permissions: ['assets.delete'] } }, async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/admin/assets/asset-1`, { method: 'DELETE' });
+    assert.equal(response.status, 204);
+    assert.equal(await response.text(), '');
+    assert.equal(services.calls[0].method, 'deleteAsset');
+    assert.equal(services.calls[0].input.id, 'asset-1');
   });
 });
 

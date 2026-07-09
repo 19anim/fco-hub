@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
 import { fetchPlayers } from '../api.js';
-import { cleanName, statColor } from '../helpers.js';
 import { getPlayerCardKey, isSamePlayerCard, normalizeUpgradeLevel } from '../upgradeHelpers.js';
-import { PlayerAvatar, SeasonChip, PosPill } from '../ui.jsx';
-import LevelSelect from './LevelSelect.jsx';
+import PlayerPickerItem from './PlayerPickerItem.jsx';
 import * as I from '../Icons.jsx';
 
 export default function PlayerPicker({
@@ -106,24 +104,15 @@ export default function PlayerPicker({
             const selectedLevel = getLevel(cardKey);
 
             return (
-              <button key={cardKey || p.id} className="fco-modal-item" disabled={disabled} onClick={() => choosePlayer(p)}>
-                <PlayerAvatar player={p} size={36} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="fco-modal-itemname">{cleanName(p.name)}</div>
-                  <div className="fco-modal-itemsub">
-                    <SeasonChip code={p.season} img={p.seasonImg} />
-                    {' '}<PosPill pos={p.primaryPos} />
-                    <span style={{ marginLeft: 6, fontFamily: 'var(--mono)', fontSize: 12, color: statColor(p.ovr) }}>{p.ovr}</span>
-                  </div>
-                </div>
-                {allowLevelSelect && !disabled && (
-                  <LevelSelect
-                    value={selectedLevel}
-                    onChange={lv => setLevelById(prev => ({ ...prev, [cardKey]: lv }))}
-                  />
-                )}
-                {disabled && <I.Check size={14} style={{ color: 'var(--accent)', flex: '0 0 14px' }} />}
-              </button>
+              <PlayerPickerItem
+                key={cardKey || p.id}
+                player={p}
+                disabled={disabled}
+                allowLevelSelect={allowLevelSelect}
+                level={selectedLevel}
+                onLevelChange={lv => setLevelById(prev => ({ ...prev, [cardKey]: lv }))}
+                onChoose={choosePlayer}
+              />
             );
           })}
           {!loading && q && results.length === 0 && (

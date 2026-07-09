@@ -747,11 +747,13 @@ function FootStars({ label, n, dim }) {
   );
 }
 
+const SKILL_MOVES_MAX = 6;
+
 function BioStars({ n, label }) {
   return (
     <span className="fa-bio-stars-wrap">
       <span className="fa-bio-stars-label">{label}</span>
-      {Array.from({ length: 5 }, (_, i) => (
+      {Array.from({ length: SKILL_MOVES_MAX }, (_, i) => (
         <svg key={i} width="10" height="10" viewBox="0 0 24 24" className={`fa-star${i < n ? ' on' : ''}`} fill="inherit">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>

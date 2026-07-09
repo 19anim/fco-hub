@@ -4,6 +4,7 @@ import {
   ASSET_CATEGORIES,
   archiveAsset,
   createAssetUpload,
+  deleteAsset,
   getAssetDetail,
   getPublicAssetMap,
   listAssets,
@@ -178,7 +179,7 @@ function makeUploader(events = [], result = {}) {
 
 test('asset categories include every current runtime family', () => {
   assert.deepEqual(Object.keys(ASSET_CATEGORIES).sort(), [
-    'badgeSprite', 'cardTheme', 'general', 'seasonSprite', 'siteAsset',
+    'badgeSprite', 'cardTheme', 'general', 'playerDetailAsset', 'seasonSprite', 'siteAsset',
     'teamColorIcon', 'upgradeBadge', 'upgradeBase', 'upgradeEffect', 'upgradeMascot',
   ]);
 });
@@ -196,6 +197,7 @@ test('asset category folders match the migration contract', () => {
       badgeSprite: 'badge-sprites',
       siteAsset: 'site-assets',
       teamColorIcon: 'team-color-icons',
+      playerDetailAsset: 'player-detail-assets',
       general: 'general',
     }
   );
@@ -225,6 +227,7 @@ test('normalizeAssetIdentity validates category-specific keys', () => {
     ['teamColorIcon', 'club'],
     ['teamColorIcon', 'grade'],
     ['teamColorIcon', 'relation'],
+    ['playerDetailAsset', 'foot'],
     ['general', 'legal-notice-2026'],
   ];
 
@@ -244,6 +247,7 @@ test('normalizeAssetIdentity rejects unknown category and invalid keys with stat
     ['badgeSprite', 'fc_online'],
     ['siteAsset', 'logo'],
     ['teamColorIcon', 'league'],
+    ['playerDetailAsset', 'bad slug'],
     ['general', 'bad slug'],
   ];
 
@@ -364,6 +368,52 @@ test('archiveAsset changes only status and does not call uploader or delete reso
   assert.deepEqual(updateCall.update, { $set: { status: 'archived' } });
   assert.equal(repository.state[0].status, 'archived');
   assert.equal(repository.state[0].versions.length, 1);
+});
+
+test('deleteAsset calls destroyer for every version public id then removes the document', async () => {
+  const existing = asset({ versions: [version(1), version(2)] });
+  const repository = makeRepository([existing]);
+  repository.deleteOne = async (filter) => {
+    repository.calls.push({ method: 'deleteOne', filter: clone(filter) });
+    const index = repository.state.findIndex((doc) => matchesCriteria(doc, filter));
+    if (index !== -1) repository.state.splice(index, 1);
+    return { deletedCount: 1 };
+  };
+  const destroyed = [];
+  const destroyer = async (publicId) => { destroyed.push(publicId); };
+
+  await deleteAsset({ category: 'general', key: 'hero' }, { repository, destroyer });
+
+  assert.deepEqual(destroyed.sort(), ['pid-v1', 'pid-v2']);
+  assert.equal(repository.state.length, 0);
+  const deleteCall = repository.calls.find((c) => c.method === 'deleteOne');
+  assert.deepEqual(deleteCall.filter, { _id: 'asset-1' });
+});
+
+test('deleteAsset returns 404 when asset does not exist', async () => {
+  const repository = makeRepository([]);
+  repository.deleteOne = async () => ({ deletedCount: 0 });
+  await assert.rejects(
+    deleteAsset({ category: 'general', key: 'missing' }, { repository, destroyer: async () => {} }),
+    (error) => error.statusCode === 404
+  );
+});
+
+test('deleteAsset still removes the document even when some Cloudinary destroys fail', async () => {
+  const existing = asset({ versions: [version(1), version(2)] });
+  const repository = makeRepository([existing]);
+  repository.deleteOne = async (filter) => {
+    repository.calls.push({ method: 'deleteOne', filter: clone(filter) });
+    repository.state.length = 0;
+    return { deletedCount: 1 };
+  };
+  const destroyer = async (publicId) => {
+    if (publicId === 'pid-v1') throw new Error('Cloudinary error');
+  };
+
+  await deleteAsset({ category: 'general', key: 'hero' }, { repository, destroyer });
+
+  assert.equal(repository.state.length, 0);
 });
 
 test('listAssets supports filters, pagination, search, and required summary fields', async () => {

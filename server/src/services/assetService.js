@@ -8,6 +8,7 @@ export const ASSET_CATEGORIES = Object.freeze({
   badgeSprite: { folder: 'badge-sprites', keys: ['fc-online'] },
   siteAsset: { folder: 'site-assets', keys: ['icons', 'favicon'] },
   teamColorIcon: { folder: 'team-color-icons', keys: ['club', 'grade', 'relation'] },
+  playerDetailAsset: { folder: 'player-detail-assets', key: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ },
   general: { folder: 'general', key: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ },
 });
 
@@ -391,6 +392,27 @@ export async function archiveAsset(input, dependencies = {}) {
   }
   await updateOne(repository, { _id: existing._id }, { $set: { status: ARCHIVED_STATUS } }, { runValidators: true });
   return getAssetDetail({ id: existing._id }, { repository });
+}
+
+export async function deleteAsset(input, dependencies = {}) {
+  const repository = dependencies.repository ?? await getDefaultRepository();
+  const destroyer = dependencies.destroyer;
+  assertRepository(repository);
+
+  const existing = await findOneAsset(repository, buildIdentityFilter(input));
+  if (!existing) {
+    throw serviceError('Asset not found', 404);
+  }
+
+  // Best-effort: destroy each Cloudinary resource; tolerate individual failures.
+  const publicIds = (existing.versions ?? []).map((v) => v.cloudinaryPublicId).filter(Boolean);
+  await Promise.allSettled(publicIds.map((publicId) => destroyer?.(publicId)));
+
+  if (typeof repository.deleteOne === 'function') {
+    await repository.deleteOne({ _id: existing._id });
+  } else {
+    await execMaybe(repository.findOneAndDelete?.({ _id: existing._id }));
+  }
 }
 
 export async function listAssets(filters = {}, dependencies = {}) {
