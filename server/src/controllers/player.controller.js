@@ -332,9 +332,19 @@ export const getClubsByLeague = async (req, res) => {
   }
 };
 
+// getPlayerMeta aggregates filter metadata across the whole collection (season list, leagues,
+// nations, etc.) that barely changes minute to minute — cache it to avoid re-scanning on every request.
+const PLAYER_META_CACHE_TTL_MS = 5 * 60 * 1000;
+let playerMetaCache = null;
+let playerMetaCacheAt = 0;
+
 // GET /api/players/meta - Filter metadata
 export const getPlayerMeta = async (req, res) => {
   try {
+    if (playerMetaCache && Date.now() - playerMetaCacheAt < PLAYER_META_CACHE_TTL_MS) {
+      return res.json(playerMetaCache);
+    }
+
     const enrichmentMatch = { source: 'fifaaddict-vn', overall: { $gt: 0 } };
     const [dbSeasons, dbPositions, count, nexonMeta, fifaAddictSeasons, dbNations, dbLeagues, dbHiddenTraits, dbTopClubs] = await Promise.all([
       PlayerEnrichment.aggregate([
@@ -420,7 +430,7 @@ export const getPlayerMeta = async (req, res) => {
       return b.count - a.count;
     }).map(({ sortOrder, seasonSort, ...season }) => season);
 
-    res.json({
+    const payload = {
       success: true,
       totalPlayers: count,
       seasons,
@@ -429,7 +439,12 @@ export const getPlayerMeta = async (req, res) => {
       leagues: (dbLeagues || []).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),
       hiddenTraits: (dbHiddenTraits || []).filter(Boolean).sort((a, b) => a.localeCompare(b)),
       topClubs: (dbTopClubs || []).map(r => r.club).filter(Boolean),
-    });
+    };
+
+    playerMetaCache = payload;
+    playerMetaCacheAt = Date.now();
+
+    res.json(payload);
   } catch (error) {
     res.status(500).json({
       success: false,

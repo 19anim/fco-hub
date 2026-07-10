@@ -114,5 +114,14 @@ const playerEnrichmentSchema = new mongoose.Schema(
 playerEnrichmentSchema.index({ source: 1, sourceUid: 1 }, { unique: true });
 playerEnrichmentSchema.index({ displayNameVi: 'text', displayNameEn: 'text', fullNameVi: 'text', seasonName: 'text' });
 
+// Support getPlayers/getPlayerMeta filters + sorts without full collection scans
+playerEnrichmentSchema.index({ source: 1, overall: -1, syncedAt: -1 });
+playerEnrichmentSchema.index({ source: 1, seasonCode: 1 });
+playerEnrichmentSchema.index({ source: 1, bestPosition: 1 });
+playerEnrichmentSchema.index({ source: 1, nation: 1 });
+playerEnrichmentSchema.index({ source: 1, league: 1 });
+playerEnrichmentSchema.index({ source: 1, club: 1 });
+playerEnrichmentSchema.index({ 'clubCareer.team': 1 });
+
 const PlayerEnrichment = mongoose.model('PlayerEnrichment', playerEnrichmentSchema);
 export default PlayerEnrichment;
