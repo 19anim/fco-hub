@@ -3,8 +3,10 @@ import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AssetProvider } from './AssetProvider.jsx';
 import FaviconAsset from './FaviconAsset.jsx';
+import { createTestQueryClient } from '../../testUtils/queryClient.js';
 
 async function renderWithAssets(map = {}) {
   const container = document.createElement('div');
@@ -13,14 +15,18 @@ async function renderWithAssets(map = {}) {
 
   await act(async () => {
     root.render(
-      <AssetProvider loadAssetMap={() => Promise.resolve({ map, updatedAt: null })}>
-        <FaviconAsset />
-      </AssetProvider>,
+      <QueryClientProvider client={createTestQueryClient()}>
+        <AssetProvider loadAssetMap={() => Promise.resolve({ map, updatedAt: null })}>
+          <FaviconAsset />
+        </AssetProvider>
+      </QueryClientProvider>,
     );
   });
 
   await act(async () => {
-    await Promise.resolve();
+    for (let i = 0; i < 10; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
   });
 
   return {

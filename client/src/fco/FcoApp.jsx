@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import './fco.css';
 import { LS_KEY } from './constants.js';
-import { fetchMeta } from './api.js';
+import { useMetaQuery } from './queries.js';
 import { AssetProvider, useAssets } from './assets/AssetProvider.jsx';
 import FaviconAsset from './assets/FaviconAsset.jsx';
 import DatabaseView from './views/DatabaseView.jsx';
@@ -144,11 +144,10 @@ export default function FcoApp() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
+  const { error: metaError } = useMetaQuery();
   useEffect(() => {
-    fetchMeta().catch(error => {
-      console.error('fetchMeta error', error);
-    });
-  }, []);
+    if (metaError) console.error('fetchMeta error', metaError);
+  }, [metaError]);
 
   // Persist watch/compare
   useEffect(() => { savePersisted({ watch, compareIds }); }, [watch, compareIds]);

@@ -3,6 +3,8 @@ import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '../../testUtils/queryClient.js';
 
 vi.mock('../../contexts/AdminAuthContext', () => ({
   useAdminAuth: () => ({ user: null }),
@@ -61,9 +63,14 @@ async function renderApp() {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
+  const queryClient = createTestQueryClient();
 
   await act(async () => {
-    root.render(<FcoApp />);
+    root.render(
+      <QueryClientProvider client={queryClient}>
+        <FcoApp />
+      </QueryClientProvider>,
+    );
   });
 
   return { container, root };

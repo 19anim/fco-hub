@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -88,53 +89,40 @@ export default function PlayerTable({
   limit = 20,
   compact = false,
 }) {
-  const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [offline, setOffline] = useState(false);
   const [sort, setSort] = useState(sortBy);
 
-  useEffect(() => {
-    let ignore = false;
+  const queryEnabled = canRunBackendSearch(searchQuery);
+  const queryParams = useMemo(() => ({
+    searchQuery, positionFilter, seasonId, sort, page, limit, advancedFilters,
+  }), [searchQuery, positionFilter, seasonId, sort, page, limit, advancedFilters]);
 
-    async function fetchPlayers() {
-      try {
-        if (!canRunBackendSearch(searchQuery)) return;
-        setLoading(true);
-        const params = new URLSearchParams({
-          search: searchQuery,
-          position: positionFilter,
-          seasonId,
-          sort,
-          page: page.toString(),
-          limit: limit.toString(),
-        });
+  const { data, isLoading: loading, isError } = useQuery({
+    queryKey: ['adminPlayerTable', queryParams],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        search: searchQuery,
+        position: positionFilter,
+        seasonId,
+        sort,
+        page: page.toString(),
+        limit: limit.toString(),
+      });
 
-        Object.entries(advancedFilters).forEach(([key, value]) => {
-          if (value !== null && value !== undefined && value !== '') params.set(key, String(value));
-        });
+      Object.entries(advancedFilters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') params.set(key, String(value));
+      });
 
-        const response = await axios.get(`${API_URL}?${params}`);
-        if (ignore) return;
-        setPlayers(response.data.data ?? []);
-        setTotalPages(response.data.totalPages ?? 1);
-        setOffline(false);
-      } catch {
-        if (ignore) return;
-        setPlayers([]);
-        setTotalPages(1);
-        setOffline(true);
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    }
+      const response = await axios.get(`${API_URL}?${params}`);
+      return { players: response.data.data ?? [], totalPages: response.data.totalPages ?? 1 };
+    },
+    enabled: queryEnabled,
+    placeholderData: (previous) => previous,
+  });
 
-    fetchPlayers();
-    return () => {
-      ignore = true;
-    };
-  }, [advancedFilters, searchQuery, positionFilter, seasonId, sort, page, limit]);
+  const players = data?.players ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const offline = isError;
 
   const visiblePlayers = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { normalizeBackendSearch } from '../../utils/backendSearch.js';
-import { fetchPlayers, fetchMeta, fetchClubsByLeague } from '../api.js';
-import { shouldClearCareerClubForLeagueChange, shouldLoadClubsForLeague } from '../views/DatabaseView.filters.js';
+import { usePlayersQuery, useMetaQuery, useClubsByLeagueQuery } from '../queries.js';
+import { shouldClearCareerClubForLeagueChange } from '../views/DatabaseView.filters.js';
 import { getPlayerCardKey, isSamePlayerCard, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import { SEASONS_META } from '../constants.js';
 import { getSeasonSprite, resolveSeasonSprite } from '../seasonSprites.js';
@@ -48,14 +48,6 @@ export default function PlayerPickerFiltered({
   const [statMax, setStatMax] = useState('');
   const [trait, setTrait] = useState('');
 
-  const [allSeasons, setAllSeasons] = useState([]);
-  const [allNations, setAllNations] = useState([]);
-  const [allLeagues, setAllLeagues] = useState([]);
-  const [allTraits, setAllTraits] = useState([]);
-  const [clubOptions, setClubOptions] = useState([]);
-
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [levelById, setLevelById] = useState({});
   const [mobileTab, setMobileTab] = useState('filters');
 
@@ -65,26 +57,27 @@ export default function PlayerPickerFiltered({
     posGroups?.length ? { posGroups, sort: 'ovr_desc', pageSize } : null
   ));
 
-  useEffect(() => {
-    fetchMeta().then(res => {
-      if (res.seasons) setAllSeasons(res.seasons);
-      if (res.nations) setAllNations(res.nations);
-      if (res.leagues) setAllLeagues(res.leagues);
-      if (res.hiddenTraits) setAllTraits(res.hiddenTraits);
-    });
-  }, []);
+  const { data: meta } = useMetaQuery();
+  const allSeasons = meta?.seasons || [];
+  const allNations = meta?.nations || [];
+  const allLeagues = meta?.leagues || [];
+  const allTraits = meta?.hiddenTraits || [];
+
+  const { data: clubOptions = [] } = useClubsByLeagueQuery(league);
 
   useEffect(() => {
-    if (shouldLoadClubsForLeague(league)) {
-      fetchClubsByLeague(league).then(setClubOptions);
-    } else {
-      setClubOptions([]);
-    }
     if (shouldClearCareerClubForLeagueChange(previousLeagueRef.current, league)) {
       setClub('');
     }
     previousLeagueRef.current = league;
   }, [league]);
+
+  const { data: playersRes, isLoading: loading } = usePlayersQuery(submittedParams);
+  const results = playersRes?.players ?? [];
+
+  useEffect(() => {
+    if (submittedParams) setMobileTab('results');
+  }, [submittedParams]);
 
   const hasActiveFilter = Boolean(
     normalizedSearch || positions.length || seasons.length || league || nation || club ||
@@ -93,26 +86,6 @@ export default function PlayerPickerFiltered({
     statFilter || salaryMax < DEFAULT_SALARY ||
     ovr[0] > DEFAULT_OVR[0] || ovr[1] < DEFAULT_OVR[1]
   );
-
-  useEffect(() => {
-    if (!submittedParams) return;
-
-    let ignore = false;
-    setLoading(true);
-
-    fetchPlayers(submittedParams)
-      .then(res => {
-        if (!ignore) {
-          setResults(res.players);
-          setMobileTab('results');
-        }
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => { ignore = true; };
-  }, [submittedParams]);
 
   function submitSearch() {
     const hasNonSearchFilter = Boolean(
@@ -125,7 +98,6 @@ export default function PlayerPickerFiltered({
 
     if (search.trim() && normalizedSearch.length < 2) {
       setSubmittedParams(null);
-      setResults([]);
       setMobileTab('results');
       return;
     }
@@ -136,7 +108,6 @@ export default function PlayerPickerFiltered({
       } else {
         setSubmittedParams(null);
       }
-      setResults([]);
       setMobileTab('results');
       return;
     }
@@ -183,7 +154,6 @@ export default function PlayerPickerFiltered({
     } else {
       setSubmittedParams(null);
     }
-    setResults([]);
   }
 
   function getLevel(playerId) {

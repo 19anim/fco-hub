@@ -1,40 +1,29 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { fetchPublicAssetMap } from './assetApi.js';
 import { getAssetUrl as lookupAssetUrl } from './assetMap.js';
+import { assetMapKey } from '../queryKeys.js';
 
 const AssetContext = createContext(null);
 
 const EMPTY_MAP = Object.freeze({});
 
 export function AssetProvider({ children, loadAssetMap = fetchPublicAssetMap }) {
-  const [state, setState] = useState({
-    loading: true,
-    error: null,
-    map: EMPTY_MAP,
-    updatedAt: null,
+  const { data, isLoading, error } = useQuery({
+    queryKey: assetMapKey(),
+    queryFn: loadAssetMap,
+    staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    let active = true;
+  const map = data?.map ?? EMPTY_MAP;
+  const updatedAt = data?.updatedAt ?? null;
 
-    loadAssetMap()
-      .then(({ map = EMPTY_MAP, updatedAt = null } = {}) => {
-        if (!active) return;
-        setState({ loading: false, error: null, map, updatedAt });
-      })
-      .catch((error) => {
-        if (!active) return;
-        setState({ loading: false, error, map: EMPTY_MAP, updatedAt: null });
-      });
+  const getAssetUrl = useCallback((category, key) => lookupAssetUrl(map, category, key), [map]);
 
-    return () => {
-      active = false;
-    };
-  }, [loadAssetMap]);
-
-  const getAssetUrl = useCallback((category, key) => lookupAssetUrl(state.map, category, key), [state.map]);
-
-  const value = useMemo(() => ({ ...state, getAssetUrl }), [state, getAssetUrl]);
+  const value = useMemo(
+    () => ({ loading: isLoading, error: error ?? null, map, updatedAt, getAssetUrl }),
+    [isLoading, error, map, updatedAt, getAssetUrl]
+  );
 
   return <AssetContext.Provider value={value}>{children}</AssetContext.Provider>;
 }

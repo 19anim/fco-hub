@@ -1,21 +1,13 @@
-import { useState, useEffect } from 'react';
-import { fetchPlayers } from '../api.js';
-import { formatCoins, statColor, cleanName } from '../helpers.js';
+import { useMemo } from 'react';
+import { usePlayersQuery } from '../queries.js';
+import { formatCoins, cleanName } from '../helpers.js';
 import { PlayerAvatar, OvrBox, PosPill, SeasonChip, EmptyState, SkeletonRow, Button } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 
 export default function WatchlistView({ watch, onToggleWatch, onSelect }) {
-  const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!watch.length) { setPlayers([]); return; }
-    setLoading(true);
-    fetchPlayers({ ids: watch, pageSize: 100 })
-      .then(res => setPlayers(res.players.filter(p => watch.includes(p.id))))
-      .catch(() => setPlayers([]))
-      .finally(() => setLoading(false));
-  }, [watch.join(',')]);
+  const queryFilters = useMemo(() => watch.length ? { ids: watch, pageSize: 100 } : null, [watch]);
+  const { data: playersRes, isLoading: loading } = usePlayersQuery(queryFilters);
+  const players = (playersRes?.players ?? []).filter(p => watch.includes(p.id));
 
   if (!watch.length) {
     return (

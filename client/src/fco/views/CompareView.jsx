@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { fetchPlayers, fetchPlayerDetail } from '../api.js';
+import { useState } from 'react';
+import { useQueries } from '@tanstack/react-query';
+import { fetchPlayerDetail } from '../api.js';
+import { playerDetailKey } from '../queryKeys.js';
 import { formatCoins, statColor, cleanName } from '../helpers.js';
 import { PlayerAvatar, OvrBox, PosPill, SeasonChip, TrustBadge, Button, EmptyState } from '../ui.jsx';
 import * as I from '../Icons.jsx';
@@ -22,21 +24,20 @@ const COMPARE_ROWS = [
 ];
 
 export default function CompareView({ compareIds, onUpdateCompare, onSelect }) {
-  const [players, setPlayers] = useState({});
-  const [loading, setLoading] = useState({});
   const [pickerOpen, setPickerOpen] = useState(false);
   const ids = compareIds.slice(0, MAX);
   const cols = MAX;
 
-  useEffect(() => {
-    ids.forEach(id => {
-      if (players[id] || loading[id]) return;
-      setLoading(prev => ({ ...prev, [id]: true }));
-      fetchPlayerDetail(id)
-        .then(res => setPlayers(prev => ({ ...prev, [id]: res.player })))
-        .finally(() => setLoading(prev => ({ ...prev, [id]: false })));
-    });
-  }, [ids.join(',')]);
+  const results = useQueries({
+    queries: ids.map(id => ({
+      queryKey: playerDetailKey(id),
+      queryFn: () => fetchPlayerDetail(id),
+      staleTime: 10 * 60 * 1000,
+    })),
+  });
+  const players = Object.fromEntries(
+    ids.map((id, i) => [id, results[i]?.data?.player]).filter(([, p]) => p != null)
+  );
 
   function removeId(id) { onUpdateCompare(ids.filter(x => x !== id)); }
   function addId(id) { if (!ids.includes(id) && ids.length < MAX) onUpdateCompare([...ids, id]); }

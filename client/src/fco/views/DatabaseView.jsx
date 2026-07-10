@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 import { BACKEND_SEARCH_DEBOUNCE_MS, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
-import { fetchPlayers, fetchMeta, fetchClubsByLeague } from '../api.js';
+import { usePlayersQuery, useMetaQuery, useClubsByLeagueQuery } from '../queries.js';
 import { formatCoins, statColor, cleanName } from '../helpers.js';
 import { POS_GROUPS, SORTS, POSITIONS_META } from '../constants.js';
 import PlayerSearchForm from '../components/PlayerSearchForm.jsx';
@@ -12,7 +12,7 @@ import {
 import * as I from '../Icons.jsx';
 import { SEASONS_META } from '../constants.js';
 import { getSeasonSprite, resolveSeasonSprite } from '../seasonSprites.js';
-import { shouldClearCareerClubForLeagueChange, shouldLoadClubsForLeague } from './DatabaseView.filters.js';
+import { shouldClearCareerClubForLeagueChange } from './DatabaseView.filters.js';
 import { useAssets } from '../assets/AssetProvider.jsx';
 
 const MAIN_STATS = [
@@ -178,35 +178,19 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   const [pageSize,  setPageSize]  = useState(init.pageSize);
   const [dense,     setDense]     = useState(false);
 
-  const [allSeasons, setAllSeasons] = useState([]);
-  const [allNations, setAllNations] = useState([]);
-  const [allLeagues, setAllLeagues] = useState([]);
-  const [allTopClubs, setAllTopClubs] = useState([]);
-  const [allTraits, setAllTraits] = useState([]);
   const [seasonSearch, setSeasonSearch] = useState('');
-
-  const [players,    setPlayers]    = useState([]);
-  const [total,      setTotal]      = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading,    setLoading]    = useState(true);
 
   const previousLeagueRef = useRef(undefined);
 
-  useEffect(() => {
-    fetchMeta().then(res => {
-      if (res.success && res.seasons) setAllSeasons(res.seasons);
-      if (res.nations) setAllNations(res.nations);
-      if (res.leagues) setAllLeagues(res.leagues);
-      if (res.hiddenTraits) setAllTraits(res.hiddenTraits);
-    });
-  }, []);
+  const { data: meta } = useMetaQuery();
+  const allSeasons = (meta?.success && meta?.seasons) || [];
+  const allNations = meta?.nations || [];
+  const allLeagues = meta?.leagues || [];
+  const allTraits = meta?.hiddenTraits || [];
+
+  const { data: allTopClubs = [] } = useClubsByLeagueQuery(league);
 
   useEffect(() => {
-    if (shouldLoadClubsForLeague(league)) {
-      fetchClubsByLeague(league).then(setAllTopClubs);
-    } else {
-      setAllTopClubs([]);
-    }
     if (shouldClearCareerClubForLeagueChange(previousLeagueRef.current, league)) {
       setClub('');
       setPage(1);
@@ -229,34 +213,27 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
       weightMin, weightMax, reputation, statFilter, statMin, statMax, trait,
       sort, page, pageSize]);
 
-  // Fetch data whenever any filter changes
-  const load = useCallback(async () => {
-    if (!canLoadSearch) return;
-    setLoading(true);
-    try {
-      const res = await fetchPlayers({
-        search: normalizedSearch, posGroups, seasons, ovr, salaryMax, priceMax,
-        league, nation, club, preferredFoot, weakFoot, skillMoves,
-        workRateAttack, workRateDefense, heightMin, heightMax,
-        weightMin, weightMax, reputation, statFilter, statMin, statMax,
-        traits: trait ? [trait] : [],
-        sort, page, pageSize,
-      });
-      setPlayers(res.players);
-      setTotal(res.total);
-      setTotalPages(res.totalPages);
-    } catch (e) {
-      console.error('fetchPlayers error', e);
-    } finally {
-      setLoading(false);
-    }
-  }, [canLoadSearch, normalizedSearch, posGroups, seasons, ovr, salaryMax, priceMax,
+  const queryFilters = useMemo(() => ({
+    search: normalizedSearch, posGroups, seasons, ovr, salaryMax, priceMax,
+    league, nation, club, preferredFoot, weakFoot, skillMoves,
+    workRateAttack, workRateDefense, heightMin, heightMax,
+    weightMin, weightMax, reputation, statFilter, statMin, statMax,
+    traits: trait ? [trait] : [],
+    sort, page, pageSize,
+  }), [normalizedSearch, posGroups, seasons, ovr, salaryMax, priceMax,
       league, nation, club, preferredFoot, weakFoot, skillMoves,
       workRateAttack, workRateDefense, heightMin, heightMax,
       weightMin, weightMax, reputation, statFilter, statMin, statMax, trait,
       sort, page, pageSize]);
 
-  useEffect(() => { load(); }, [load]);
+  const { data: playersRes, isLoading: loading, refetch } = usePlayersQuery(
+    canLoadSearch ? queryFilters : null
+  );
+  const players = playersRes?.players ?? [];
+  const total = playersRes?.total ?? 0;
+  const totalPages = playersRes?.totalPages ?? 1;
+
+  function load() { refetch(); }
 
   function resetFilters() {
     setSearch('');

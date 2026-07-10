@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchPlayerDetail } from '../api.js';
+import { usePlayerDetailQuery } from '../queries.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpers.js';
 import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
@@ -385,9 +385,6 @@ function TrainingOvrTab({ p, position }) {
 }
 
 export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, onSelect, onCompare }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [grade, setGrade] = useState(1);
   const [level, setLevel] = useState(1);
   const [teamColorBonus, setTeamColorBonus] = useState(0);
@@ -395,22 +392,19 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   const [activePosition, setActivePosition] = useState('');
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
     setGrade(1);
     setLevel(1);
     setTeamColorBonus(0);
     setIsUpgradePanelOpen(false);
     setActivePosition('');
-    fetchPlayerDetail(id)
-      .then(res => { setData(res); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
   }, [id]);
+
+  const { data, isLoading: loading, error } = usePlayerDetailQuery(id);
 
   if (loading) return <LoadingDetail />;
   if (error || !data) return (
     <EmptyState icon={I.Alert} title="Không tải được cầu thủ"
-      body={error || 'Đã xảy ra lỗi không xác định.'}
+      body={error?.message || 'Đã xảy ra lỗi không xác định.'}
       action={<Button variant="outline" icon={I.ArrowLeft} onClick={onBack}>Quay lại</Button>} />
   );
 

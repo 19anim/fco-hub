@@ -77,29 +77,10 @@ export async function fetchPlayerDetail(id) {
   return { player: normalized, related };
 }
 
-const META_CACHE_TTL_MS = 5 * 60 * 1000;
-let metaCache = null;
-let metaCacheAt = 0;
-let metaInFlight = null;
-
-// Multiple views (FcoApp, DatabaseView, PlayerPickerFiltered) mount fetchMeta() independently —
-// share one request/cache so we don't hit /players/meta 2-3x per session.
 export async function fetchMeta() {
-  if (metaCache && Date.now() - metaCacheAt < META_CACHE_TTL_MS) {
-    return metaCache;
-  }
-  if (metaInFlight) return metaInFlight;
-
-  metaInFlight = axios.get(`${BASE}/players/meta`)
-    .then(res => {
-      registerSeasonSprites(res.data?.seasons || []);
-      metaCache = res.data;
-      metaCacheAt = Date.now();
-      return res.data;
-    })
-    .finally(() => { metaInFlight = null; });
-
-  return metaInFlight;
+  const res = await axios.get(`${BASE}/players/meta`);
+  registerSeasonSprites(res.data?.seasons || []);
+  return res.data;
 }
 
 export async function fetchClubsByLeague(league = '') {

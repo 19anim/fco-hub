@@ -1,45 +1,40 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminAuth } from '../services/adminAuth';
+import { adminMeKey } from '../fco/queryKeys.js';
 
 const AdminAuthContext = createContext(null);
 
+async function getMeUser() {
+  const result = await adminAuth.getMe();
+  return result.success ? result.data.user : null;
+}
+
 export function AdminAuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchMe = async () => {
-    try {
-      const result = await adminAuth.getMe();
-      if (result.success) {
-        setUser(result.data.user);
-      } else {
-        setUser(null);
-      }
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMe();
-  }, []);
+  const queryClient = useQueryClient();
+  const { data: user, isLoading: loading } = useQuery({
+    queryKey: adminMeKey(),
+    queryFn: getMeUser,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
   const login = (userData) => {
-    setUser(userData);
+    queryClient.setQueryData(adminMeKey(), userData);
   };
 
   const logout = async () => {
     try {
       await adminAuth.logout();
     } finally {
-      setUser(null);
+      queryClient.setQueryData(adminMeKey(), null);
     }
   };
 
+  const refetch = () => queryClient.invalidateQueries({ queryKey: adminMeKey() });
+
   return (
-    <AdminAuthContext.Provider value={{ user, loading, login, logout, refetch: fetchMe }}>
+    <AdminAuthContext.Provider value={{ user: user ?? null, loading, login, logout, refetch }}>
       {children}
     </AdminAuthContext.Provider>
   );

@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { fetchEvents } from '../api.js';
+import { useMemo, useRef, useState } from 'react';
+import { useEventsQuery } from '../queries.js';
 import { filterValidEvents, groupEvents, daysUntil, openSequentially } from '../eventHelpers.js';
 import { Button, EmptyState, SkeletonRow } from '../ui.jsx';
 import * as I from '../Icons.jsx';
@@ -45,31 +45,12 @@ function Group({ title, warn, events }) {
 }
 
 export default function EventsView({ showToast }) {
-  const [events, setEvents]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(false);
   const [blocked, setBlocked] = useState(false);
 
-  // Async fetch core — only updates state from promise callbacks, never synchronously.
-  function runFetch() {
-    return fetchEvents()
-      .then((raw) => { setEvents(filterValidEvents(raw)); setError(false); })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }
+  const { data: raw, isLoading: loading, error, refetch } = useEventsQuery();
+  const events = useMemo(() => filterValidEvents(raw || []), [raw]);
 
-  // Retry handler: show the spinner again, then re-fetch.
-  function load() {
-    setLoading(true);
-    setError(false);
-    runFetch();
-  }
-
-  // On mount `loading` is already true and `error` already false, so no sync setState here.
-  useEffect(() => {
-    runFetch();
-    return () => {};
-  }, []);
+  function load() { refetch(); }
 
   const groups = useMemo(() => groupEvents(events), [events]);
   const counts = useMemo(() => ({

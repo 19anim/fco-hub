@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import PlayerPickerFiltered from '../components/PlayerPickerFiltered.jsx';
 import LevelBadge from '../components/LevelBadge.jsx';
 import TeamGradePopover from '../components/TeamGradePopover.jsx';
-import { fetchPlayerDetail } from '../api.js';
+import { usePlayerDetailQuery } from '../queries.js';
 import { buildTeamColorPayload, getLiveTeamColorOvrBonusBySlot, getTeamColorPayloadHash, evaluateTeamColorLive } from '../teamColorLive.js';
 import { PitchTeamColorList, TeamColorStrip } from '../components/TeamColorStrip.jsx';
 import {
@@ -173,8 +173,6 @@ export default function SquadView() {
   const [salaryCap, setSalaryCap] = useState(DEFAULT_SALARY_CAP);
   const [isEditingSalaryCap, setIsEditingSalaryCap] = useState(false);
   const [teamGrade, setTeamGrade] = useState(MIN_UPGRADE_LEVEL);
-  const [editPlayerSeasons, setEditPlayerSeasons] = useState([]);
-  const [editPlayerSeasonsLoading, setEditPlayerSeasonsLoading] = useState(false);
   const pitchRef = useRef(null);
   const layoutDragRef = useRef(null);
   const suppressClickRef = useRef(false);
@@ -237,31 +235,9 @@ export default function SquadView() {
     return () => clearTimeout(timer);
   }, [slots, bySlotId]);
 
-  useEffect(() => {
-    if (!editSlotId) {
-      setEditPlayerSeasons([]);
-      setEditPlayerSeasonsLoading(false);
-      return;
-    }
-    const player = bySlotId[editSlotId];
-    if (!player?.id) {
-      setEditPlayerSeasons([]);
-      return;
-    }
-    let ignore = false;
-    setEditPlayerSeasonsLoading(true);
-    fetchPlayerDetail(player.id)
-      .then((res) => {
-        if (!ignore) setEditPlayerSeasons(res.related || []);
-      })
-      .catch(() => {
-        if (!ignore) setEditPlayerSeasons([]);
-      })
-      .finally(() => {
-        if (!ignore) setEditPlayerSeasonsLoading(false);
-      });
-    return () => { ignore = true; };
-  }, [editSlotId]);
+  const editPlayerId = editSlotId ? bySlotId[editSlotId]?.id : null;
+  const { data: editPlayerDetail, isLoading: editPlayerSeasonsLoading } = usePlayerDetailQuery(editPlayerId);
+  const editPlayerSeasons = editPlayerDetail?.related || [];
 
   function persist(nextBySlotId, nextCustomSlots = squad.customSlots) {
     const next = { formationId, bySlotId: nextBySlotId, customSlots: normalizeSquadSlots(nextCustomSlots) };

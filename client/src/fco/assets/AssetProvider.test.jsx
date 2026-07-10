@@ -3,8 +3,22 @@ import React, { useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AssetProvider, useAssets } from './AssetProvider.jsx';
 import { resetAssetDiagnosticsForTest } from './assetMap.js';
+import { createTestQueryClient } from '../../testUtils/queryClient.js';
+
+function withQueryClient(element) {
+  return <QueryClientProvider client={createTestQueryClient()}>{element}</QueryClientProvider>;
+}
+
+async function waitFor(predicate, { timeout = 1000, interval = 10 } = {}) {
+  const start = Date.now();
+  while (!predicate()) {
+    if (Date.now() - start > timeout) throw new Error('waitFor timed out');
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+}
 
 function deferred() {
   let resolve;
@@ -64,11 +78,11 @@ describe('AssetProvider', () => {
     const loadAssetMap = vi.fn(() => request.promise);
     const states = [];
 
-    const mounted = await render(
+    const mounted = await render(withQueryClient(
       <AssetProvider loadAssetMap={loadAssetMap}>
         <AssetStateProbe onState={(state) => states.push(state)} />
       </AssetProvider>,
-    );
+    ));
 
     expect(loadAssetMap).toHaveBeenCalledTimes(1);
     expect(mounted.container.textContent).toContain('loading');
@@ -80,6 +94,7 @@ describe('AssetProvider', () => {
         updatedAt: '2026-07-07T00:00:00.000Z',
       });
       await request.promise;
+      await waitFor(() => states.at(-1)?.loading === false);
     });
 
     expect(mounted.container.textContent).toContain('ready');
@@ -100,21 +115,26 @@ describe('AssetProvider', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
+    const queryClient = createTestQueryClient();
 
     await act(async () => {
       root.render(
-        <AssetProvider loadAssetMap={loadAssetMap}>
-          <AssetStateProbe onState={(state) => states.push(state)} />
-        </AssetProvider>,
+        <QueryClientProvider client={queryClient}>
+          <AssetProvider loadAssetMap={loadAssetMap}>
+            <AssetStateProbe onState={(state) => states.push(state)} />
+          </AssetProvider>
+        </QueryClientProvider>,
       );
     });
 
     await act(async () => {
       root.render(
-        <AssetProvider loadAssetMap={loadAssetMap}>
-          <AssetStateProbe onState={(state) => states.push(state)} />
-          <span>route changed</span>
-        </AssetProvider>,
+        <QueryClientProvider client={queryClient}>
+          <AssetProvider loadAssetMap={loadAssetMap}>
+            <AssetStateProbe onState={(state) => states.push(state)} />
+            <span>route changed</span>
+          </AssetProvider>
+        </QueryClientProvider>,
       );
     });
 
@@ -131,14 +151,14 @@ describe('AssetProvider', () => {
     const loadAssetMap = vi.fn().mockRejectedValue(failure);
     const states = [];
 
-    const mounted = await render(
+    const mounted = await render(withQueryClient(
       <AssetProvider loadAssetMap={loadAssetMap}>
         <AssetStateProbe onState={(state) => states.push(state)} />
       </AssetProvider>,
-    );
+    ));
 
     await act(async () => {
-      await Promise.resolve();
+      await waitFor(() => states.at(-1)?.loading === false);
     });
 
     expect(mounted.container.textContent).toContain('ready');

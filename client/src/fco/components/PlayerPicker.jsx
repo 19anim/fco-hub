@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
-import { fetchPlayers } from '../api.js';
+import { usePlayersQuery } from '../queries.js';
 import { getPlayerCardKey, isSamePlayerCard, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import PlayerPickerItem from './PlayerPickerItem.jsx';
 import * as I from '../Icons.jsx';
@@ -19,40 +19,21 @@ export default function PlayerPicker({
   pageSize = 20,
 }) {
   const [q, setQ] = useState('');
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [levelById, setLevelById] = useState({});
   const debouncedQ = useDebouncedValue(q, q.trim() ? BACKEND_SEARCH_DEBOUNCE_MS : 0);
 
-  useEffect(() => {
-    const search = normalizeBackendSearch(debouncedQ);
+  const search = normalizeBackendSearch(debouncedQ);
+  const canQuery = canRunBackendSearch(debouncedQ) && (search || showTopPlayers);
 
-    if (!canRunBackendSearch(debouncedQ)) return;
+  const queryFilters = useMemo(() => canQuery ? {
+    search,
+    posGroups: posGroups?.length ? posGroups : undefined,
+    sort: 'ovr_desc',
+    pageSize: search ? pageSize : 10,
+  } : null, [canQuery, search, posGroups, pageSize]);
 
-    if (!search && !showTopPlayers) {
-      setResults([]);
-      return;
-    }
-
-    let ignore = false;
-    setLoading(true);
-    fetchPlayers({
-      search,
-      posGroups: posGroups?.length ? posGroups : undefined,
-      sort: 'ovr_desc',
-      pageSize: search ? pageSize : 10,
-    })
-      .then((res) => {
-        if (!ignore) setResults(res.players);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [debouncedQ, showTopPlayers, posGroups, pageSize]);
+  const { data: playersRes, isLoading: loading } = usePlayersQuery(queryFilters);
+  const results = playersRes?.players ?? [];
 
   function getLevel(playerId) {
     return normalizeUpgradeLevel(levelById[playerId] ?? defaultLevel);
@@ -85,14 +66,7 @@ export default function PlayerPicker({
             autoFocus
             maxLength={BACKEND_SEARCH_MAX_LENGTH}
             value={q}
-            onChange={e => {
-              const nextQuery = e.target.value;
-              setQ(nextQuery);
-              if (!canRunBackendSearch(nextQuery)) {
-                setResults([]);
-                setLoading(false);
-              }
-            }}
+            onChange={e => setQ(e.target.value)}
             placeholder="Tìm cầu thủ…"
           />
         </div>
