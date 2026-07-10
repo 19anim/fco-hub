@@ -315,7 +315,9 @@ export async function createAssetUpload(input, dependencies = {}) {
   };
 
   try {
-    return sanitizeAssetDetail(await createRepositoryDoc(repository, doc));
+    const created = sanitizeAssetDetail(await createRepositoryDoc(repository, doc));
+    invalidatePublicAssetMapCache();
+    return created;
   } catch (error) {
     translateWriteError(error);
   }
@@ -356,6 +358,7 @@ export async function replaceAssetUpload(input, dependencies = {}) {
     if (!updateMatched(result)) {
       throw serviceError('Asset was modified during replacement', 409, { orphanPublicId: version.cloudinaryPublicId });
     }
+    invalidatePublicAssetMapCache();
     return getAssetDetail({ id: existing._id }, { repository });
   } catch (error) {
     if (error.statusCode === 409) {
@@ -379,6 +382,7 @@ export async function rollbackAssetVersion(input, dependencies = {}) {
   }
 
   await updateOne(repository, { _id: existing._id }, { $set: { activeVersion: version } }, { runValidators: true });
+  invalidatePublicAssetMapCache();
   return getAssetDetail({ id: existing._id }, { repository });
 }
 
@@ -391,6 +395,7 @@ export async function archiveAsset(input, dependencies = {}) {
     throw serviceError('Asset not found', 404);
   }
   await updateOne(repository, { _id: existing._id }, { $set: { status: ARCHIVED_STATUS } }, { runValidators: true });
+  invalidatePublicAssetMapCache();
   return getAssetDetail({ id: existing._id }, { repository });
 }
 
@@ -413,6 +418,7 @@ export async function deleteAsset(input, dependencies = {}) {
   } else {
     await execMaybe(repository.findOneAndDelete?.({ _id: existing._id }));
   }
+  invalidatePublicAssetMapCache();
 }
 
 export async function listAssets(filters = {}, dependencies = {}) {
@@ -451,7 +457,23 @@ export async function getAssetDetail(input, dependencies = {}) {
   return sanitizeAssetDetail(asset);
 }
 
+// Public asset map barely changes minute to minute but is fetched on every app load —
+// cache it to avoid re-querying + re-hashing the full asset list on every request.
+const PUBLIC_ASSET_MAP_CACHE_TTL_MS = 5 * 60 * 1000;
+let publicAssetMapCache = null;
+let publicAssetMapCacheAt = 0;
+
+export function invalidatePublicAssetMapCache() {
+  publicAssetMapCache = null;
+  publicAssetMapCacheAt = 0;
+}
+
 export async function getPublicAssetMap(filters = {}, dependencies = {}) {
+  const cacheable = Object.keys(filters).length === 0 && !dependencies.repository;
+  if (cacheable && publicAssetMapCache && Date.now() - publicAssetMapCacheAt < PUBLIC_ASSET_MAP_CACHE_TTL_MS) {
+    return publicAssetMapCache;
+  }
+
   const repository = dependencies.repository ?? await getDefaultRepository();
   assertRepository(repository);
 
@@ -482,5 +504,10 @@ export async function getPublicAssetMap(filters = {}, dependencies = {}) {
     }
   }
 
-  return { data, updatedAt: updatedAt?.toISOString() ?? null };
+  const result = { data, updatedAt: updatedAt?.toISOString() ?? null };
+  if (cacheable) {
+    publicAssetMapCache = result;
+    publicAssetMapCacheAt = Date.now();
+  }
+  return result;
 }
