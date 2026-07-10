@@ -3,21 +3,50 @@
 .fco-nav {
   position: sticky; top: 0; z-index: 40;
   display: flex; align-items: center; gap: 8px;
-  padding: 0 20px; height: 58px;
+  padding: 0 20px; height: 86px;
   background: rgba(15,18,23,.86); backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
-.fco-brand { display: flex; align-items: center; gap: 10px; margin-right: 10px; flex: 0 0 auto; }
-.fco-brand-mark {
-  width: 30px; height: 30px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), #0bbf76);
-  display: flex; align-items: center; justify-content: center;
-  color: #04130d; font-family: var(--mono); font-weight: 800; font-size: 15px;
-  box-shadow: 0 0 14px -2px var(--accent);
+.fco-brand {
+  width: 172px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  outline-offset: 4px;
 }
-.fco-brand-name { font-weight: 800; font-size: 16px; letter-spacing: -.01em; }
-.fco-brand-name span { color: var(--accent); }
-.fco-navitems { display: flex; align-items: center; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.fco-brand-logo {
+  max-width: 172px;
+  max-height: 80px;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.34));
+}
+.fco-brand:hover .fco-brand-logo { transform: translateY(-1px); }
+.fco-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 12px;
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,.22);
+}
+.fco-nav-toggle:hover,
+.fco-nav-toggle.open { border-color: #36506d; background: var(--surface-3); }
+.fco-navitems { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; scrollbar-width: none; }
 .fco-navitems::-webkit-scrollbar { display: none; }
 .fco-navitem {
   display: inline-flex; align-items: center; gap: 7px;

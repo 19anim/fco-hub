@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useAssets } from './AssetProvider.jsx';
 
-export default function FaviconAsset() {
-  const { getAssetUrl } = useAssets();
-  const faviconUrl = getAssetUrl('siteAsset', 'favicon');
+export default function FaviconAsset({ fallbackUrl = null }) {
+  const { loading, getAssetUrl } = useAssets();
+  const faviconUrl = loading ? fallbackUrl : (getAssetUrl('siteAsset', 'favicon') || fallbackUrl);
 
   useEffect(() => {
     if (!faviconUrl) return;

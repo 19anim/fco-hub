@@ -3,7 +3,7 @@ import { useAdminAuth } from '../contexts/AdminAuthContext';
 import './fco.css';
 import { LS_KEY } from './constants.js';
 import { fetchMeta } from './api.js';
-import { AssetProvider } from './assets/AssetProvider.jsx';
+import { AssetProvider, useAssets } from './assets/AssetProvider.jsx';
 import FaviconAsset from './assets/FaviconAsset.jsx';
 import DatabaseView from './views/DatabaseView.jsx';
 import EventsView from './views/EventsView.jsx';
@@ -16,7 +16,7 @@ import VideosView from './views/VideosView.jsx';
 import * as I from './Icons.jsx';
 
 const NAV_ITEMS = [
-  { id: 'db',        label: 'Database',   icon: I.Database  },
+  { id: 'db',        label: 'Cầu thủ',    icon: I.Database  },
   { id: 'events',    label: 'Sự kiện',    icon: I.Calendar  },
   { id: 'videos',    label: 'Videos',     icon: I.Video     },
   { id: 'upgrade',   label: 'Nâng cấp',   icon: I.Zap       },
@@ -109,6 +109,15 @@ function savePersisted(s) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch {}
 }
 
+const FCO_SITE_LOGO_URL = 'https://res.cloudinary.com/dk6nhyxaq/image/upload/v1783688033/Fco-hub/site-assets/favicon-v3.png';
+
+function FcoBrandLogo() {
+  const { loading, getAssetUrl } = useAssets();
+  const logoUrl = loading ? FCO_SITE_LOGO_URL : (getAssetUrl('siteAsset', 'favicon') || FCO_SITE_LOGO_URL);
+
+  return <img className="fco-brand-logo" src={logoUrl} alt="FCO Đá Phím" />;
+}
+
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function FcoApp() {
   const persisted = loadPersisted();
@@ -119,6 +128,7 @@ export default function FcoApp() {
   const [watch,      setWatch]      = useState(persisted.watch || []);
   const [compareIds, setCompareIds] = useState(persisted.compareIds || []);
   const [toast,      setToast]      = useState(null);
+  const [navOpen,    setNavOpen]    = useState(false);
 
   // Listen to browser back/forward
   useEffect(() => {
@@ -155,6 +165,7 @@ export default function FcoApp() {
   function navigate(view, param = null) {
     setPath(view, param);
     setRoute(parsePath());
+    setNavOpen(false);
   }
 
   function handleNavClick(e, view) {
@@ -193,15 +204,29 @@ export default function FcoApp() {
 
   return (
     <AssetProvider>
-      <FaviconAsset />
+      <FaviconAsset fallbackUrl={FCO_SITE_LOGO_URL} />
       <div className="fco-app">
         <nav className="fco-nav">
-        <div className="fco-brand">
-          <div className="fco-brand-mark">F</div>
-          <div className="fco-brand-name">FCO <span>Hub</span></div>
-        </div>
+        <a
+          className="fco-brand"
+          href={routeUrl('db', null, { keepSearch: true })}
+          aria-label="Về trang cầu thủ"
+          onClick={e => handleNavClick(e, 'db')}>
+          <FcoBrandLogo />
+        </a>
 
-        <div className="fco-navitems">
+        <button
+          type="button"
+          className={`fco-nav-toggle${navOpen ? ' open' : ''}`}
+          aria-label={navOpen ? 'Đóng menu' : 'Mở menu'}
+          aria-expanded={navOpen}
+          aria-controls="fco-navitems"
+          onClick={() => setNavOpen(open => !open)}>
+          {navOpen ? <I.X size={18} /> : <I.List size={18} />}
+          <span>Menu</span>
+        </button>
+
+        <div id="fco-navitems" className={`fco-navitems${navOpen ? ' open' : ''}`}>
           {NAV_ITEMS.map(item => (
             <a key={item.id}
               href={routeUrl(item.id)}
