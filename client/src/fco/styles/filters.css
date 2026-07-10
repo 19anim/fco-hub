@@ -1,0 +1,43 @@
+/* ===== Popover / filters ===== */
+
+/* ===== FIFAAddict Filter Layout ===== */
+.fifaaddict-form-wrap { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; margin-bottom: 20px; }
+.fa-search-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.fa-search-input-wrap { flex: 1; position: relative; }
+.fa-search-input { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); }
+.fa-clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-faint); cursor: pointer; }
+.fa-btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+.fa-btn-primary { background: var(--accent); color: var(--bg); }
+.fa-btn-reset { background: var(--surface-3); color: var(--text); }
+.fa-section { margin-bottom: 16px; }
+.fa-positions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 4px; }
+.fa-pos-btn { padding: 6px 0; background: var(--surface-3); border: 1px solid var(--border); border-radius: 4px; color: var(--text); cursor: pointer; font-size: 12px; }
+.fa-pos-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.fa-stats-section { display: flex; gap: 16px; }
+.fa-filter-row { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.fa-label { font-size: 12px; color: var(--text-dim); }
+.fa-range-inputs { display: flex; align-items: center; gap: 4px; }
+.fa-input { width: 100%; padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); }
+.fa-separator { color: var(--text-faint); }
+
+.fco-pop-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-faint); padding: 4px 8px 8px; }
+.fco-sortopt { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 9px; border: none; background: transparent; color: var(--text-dim); border-radius: 8px; cursor: pointer; font-size: 13px; text-align: left; }
+.fco-sortopt:hover { background: var(--surface-3); color: var(--text); }
+.fco-sortopt.on { color: var(--text); }
+.fco-filterbtn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim); font-size: 13px; font-weight: 550; cursor: pointer; white-space: nowrap; transition: all .14s; }
+.fco-filterbtn:hover { color: var(--text); border-color: #36404d; }
+.fco-filterbtn.active { color: var(--text); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); background: color-mix(in srgb, var(--accent) 8%, var(--surface-2)); }
+.fco-filterbtn-count { font-family: var(--mono); font-size: 11px; font-weight: 700; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 5px; background: var(--accent); color: #04130d; display: inline-flex; align-items: center; justify-content: center; }
+.fco-checklist { display: flex; flex-direction: column; gap: 1px; max-height: 280px; overflow-y: auto; }
+.fco-check { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border: none; background: transparent; color: var(--text); border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; }
+.fco-check:hover { background: var(--surface-3); }
+.fco-checkbox { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid #3a434f; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 16px; color: #04130d; transition: all .12s; }
+.fco-checkbox.on { background: var(--accent); border-color: var(--accent); }
+.fco-range { padding: 4px 8px 8px; }
+.fco-range-head { display: flex; justify-content: center; gap: 8px; font-family: var(--mono); font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 12px; }
+.fco-range-track { position: relative; height: 4px; background: var(--surface-3); border-radius: 99px; margin: 14px 4px; }
+.fco-range-fill { position: absolute; top: 0; bottom: 0; background: var(--accent); border-radius: 99px; }
+.fco-range-input { position: absolute; top: 50%; left: -4px; right: -4px; width: calc(100% + 8px); transform: translateY(-50%); -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; margin: 0; }
+.fco-range-input::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 16px; height: 16px; border-radius: 99px; background: #fff; border: 3px solid var(--accent); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.4); }
+.fco-range-input::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 99px; background: #fff; border: 3px solid var(--accent); cursor: pointer; }
+

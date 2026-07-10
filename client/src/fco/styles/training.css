@@ -1,0 +1,56 @@
+/* ===== Training OVR tab ===== */
+.fco-training-tab { padding: 8px 0; }
+.fco-training-dashboard {
+  border: 1px solid var(--border-soft);
+  border-top: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  border-radius: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 96%, var(--accent) 4%), var(--surface-2));
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.fco-training-dashboard-main { display: grid; grid-template-columns: minmax(140px, 1fr) auto minmax(132px, .75fr); gap: 10px; align-items: center; }
+.fco-training-kicker { color: var(--text-primary); font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.fco-training-helper { color: var(--text-faint); font-size: 11px; margin-top: 2px; }
+.fco-training-ovr-lockup { display: flex; align-items: baseline; justify-content: center; gap: 9px; white-space: nowrap; }
+.fco-training-ovr-value { font-family: var(--mono); font-size: 36px; font-weight: 900; line-height: .9; letter-spacing: -.05em; }
+.fco-training-ovr-arrow { color: var(--text-faint); font-size: 17px; }
+.fco-training-dashboard-actions { display: flex; align-items: flex-end; flex-direction: column; gap: 5px; }
+.fco-training-gain { border: 1px solid var(--border-soft); border-radius: 999px; padding: 3px 8px; color: var(--text-dim); background: var(--surface); font-family: var(--mono); font-size: 12px; font-weight: 800; }
+.fco-training-gain.on { border-color: color-mix(in srgb, var(--accent) 48%, var(--border-soft)); color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
+.fco-training-count { color: var(--text-faint); font-size: 11px; }
+.fco-training-reset { padding: 3px 9px; border: 1px solid var(--border-soft); border-radius: 7px; background: var(--surface); color: var(--text-dim); font-size: 12px; cursor: pointer; }
+.fco-training-reset:disabled { opacity: 0.35; cursor: default; }
+.fco-training-reset:not(:disabled):hover { background: var(--surface-3); color: var(--text); }
+.fco-training-slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; margin-top: 8px; }
+.fco-training-slot { min-width: 0; border: 1px dashed var(--border-soft); border-radius: 8px; padding: 4px 6px; color: var(--text-faint); background: color-mix(in srgb, var(--surface) 72%, transparent); display: flex; justify-content: space-between; gap: 4px; font-size: 11px; }
+.fco-training-slot span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fco-training-slot strong { font-family: var(--mono); color: inherit; }
+.fco-training-slot.filled { border-style: solid; border-color: color-mix(in srgb, var(--accent) 38%, var(--border-soft)); color: var(--text-primary); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.fco-training-list { display: flex; flex-direction: column; gap: 4px; }
+.fco-training-list-head,
+.fco-training-row { display: grid; grid-template-columns: minmax(120px, 1fr) 64px 72px 108px; gap: 8px; align-items: center; }
+.fco-training-list-head { color: var(--text-faint); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 0 8px 1px; }
+.fco-training-row { border: 1px solid var(--border-soft); border-radius: 9px; background: var(--surface); padding: 6px 8px; font-size: 13px; }
+.fco-training-row.on { border-color: color-mix(in srgb, var(--accent) 36%, var(--border-soft)); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.fco-training-stat-name { min-width: 0; }
+.fco-training-stat-name strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); font-weight: 700; }
+.fco-training-coef { color: var(--text-faint); font-family: var(--mono); font-size: 12px; }
+.fco-training-base { font-family: var(--mono); font-weight: 800; }
+.fco-training-controls { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+.fco-training-btn { width: 25px; height: 25px; border: 1px solid var(--border-soft); border-radius: 7px; background: var(--surface-2); color: var(--text-primary); font-size: 15px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+.fco-training-btn:disabled { opacity: 0.35; cursor: default; }
+.fco-training-btn:not(:disabled):hover { background: var(--surface-3); }
+.fco-training-points { min-width: 20px; text-align: center; color: var(--text-primary); font-family: var(--mono); font-size: 12px; font-weight: 800; }
+@media (max-width: 720px) {
+  .fco-training-dashboard-main { grid-template-columns: 1fr; align-items: stretch; }
+  .fco-training-ovr-lockup { justify-content: flex-start; }
+  .fco-training-dashboard-actions { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+  .fco-training-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fco-training-list-head { display: none; }
+  .fco-training-row { grid-template-columns: 1fr auto; grid-template-areas: "name controls" "meta controls"; }
+  .fco-training-stat-name { grid-area: name; }
+  .fco-training-coef { grid-area: meta; }
+  .fco-training-base { grid-area: meta; margin-left: 58px; }
+  .fco-training-controls { grid-area: controls; }
+}
+

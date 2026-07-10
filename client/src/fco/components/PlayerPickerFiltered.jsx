@@ -57,6 +57,7 @@ export default function PlayerPickerFiltered({
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [levelById, setLevelById] = useState({});
+  const [mobileTab, setMobileTab] = useState('filters');
 
   const previousLeagueRef = useRef(undefined);
   const normalizedSearch = normalizeBackendSearch(search);
@@ -101,7 +102,10 @@ export default function PlayerPickerFiltered({
 
     fetchPlayers(submittedParams)
       .then(res => {
-        if (!ignore) setResults(res.players);
+        if (!ignore) {
+          setResults(res.players);
+          setMobileTab('results');
+        }
       })
       .finally(() => {
         if (!ignore) setLoading(false);
@@ -122,6 +126,7 @@ export default function PlayerPickerFiltered({
     if (search.trim() && normalizedSearch.length < 2) {
       setSubmittedParams(null);
       setResults([]);
+      setMobileTab('results');
       return;
     }
 
@@ -132,6 +137,7 @@ export default function PlayerPickerFiltered({
         setSubmittedParams(null);
       }
       setResults([]);
+      setMobileTab('results');
       return;
     }
 
@@ -247,7 +253,28 @@ export default function PlayerPickerFiltered({
           </button>
         </div>
 
-        <div className="fco-picker-body">
+        <div className="fco-picker-mobile-tabs">
+          <button
+            type="button"
+            className={`fco-picker-tab${mobileTab === 'filters' ? ' on' : ''}`}
+            onClick={() => setMobileTab('filters')}
+          >
+            <I.Sliders size={14} />
+            Bộ lọc
+            {hasActiveFilter && <span className="fco-picker-tab-dot" />}
+          </button>
+          <button
+            type="button"
+            className={`fco-picker-tab${mobileTab === 'results' ? ' on' : ''}`}
+            onClick={() => setMobileTab('results')}
+          >
+            <I.List size={14} />
+            Kết quả
+            {submittedParams && <span className="fco-picker-tab-count">{loading ? <I.Spinner size={11} className="fco-spin" /> : results.length}</span>}
+          </button>
+        </div>
+
+        <div className={`fco-picker-body fco-picker-body--${mobileTab}`}>
           <div className="fco-picker-filters">
             <PlayerSearchForm
               search={search} setSearch={setSearch}

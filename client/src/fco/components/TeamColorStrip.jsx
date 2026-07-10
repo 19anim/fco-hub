@@ -136,45 +136,62 @@ function buildPitchTeamColorEntries(result) {
   });
 }
 
+function groupPitchTeamColorEntries(entries) {
+  const groups = [];
+  for (const entry of entries) {
+    const last = groups[groups.length - 1];
+    if (last && last.groupKey === entry.groupKey) {
+      last.entries.push(entry);
+    } else {
+      groups.push({ groupKey: entry.groupKey, tone: entry.tone, entries: [entry] });
+    }
+  }
+  return groups;
+}
+
 export function PitchTeamColorList({ result, activeFocus, onToggleFocus }) {
   const entries = buildPitchTeamColorEntries(result);
   if (!entries.length) return null;
 
+  const groups = groupPitchTeamColorEntries(entries);
+
   return (
     <div className="pitch-teamcolor-list" aria-label="Team color đang kích hoạt">
-      {entries.map((entry) => {
-        const isActive = activeFocus?.id === entry.id;
-        const iconUrl = getIconUrl(entry.item);
-        const name = entry.item?.name_vn || entry.item?.name || entry.label;
+      {groups.map((group) => (
+        <div
+          key={group.groupKey}
+          className={`pitch-teamcolor-badge pitch-teamcolor-badge--${group.tone}`}
+          data-group-name={group.groupKey}
+          data-team-color-tone={group.tone}
+        >
+          {group.entries.map((entry) => {
+            const isActive = activeFocus?.id === entry.id;
+            const iconUrl = getIconUrl(entry.item);
+            const name = entry.item?.name_vn || entry.item?.name || entry.label;
 
-        return (
-          <button
-            key={entry.id}
-            type="button"
-            className={`pitch-teamcolor-badge pitch-teamcolor-badge--${entry.tone}${isActive ? ' is-active' : ''}`}
-            onClick={() => onToggleFocus(isActive ? null : entry)}
-            aria-pressed={isActive}
-            aria-label={name}
-            title={name}
-            data-group-name={entry.groupKey}
-            data-team-color-tone={entry.tone}
-            data-matched-slots={entry.matchedSlots.join(',')}
-            data-qualified-slots={entry.qualifiedSlots.join(',')}
-          >
-            <span className="pitch-teamcolor-badge__icon-wrap">
-              {iconUrl ? (
-                <img className="pitch-teamcolor-badge__icon" src={iconUrl} alt="" aria-hidden="true" />
-              ) : (
-                <span className="pitch-teamcolor-badge__icon-placeholder" aria-hidden="true" />
-              )}
-            </span>
-            <span className="pitch-teamcolor-badge__text">
-              <span className="pitch-teamcolor-badge__name">{name}</span>
-              <span className="pitch-teamcolor-badge__meta">{entry.item?.matched ?? entry.matchedSlots.length}/{entry.item?.required ?? entry.qualifiedSlots.length}</span>
-            </span>
-          </button>
-        );
-      })}
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                className={`pitch-teamcolor-chip${isActive ? ' is-active' : ''}`}
+                onClick={() => onToggleFocus(isActive ? null : entry)}
+                aria-pressed={isActive}
+                aria-label={name}
+                data-matched-slots={entry.matchedSlots.join(',')}
+                data-qualified-slots={entry.qualifiedSlots.join(',')}
+              >
+                {iconUrl ? (
+                  <img className="pitch-teamcolor-badge__icon" src={iconUrl} alt="" aria-hidden="true" />
+                ) : (
+                  <span className="pitch-teamcolor-badge__icon-placeholder" aria-hidden="true" />
+                )}
+                <span className="pitch-teamcolor-badge__meta">{entry.item?.matched ?? entry.matchedSlots.length}/{entry.item?.required ?? entry.qualifiedSlots.length}</span>
+                <span className="pitch-teamcolor-badge__name">{name}</span>
+              </button>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

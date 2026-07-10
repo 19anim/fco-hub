@@ -26,7 +26,7 @@ import { DEFAULT_SALARY_CAP, MAX_SALARY_CAP, getLineAverages, getSlotDisplayOvr,
 import { computeSquadBonuses, getPlayerSquadBonus } from '../teamColor.js';
 import { getPlayerCardKey, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import { MIN_UPGRADE_LEVEL } from '../upgradeConfig.js';
-import { Button, IconButton, PlayerCardMini, PlayerAvatar, SeasonChip, PosPill } from '../ui.jsx';
+import { Button, PlayerCardMini, PlayerAvatar, SeasonChip, PosPill } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot.jsx';
 
@@ -171,6 +171,7 @@ export default function SquadView() {
   const [dragOverSlotId, setDragOverSlotId] = useState(null);
   const [layoutDrag, setLayoutDrag] = useState(null);
   const [salaryCap, setSalaryCap] = useState(DEFAULT_SALARY_CAP);
+  const [isEditingSalaryCap, setIsEditingSalaryCap] = useState(false);
   const [teamGrade, setTeamGrade] = useState(MIN_UPGRADE_LEVEL);
   const [editPlayerSeasons, setEditPlayerSeasons] = useState([]);
   const [editPlayerSeasonsLoading, setEditPlayerSeasonsLoading] = useState(false);
@@ -461,19 +462,43 @@ export default function SquadView() {
               <span className="fco-squad-summary-eyebrow">Tổng lương</span>
             </div>
             <div className="fco-squad-summary-value">
-              {salaryTotal} /
-              <input
-                type="number"
-                min={0}
-                max={MAX_SALARY_CAP}
-                value={salaryCap}
-                onChange={(e) => {
-                  const next = Math.max(0, Math.min(MAX_SALARY_CAP, Number(e.target.value) || 0));
-                  setSalaryCap(next);
-                }}
-                className="fco-squad-summary-cap-input"
-              />
+              <span>{salaryTotal}</span>
+              <span className="fco-squad-summary-divider">/</span>
+              <span className="fco-squad-summary-cap-wrap">
+                {isEditingSalaryCap ? (
+                  <input
+                    type="number"
+                    min={0}
+                    max={MAX_SALARY_CAP}
+                    value={salaryCap}
+                    autoFocus
+                    onChange={(e) => {
+                      const next = Math.max(0, Math.min(MAX_SALARY_CAP, Number(e.target.value) || 0));
+                      setSalaryCap(next);
+                    }}
+                    onBlur={() => setIsEditingSalaryCap(false)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setIsEditingSalaryCap(false); }}
+                    className="fco-squad-summary-cap-input"
+                  />
+                ) : (
+                  <>
+                    <span>{salaryCap}</span>
+                    <button
+                      type="button"
+                      className="summary-edit-icon"
+                      aria-label="Sửa lương tối đa"
+                      onClick={() => setIsEditingSalaryCap(true)}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z" />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </span>
             </div>
+            <div className="fco-squad-summary-caption">Hiện tại / Tối đa</div>
             <div className="fco-squad-summary-bar" aria-label={`Tổng lương ${salaryTotal} trên ${salaryCap}`}>
               <span style={{ width: `${salaryProgress}%` }} />
             </div>
@@ -496,7 +521,7 @@ export default function SquadView() {
                   );
                 })}
               </div>
-              <div className="fco-squad-summary-ovr-total">{lineAverages.overall ?? '—'}</div>
+              <div className="fco-squad-summary-ovr-total-wrap"><div className="fco-squad-summary-ovr-total">{lineAverages.overall ?? '—'}</div></div>
             </div>
           </div>
 
@@ -608,26 +633,8 @@ export default function SquadView() {
               >
                 {player ? (
                   <div
-                    key={isTeamColorQualified ? activeTeamColorFocus?.id : undefined}
                     className={`fco-squad-card${isMovingSource ? ' moving' : ''}${isMoveTarget ? ' move-target' : ''}${dragSlotId === slot.id ? ' dragging' : ''}`}
                   >
-                    <div className="fco-squad-card-actions">
-                      <IconButton
-                        icon={I.Settings}
-                        label="Chỉnh thẻ"
-                        size={12}
-                        className="card-edit-btn"
-                        onClick={() => openEditModal(slot.id)}
-                      />
-                      <IconButton
-                        icon={I.X}
-                        label="Xoá cầu thủ"
-                        size={12}
-                        className="card-remove-btn"
-                        onClick={() => removeFromSlot(slot.id)}
-                      />
-                    </div>
-
                     <PlayerCardMini
                       player={player}
                       slotPos={slot.pos}
@@ -637,7 +644,7 @@ export default function SquadView() {
                       level={player.upgradeLevel}
                       onClick={() => {
                         if (suppressClickRef.current) return;
-                        movingSlotId ? handleSlotClick(slot.id) : setPickerSlotId(slot.id);
+                        movingSlotId ? handleSlotClick(slot.id) : openEditModal(slot.id);
                       }}
                     />
                   </div>

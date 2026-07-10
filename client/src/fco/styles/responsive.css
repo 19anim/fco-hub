@@ -1,0 +1,124 @@
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .fco-main {
+    max-width: 100%;
+  }
+
+  .fco-panel,
+  .fa-form-panel,
+  .fco-season-ext-list,
+  .fco-pos-container {
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  html,
+  body,
+  #root {
+    overflow-x: hidden;
+  }
+
+  .fco-main {
+    padding: 14px 10px 64px;
+  }
+
+  .fco-nav {
+    height: 54px;
+    padding: 0 10px;
+  }
+
+  .fco-navitems {
+    flex: 1;
+  }
+
+  .fco-panel-head {
+    min-height: 42px;
+    padding: 0 12px;
+  }
+
+  .fco-panel-body {
+    padding: 12px;
+  }
+
+  .fa-form-panel,
+  .fco-season-ext-list,
+  .fco-pos-container {
+    padding: 12px;
+  }
+
+  .fa-search-row,
+  .fco-toolbar,
+  .fco-resultbar,
+  .fco-pager {
+    align-items: stretch;
+  }
+
+  .fa-search-row {
+    flex-direction: column;
+  }
+
+  .fa-search-row .fa-btn,
+  .fco-pager .fco-iconbtn {
+    min-height: 40px;
+  }
+
+  .fco-resultbar {
+    gap: 8px;
+  }
+
+  .fco-resultcount {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 1120px) { .fco-hide-md { display: none !important; } .fco-detail-grid { grid-template-columns: 1fr; } .fco-ops-grid { grid-template-columns: 1fr; } .fco-relgrid { grid-template-columns: repeat(2, 1fr); } .fco-tiles { grid-template-columns: repeat(4, 1fr); } .fa-detail-hero { grid-template-columns: minmax(0, 1fr) minmax(140px, 210px); } .fa-attribute-grid { column-count: 3; } .fco-video-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .fco-detail-top { align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .fco-detail-actions { width: 100%; margin-left: 0; }
+  .fco-detail-actions .fco-btn { flex: 1 1 140px; justify-content: center; }
+  .fa-detail-sheet { min-height: 0; padding: 12px; }
+  .fa-detail-hero { grid-template-columns: 1fr; gap: 8px; }
+  .fa-detail-main { padding-left: 0; }
+  .fa-name-block { align-items: center; gap: 8px; }
+  .fa-hero-ovr { font-size: 40px; }
+  .fa-player-name { line-height: 1.05; }
+  .fa-player-art { min-height: 132px; margin: -4px 0 -10px; justify-content: center; }
+  .fa-player-art > * { max-width: 156px; max-height: 156px; }
+  .fa-bio-grid { gap: 6px 8px; }
+  .fa-economy-row span { flex: 1 1 auto; justify-content: center; }
+  .fa-upgrade-panel { width: 100%; margin-left: 0; }
+  .fa-upgrade-controls { grid-template-columns: 1fr; }
+  .fa-upgrade-summary-text { white-space: normal; }
+  .fa-summary-strip { grid-template-columns: repeat(3, 1fr); }
+  .fa-attribute-grid { column-count: 2; }
+  .fco-hide-sm { display: none !important; }
+  .fco-main { padding: 16px 10px 70px; }
+  .fco-brand-name { display: none; }
+  .fco-navitem span:not(.fco-navsoon) { display: none; }
+  .fco-navitem { padding: 8px 10px; }
+  .fco-statgrid { grid-template-columns: 1fr; }
+  .fco-tiles { grid-template-columns: repeat(2, 1fr); }
+  .fco-relgrid { grid-template-columns: 1fr; }
+  .fco-kvgrid { grid-template-columns: 1fr 1fr; }
+  .fco-cmp-scroll { overflow-x: auto; }
+}
+@media (max-width: 560px) {
+  .fco-detail-actions .fco-btn { flex-basis: 100%; }
+  .fa-summary-strip { grid-template-columns: repeat(2, 1fr); }
+  .fa-attribute-grid { column-count: 1; }
+  .fa-hero-ovr { font-size: 36px; }
+  .fa-player-name { font-size: 24px; }
+  .fa-player-art > * { max-width: 136px; max-height: 136px; }
+}
+
+@media (max-width: 760px) {
+  .fco-video-card { padding: 12px; }
+  .fco-video-card-head { gap: 10px; }
+  .fco-video-play {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+}
+

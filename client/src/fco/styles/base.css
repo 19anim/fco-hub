@@ -1,0 +1,33 @@
+/* ===== FCO Hub — dark utility theme ===== */
+:root {
+  --bg: #0a0c10;
+  --surface: #0f1217;
+  --surface-2: #14181e;
+  --surface-3: #1a1f28;
+  --border: #242b35;
+  --border-soft: #1b212a;
+  --text: #e7eaef;
+  --text-dim: #98a2af;
+  --text-faint: #5e6773;
+  --accent: #00e08a;
+  --accent-dim: #00e08a;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --r: 12px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.fco-num { font-family: var(--mono); font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+::selection { background: var(--accent); color: #04130d; }
+button { font-family: inherit; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #2a313c; border-radius: 99px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: #353d49; }
+

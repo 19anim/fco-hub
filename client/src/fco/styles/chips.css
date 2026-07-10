@@ -1,0 +1,72 @@
+/* ===== Chips / segmented ===== */
+.fco-season-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 2px 7px 2px 5px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--season-bg, var(--surface-2)) 72%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--season-ring, var(--accent)) 45%, var(--border));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), 0 3px 10px rgba(0,0,0,.22);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.fco-season-chip img {
+  height: 20px;
+  width: auto;
+  max-width: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.45));
+}
+.fco-season-sprite {
+  display: inline-block;
+  width: var(--season-sprite-width, 30px);
+  height: var(--season-sprite-height, 24px);
+  max-width: 38px;
+  background-image: var(--season-sprite-url, none);
+  background-position: var(--season-sprite-position, 0 0);
+  background-size: var(--season-sprite-size, auto);
+  background-repeat: no-repeat;
+  transform: scale(.86);
+  transform-origin: center;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.45));
+  flex: 0 0 auto;
+}
+.fco-season-chip span {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
+  font-weight: 750;
+  color: var(--text);
+}
+.fco-season-chip.fallback {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 850;
+  letter-spacing: .04em;
+  color: var(--season-fg, var(--text));
+  padding: 4px 7px;
+}
+.fco-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 5px 4px 9px;
+  background: var(--surface-3); border: 1px solid var(--border); border-radius: 8px; font-size: 12.5px;
+}
+.fco-chip-x { display: inline-flex; padding: 2px; border-radius: 5px; border: none; background: transparent; color: var(--text-faint); cursor: pointer; }
+.fco-chip-x:hover { background: rgba(226,86,111,.18); color: #ff8095; }
+.fco-seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px; padding: 2px; gap: 2px; }
+.fco-seg-btn { display: inline-flex; align-items: center; gap: 6px; border: none; background: transparent; color: var(--text-dim); border-radius: 7px; cursor: pointer; font-weight: 550; transition: all .12s; }
+.fco-seg-btn:hover { color: var(--text); }
+.fco-seg-btn.on { background: var(--surface-3); color: var(--text); box-shadow: inset 0 0 0 1px var(--border); }
+
+/* ===== Tooltip / info ===== */
+.fco-tip { position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%); background: #0a0c10; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12px; width: max-content; max-width: 230px; z-index: 60; box-shadow: 0 8px 24px rgba(0,0,0,.5); line-height: 1.45; }
+
+/* ===== Empty / skeleton ===== */
+.fco-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 56px 24px; text-align: center; }
+.fco-empty-ico { width: 56px; height: 56px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-faint); }
+.fco-skrow { display: flex; align-items: center; gap: 14px; padding: 13px 14px; border-bottom: 1px solid var(--border-soft); }
+.fco-sk { background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: fco-shimmer 1.3s infinite; border-radius: 6px; }
+@keyframes fco-shimmer { to { background-position: -200% 0; } }
+
