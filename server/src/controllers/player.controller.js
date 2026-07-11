@@ -5,7 +5,7 @@ import PlayerUsageAggregate from '../models/PlayerUsageAggregate.js';
 import FifaAddictSeason from '../models/FifaAddictSeason.js';
 import { getNexonMetadata, syncNexonPlayers } from '../services/nexonMetadata.js';
 import { enrichSinglePlayer, ensureEnrichmentDetail, fetchFifaAddictTeamsByLeague } from '../services/fifaAddictSource.js';
-import { hasSearchText, toSearchRegex } from '../services/searchText.js';
+import { hasSearchText, toFoldedSearchRegex } from '../services/searchText.js';
 
 async function attachEnrichment(players) {
   const list = players.map((player) => (typeof player.toObject === 'function' ? player.toObject() : player));
@@ -60,13 +60,9 @@ export function buildEnrichmentSearchQuery(search, seasonId, filters = {}) {
   const query = { source: 'fifaaddict-vn' };
 
   if (hasSearchText(search)) {
-    const searchRegex = toSearchRegex(search);
+    const searchRegex = toFoldedSearchRegex(search);
     query.$and = query.$and || [];
-    query.$and.push({ $or: [
-      { displayNameVi: { $regex: searchRegex, $options: 'i' } },
-      { displayNameEn: { $regex: searchRegex, $options: 'i' } },
-      { fullNameVi: { $regex: searchRegex, $options: 'i' } },
-    ] });
+    query.$and.push({ searchKey: { $regex: searchRegex, $options: 'i' } });
   }
 
   if (seasonId) {

@@ -5,6 +5,7 @@ import PlayerAlias from '../models/PlayerAlias.js';
 import PlayerEnrichment from '../models/PlayerEnrichment.js';
 import FifaAddictSeason from '../models/FifaAddictSeason.js';
 import SyncRun from '../models/SyncRun.js';
+import { buildSearchKey } from './searchText.js';
 import { getNexonMetadata } from './nexonMetadata.js';
 import {
   buildSearchVariants,
@@ -927,6 +928,7 @@ async function upsertEnrichmentRow(payload) {
   const merged = {
     ...withSeasonMeta,
     dataQuality: withSeasonMeta.dataQuality || buildDataQuality(withSeasonMeta),
+    searchKey: buildSearchKey(withSeasonMeta.displayNameVi, withSeasonMeta.displayNameEn, withSeasonMeta.fullNameVi),
   };
   return PlayerEnrichment.findOneAndUpdate(
     { source: 'fifaaddict-vn', sourceUid: merged.sourceUid },
@@ -1407,6 +1409,7 @@ async function upsertEnrichment(row) {
     parseWarnings: detail.rawDescription ? [] : ['missing-meta-description'],
   };
   payload.dataQuality = buildDataQuality(payload, payload.parseWarnings);
+  payload.searchKey = buildSearchKey(payload.displayNameVi, payload.displayNameEn, payload.fullNameVi);
 
   const enrichment = await PlayerEnrichment.findOneAndUpdate(
     { source: 'fifaaddict-vn', sourceUid: row.sourceUid },

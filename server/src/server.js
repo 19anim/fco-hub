@@ -46,7 +46,7 @@ const allowedOrigins = new Set([
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'https://glistening-longma-8532e9.netlify.app',
-  'https://fco-hub.netlify.app',
+  'https://fcodaphim.netlify.app',
   process.env.CLIENT_URL,
 ].filter(Boolean));
 

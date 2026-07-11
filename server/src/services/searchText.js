@@ -15,3 +15,18 @@ export function escapeRegex(value = '') {
 export function toSearchRegex(value = '') {
   return escapeRegex(normalizeSearchText(value));
 }
+
+export function foldDiacritics(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[Đđ]/g, (c) => (c === 'Đ' ? 'D' : 'd'));
+}
+
+export function buildSearchKey(...parts) {
+  return foldDiacritics(parts.filter(Boolean).join(' ')).toLowerCase().trim();
+}
+
+export function toFoldedSearchRegex(value = '') {
+  return escapeRegex(foldDiacritics(normalizeSearchText(value)).toLowerCase());
+}

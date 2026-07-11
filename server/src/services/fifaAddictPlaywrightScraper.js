@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import PlayerEnrichment from '../models/PlayerEnrichment.js';
 import SyncRun from '../models/SyncRun.js';
+import { buildSearchKey } from './searchText.js';
 
 const BASE_URL = 'https://vn.fifaaddict.com';
 const DEFAULT_DELAY_MS = 2000; // Longer delay to mimic human
@@ -85,6 +86,7 @@ function parsePlayersFromPage(content) {
       sourceUrl: `${BASE_URL}/fo4db/pid${sourceUid}`,
       displayNameVi: normalizeText(row.name || ''),
       displayNameEn: normalizeText(row.name || ''),
+      searchKey: buildSearchKey(normalizeText(row.name || '')),
       seasonCode: String(row.year ?? ''),
       seasonName: normalizeText(row.year_short || ''),
       seasonImg: absoluteUrl(row.year_icon || row.seasonImg || ''),

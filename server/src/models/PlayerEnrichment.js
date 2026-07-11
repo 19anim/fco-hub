@@ -31,6 +31,7 @@ const playerEnrichmentSchema = new mongoose.Schema(
     displayNameVi: { type: String, required: true, trim: true, index: true },
     displayNameEn: { type: String, trim: true, default: '' },
     fullNameVi: { type: String, trim: true, default: '' },
+    searchKey: { type: String, trim: true, default: '', index: true },
 
     seasonCode: { type: String, trim: true, default: '' },
     seasonName: { type: String, trim: true, default: '' },
