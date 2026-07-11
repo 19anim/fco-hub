@@ -18,11 +18,13 @@ function setMetaTag(html, selectorAttrs, content) {
 
 export default async function handler(request, context) {
   const userAgent = request.headers.get('user-agent') || '';
+  const url = new URL(request.url);
+  console.log(`[player-preview] hit path=${url.pathname} ua=${userAgent}`);
+
   if (!BOT_UA_PATTERN.test(userAgent)) {
     return context.next();
   }
 
-  const url = new URL(request.url);
   const match = url.pathname.match(/^\/players\/([^/]+)\/?$/);
   if (!match) {
     return context.next();
