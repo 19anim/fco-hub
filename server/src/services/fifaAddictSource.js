@@ -64,6 +64,21 @@ function normalizeText(value = '') {
   return String(value).replace(/\s+/g, ' ').trim();
 }
 
+export function extractFullNameFromDescription(description = '') {
+  const match = String(description).match(/^(.+?)\s+\(mùa giải/i);
+  return normalizeText(match?.[1] || '');
+}
+
+export function extractFullNameFromHtml(html = '') {
+  const $ = cheerio.load(html);
+  const fromHeading = normalizeText($('.foflex-left h1 a').first().text() || '');
+  if (fromHeading) return fromHeading;
+  const description = normalizeText(
+    $('meta[name="description"]').attr('content') || $('.fometa-desc').first().text() || ''
+  );
+  return extractFullNameFromDescription(description);
+}
+
 const FIFAADDICT_LEAGUE_SLUGS = new Map([
   ['England Premier League', 'england-premier-league'],
   ['England Championship', 'england-championship'],
@@ -277,12 +292,12 @@ function parseMetaDescription(html) {
   const clubMatch = description.match(/câu lạc bộ\s+(.+?)\s+thuộc giải/i);
   const leagueMatch = description.match(/thuộc giải\s+(.+?)\./i);
   const nationMatch = description.match(/người\s+(.+?)\s+hiện đang/i);
-  const fullNameMatch = description.match(/^(.+?)\s+\(mùa giải/i);
   const seasonNameMatch = description.match(/\(mùa giải\s+(.+?),\s+sinh ngày/i);
+  const fullNameFromHeading = normalizeText($('.foflex-left h1 a').first().text() || '');
 
   return {
     rawDescription: description,
-    fullNameVi: normalizeText(fullNameMatch?.[1] || ''),
+    fullNameVi: fullNameFromHeading || extractFullNameFromDescription(description),
     seasonName: normalizeText(seasonNameMatch?.[1] || ''),
     overall: ovrMatch ? Number(ovrMatch[1]) : null,
     heightCm: heightMatch ? Number(heightMatch[1]) : null,
@@ -572,7 +587,7 @@ async function fetchPlayerJson(sourceUid, retry = 0) {
   }
 }
 
-async function fetchHtml(url) {
+export async function fetchHtml(url) {
   try {
     const response = await axios.get(url, {
       timeout: 30000,
@@ -865,6 +880,7 @@ function detailPayloadToEnrichment(payload, sourceUid) {
   const detailedStats = extractDetailedStatsFromJson(payload.attr, boost);
   const traits = extractTraitsFromJson(payload);
   const meta = payload.meta || {};
+  const rawDescription = normalizeText(meta.desc || db.desc || '');
 
   const detailUpdate = {
     ...enrichment,
@@ -874,7 +890,8 @@ function detailPayloadToEnrichment(payload, sourceUid) {
     traitsDescription: traits.traitsDescription,
     positionRatings: extractPositionRatings(db.postlist, boost),
     clubCareer: extractClubCareer(getClubCareerSource(payload)),
-    rawDescription: normalizeText(meta.desc || db.desc || ''),
+    rawDescription,
+    fullNameVi: extractFullNameFromDescription(rawDescription) || enrichment.fullNameVi || '',
     lastDetailSyncedAt: new Date(),
     syncedAt: new Date(),
     parseWarnings: detailedStats.length ? [] : ['missing-detail-stats'],
@@ -1120,6 +1137,8 @@ export async function ensureEnrichmentDetail(enrichmentDoc, { force = false } = 
 
   const traits = extractTraitsFromJson(payload);
   const meta = payload.meta || {};
+  const rawDescription = normalizeText(meta.desc || db.desc || '');
+  const fullNameVi = extractFullNameFromDescription(rawDescription);
 
   const update = {
     detailedStats,
@@ -1128,7 +1147,8 @@ export async function ensureEnrichmentDetail(enrichmentDoc, { force = false } = 
     traitsDescription: traits.traitsDescription,
     positionRatings: extractPositionRatings(db.postlist, boost),
     clubCareer: extractClubCareer(getClubCareerSource(payload)),
-    rawDescription: normalizeText(meta.desc || db.desc || ''),
+    rawDescription,
+    ...(fullNameVi ? { fullNameVi } : {}),
     parseWarnings: [],
     lastDetailSyncedAt: new Date(),
     syncedAt: new Date(),

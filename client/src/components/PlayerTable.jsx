@@ -130,6 +130,7 @@ export default function PlayerTable({
         player.cardType,
         player.seasonName,
         display.name,
+        display.fullName,
         display.seasonName,
         display.bestPosition,
         display.club,
