@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import {
   Activity,
   ArrowLeft,
@@ -23,9 +22,7 @@ import {
   getStatTone,
   getValue,
 } from '../utils/playerDisplay';
-import { API_BASE } from '../config/api';
-
-const API_URL = `${API_BASE}/players`;
+import { usePlayerDetailQuery } from '../fco/queries.js';
 
 const groupLabels = {
   pace: 'Tốc độ',
@@ -114,42 +111,20 @@ function RelatedSeasonCard({ item }) {
 export default function PlayerDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    let ignore = false;
-
-    axios
-      .get(`${API_URL}/${id}/detail`)
-      .then((response) => {
-        if (!ignore) setData(response.data.data);
-      })
-      .catch((requestError) => {
-        if (!ignore) {
-          setError(
-            requestError.response?.status === 404
-              ? 'Không tìm thấy cầu thủ này.'
-              : 'Không tải được dữ liệu. Hãy kiểm tra API server.'
-          );
-        }
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [id]);
+  const detailQuery = usePlayerDetailQuery(id);
+  const data = detailQuery.data;
+  const error = detailQuery.error
+    ? detailQuery.error.response?.status === 404
+      ? 'Không tìm thấy cầu thủ này.'
+      : 'Không tải được dữ liệu. Hãy kiểm tra API server.'
+    : '';
 
   const display = useMemo(
-    () => (data ? getDisplay({ ...data.player, enrichment: data.enrichment, enrichmentMatch: data.enrichmentMatch }) : null),
+    () => (data?.player ? getDisplay(data.player) : null),
     [data]
   );
 
-  if (loading) {
+  if (detailQuery.isLoading) {
     return (
       <div className="space-y-4">
         <div className="h-10 w-40 animate-pulse rounded-lg bg-surface-2" />
@@ -177,7 +152,7 @@ export default function PlayerDetailPage() {
   const usage = (data.usage || []).filter((item) => item.usageCount > 0);
   const totalUsage = usage[0];
   const stats = display.detailedStats.length ? display.detailedStats : display.keyStats;
-  const relatedSeasons = (data.relatedSeasons || []).filter((item) => item._id !== data.player._id).slice(0, 18);
+  const relatedSeasons = (data.related || []).filter((item) => item._id !== data.player._id).slice(0, 18);
 
   return (
     <div className="space-y-6">

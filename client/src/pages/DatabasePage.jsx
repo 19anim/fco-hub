@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
+import { useMemo } from 'react';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, normalizeBackendSearch } from '../utils/backendSearch';
 import {
@@ -15,10 +14,8 @@ import {
 } from 'lucide-react';
 import PlayerTable from '../components/PlayerTable';
 import AdSlot from '../components/AdSlot';
-import { API_BASE } from '../config/api';
-
-const PLAYERS_API_URL = `${API_BASE}/players`;
-const ENRICHMENT_API_URL = `${API_BASE}/enrichment`;
+import { useEnrichmentStatusQuery, useMetaQuery } from '../fco/queries.js';
+import { useDatabaseViewStore } from '../stores/databaseViewStore.js';
 
 const sortOptions = [
   { value: 'overall', label: 'OVR cao nhất', icon: Gauge },
@@ -29,23 +26,6 @@ const sortOptions = [
 ];
 
 const positionOptions = ['ST', 'CF', 'LW', 'RW', 'CAM', 'CM', 'CDM', 'CB', 'LB', 'RB', 'GK'];
-
-const emptyFilters = {
-  position: '',
-  minOverall: '',
-  maxOverall: '',
-  minPrice: '',
-  maxPrice: '',
-  minSalary: '',
-  maxSalary: '',
-  trait: '',
-  minPace: '',
-  minShooting: '',
-  minPassing: '',
-  minDribbling: '',
-  minDefending: '',
-  minPhysical: '',
-};
 
 function FilterInput({ label, value, onChange, placeholder }) {
   return (
@@ -62,31 +42,28 @@ function FilterInput({ label, value, onChange, placeholder }) {
 }
 
 export default function DatabasePage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [seasonSearch, setSeasonSearch] = useState('');
-  const [selectedSeasonIds, setSelectedSeasonIds] = useState([]);
-  const [sortBy, setSortBy] = useState('overall');
-  const [meta, setMeta] = useState({ seasons: [], totalPlayers: 0 });
-  const [enrichmentStatus, setEnrichmentStatus] = useState(null);
-  const [filters, setFilters] = useState(emptyFilters);
-  const [status, setStatus] = useState('');
+  const searchQuery = useDatabaseViewStore((state) => state.searchQuery);
+  const seasonSearch = useDatabaseViewStore((state) => state.seasonSearch);
+  const selectedSeasonIds = useDatabaseViewStore((state) => state.selectedSeasonIds);
+  const sortBy = useDatabaseViewStore((state) => state.sortBy);
+  const tablePage = useDatabaseViewStore((state) => state.tablePage);
+  const filters = useDatabaseViewStore((state) => state.filters);
+  const setSearchQuery = useDatabaseViewStore((state) => state.setSearchQuery);
+  const setSeasonSearch = useDatabaseViewStore((state) => state.setSeasonSearch);
+  const setSelectedSeasonIds = useDatabaseViewStore((state) => state.setSelectedSeasonIds);
+  const toggleSeason = useDatabaseViewStore((state) => state.toggleSeason);
+  const setSortBy = useDatabaseViewStore((state) => state.setSortBy);
+  const setTablePage = useDatabaseViewStore((state) => state.setTablePage);
+  const setFilter = useDatabaseViewStore((state) => state.setFilter);
+  const resetFilters = useDatabaseViewStore((state) => state.resetFilters);
   const debouncedSearch = useDebouncedValue(searchQuery, BACKEND_SEARCH_DEBOUNCE_MS);
   const backendSearch = normalizeBackendSearch(debouncedSearch);
   const seasonIdParam = selectedSeasonIds.join(',');
-
-  useEffect(() => {
-    Promise.all([
-      axios.get(`${PLAYERS_API_URL}/meta`),
-      axios.get(`${ENRICHMENT_API_URL}/status`),
-    ])
-      .then(([metaResponse, enrichmentResponse]) => {
-        setMeta(metaResponse.data);
-        setEnrichmentStatus(enrichmentResponse.data.data);
-      })
-      .catch(() => {
-        setStatus('Hãy khởi động API server để tải dữ liệu cầu thủ.');
-      });
-  }, []);
+  const metaQuery = useMetaQuery();
+  const enrichmentStatusQuery = useEnrichmentStatusQuery();
+  const meta = metaQuery.data ?? { seasons: [], totalPlayers: 0 };
+  const enrichmentStatus = enrichmentStatusQuery.data;
+  const status = metaQuery.isError || enrichmentStatusQuery.isError ? 'Hãy khởi động API server để tải dữ liệu cầu thủ.' : '';
 
   const filteredSeasons = useMemo(() => {
     const query = seasonSearch.trim().toLowerCase();
@@ -106,17 +83,6 @@ export default function DatabasePage() {
     () => Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== '')),
     [filters]
   );
-
-  const setFilter = (key, value) => {
-    setFilters((current) => ({ ...current, [key]: value }));
-  };
-
-  const toggleSeason = (seasonId) => {
-    const value = String(seasonId);
-    setSelectedSeasonIds((current) =>
-      current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-    );
-  };
 
   const currentSort = sortOptions.find((option) => option.value === sortBy) ?? sortOptions[0];
   const CurrentSortIcon = currentSort.icon;
@@ -274,7 +240,7 @@ export default function DatabasePage() {
               </div>
               <button
                 type="button"
-                onClick={() => setFilters(emptyFilters)}
+                onClick={resetFilters}
                 className="inline-flex h-9 items-center gap-2 rounded-lg border border-hairline bg-surface-1 px-3 text-xs font-semibold text-ink-muted transition hover:border-brand-blue/50 hover:text-brand-blue"
               >
                 <X className="h-3.5 w-3.5" />
@@ -323,6 +289,9 @@ export default function DatabasePage() {
           positionFilter={filters.position}
           seasonId={seasonIdParam}
           sortBy={sortBy}
+          onSortChange={setSortBy}
+          page={tablePage}
+          onPageChange={setTablePage}
           advancedFilters={advancedFilters}
           limit={30}
         />

@@ -1,8 +1,16 @@
 export const playersKey = (filters = {}) => ['players', filters];
 export const playerDetailKey = (id) => ['playerDetail', id];
+export const playerTableKey = (params = {}) => ['playerTable', params];
 export const metaKey = () => ['meta'];
+export const enrichmentStatusKey = () => ['enrichmentStatus'];
 export const clubsByLeagueKey = (league) => ['clubsByLeague', league];
 export const eventsKey = () => ['events'];
 export const assetMapKey = () => ['assetMap'];
 export const monetizationFeedKey = (placement) => ['monetizationFeed', placement];
 export const adminMeKey = () => ['adminMe'];
+export const adminAssetsKey = () => ['adminAssets'];
+export const adminAssetsListKey = (params = {}) => ['adminAssets', 'list', params];
+export const adminAssetDetailKey = (id) => ['adminAssets', 'detail', id];
+export const adminAssetIdentityKey = (identity = {}) => ['adminAssets', 'identity', identity];
+export const adminAnalyticsSummaryKey = (range) => ['adminAnalytics', 'summary', range];
+export const adminAuditLogKey = (params = {}) => ['adminAuditLog', params];

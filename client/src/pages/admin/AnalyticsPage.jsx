@@ -1,12 +1,9 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { BarChart2, TrendingUp } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { API_BASE } from '../../config/api';
-
-const api = axios.create({ baseURL: `${API_BASE}/admin/analytics`, withCredentials: true });
+import { useAdminAnalyticsSummaryQuery } from '../../fco/queries.js';
+import { useAdminUiStore } from '../../stores/adminUiStore.js';
 
 const RANGES = [
   { label: '7d',  days: 7  },
@@ -54,21 +51,10 @@ function TopTable({ title, rows, labelKey, valueKey = 'clicks', valueLabel = 'Cl
 }
 
 export default function AnalyticsPage() {
-  const [range, setRange] = useState(30);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const from = new Date(Date.now() - range * 86400000).toISOString();
-      const res = await api.get('/summary', { params: { from } });
-      if (res.data.success) setData(res.data.data);
-    } catch { /* ignore */ }
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, [range]);
+  const range = useAdminUiStore((state) => state.analyticsRange);
+  const setRange = useAdminUiStore((state) => state.setAnalyticsRange);
+  const analyticsQuery = useAdminAnalyticsSummaryQuery(range);
+  const data = analyticsQuery.data;
 
   return (
     <div className="space-y-6">
@@ -94,9 +80,9 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {loading && <p className="text-ink-muted text-sm">Loading...</p>}
+      {analyticsQuery.isLoading && <p className="text-ink-muted text-sm">Loading...</p>}
 
-      {!loading && data && (
+      {!analyticsQuery.isLoading && data && (
         <>
           {/* Stat cards */}
           <div className="grid grid-cols-3 gap-4">

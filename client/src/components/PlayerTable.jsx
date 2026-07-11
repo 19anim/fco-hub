@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import {
   ArrowDown,
   ArrowUp,
@@ -19,10 +17,8 @@ import {
   getQualityTone,
   getValue,
 } from '../utils/playerDisplay';
-import { API_BASE } from '../config/api';
+import { usePlayerTableQuery } from '../fco/queries.js';
 import { canRunBackendSearch } from '../utils/backendSearch';
-
-const API_URL = `${API_BASE}/players`;
 
 function PositionBadge({ position }) {
   return (
@@ -84,43 +80,42 @@ export default function PlayerTable({
   searchQuery = '',
   positionFilter = '',
   sortBy = 'overall',
+  onSortChange,
+  page: controlledPage,
+  onPageChange,
   seasonId = '',
   advancedFilters = {},
   limit = 20,
   compact = false,
 }) {
-  const [page, setPage] = useState(1);
-  const [sort, setSort] = useState(sortBy);
+  const [localPage, setLocalPage] = useState(1);
+  const [localSort, setLocalSort] = useState(sortBy);
+  const page = controlledPage ?? localPage;
+  const sort = onSortChange ? sortBy : localSort;
+  const setPage = onPageChange ?? setLocalPage;
+  const setSort = onSortChange ?? setLocalSort;
 
   const queryEnabled = canRunBackendSearch(searchQuery);
-  const queryParams = useMemo(() => ({
-    searchQuery, positionFilter, seasonId, sort, page, limit, advancedFilters,
-  }), [searchQuery, positionFilter, seasonId, sort, page, limit, advancedFilters]);
+  const queryParams = useMemo(() => {
+    const params = {
+      search: searchQuery,
+      position: positionFilter,
+      seasonId,
+      sort,
+      page: page.toString(),
+      limit: limit.toString(),
+    };
 
-  const { data, isLoading: loading, isError } = useQuery({
-    queryKey: ['adminPlayerTable', queryParams],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        search: searchQuery,
-        position: positionFilter,
-        seasonId,
-        sort,
-        page: page.toString(),
-        limit: limit.toString(),
-      });
+    Object.entries(advancedFilters).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') params[key] = String(value);
+    });
 
-      Object.entries(advancedFilters).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') params.set(key, String(value));
-      });
+    return params;
+  }, [searchQuery, positionFilter, seasonId, sort, page, limit, advancedFilters]);
 
-      const response = await axios.get(`${API_URL}?${params}`);
-      return { players: response.data.data ?? [], totalPages: response.data.totalPages ?? 1 };
-    },
-    enabled: queryEnabled,
-    placeholderData: (previous) => previous,
-  });
+  const { data, isLoading: loading, isError } = usePlayerTableQuery(queryEnabled ? queryParams : null);
 
-  const players = data?.players ?? [];
+  const players = useMemo(() => data?.players ?? [], [data]);
   const totalPages = data?.totalPages ?? 1;
   const offline = isError;
 

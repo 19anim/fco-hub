@@ -1,12 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Images, RefreshCw } from 'lucide-react';
 import { adminAssetsService } from '../../services/adminAssets';
 import AssetDetailPanel from '../../components/admin/assets/AssetDetailPanel.jsx';
 import AssetFilters from '../../components/admin/assets/AssetFilters.jsx';
 import AssetLibrary from '../../components/admin/assets/AssetLibrary.jsx';
 import AssetUploadPanel from '../../components/admin/assets/AssetUploadPanel.jsx';
+import {
+  useAdminAssetDetailQuery,
+  useAdminAssetIdentityQuery,
+  useAdminAssetsListQuery,
+} from '../../fco/queries.js';
+import { adminAssetsKey } from '../../fco/queryKeys.js';
+import { assetsFiltersInitialState, useAssetsViewStore } from '../../stores/assetsViewStore.js';
 
-const DEFAULT_FILTERS = Object.freeze({ search: '', category: 'all', status: 'active', page: 1, limit: 24 });
 const ERROR_HELP = Object.freeze({
   401: 'Sign in again to manage assets.',
   403: 'Your admin account is missing the required asset permission.',
@@ -40,114 +47,54 @@ function sameIdentity(asset, identity) {
 }
 
 export default function AssetsPage({ service = adminAssetsService }) {
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [items, setItems] = useState([]);
-  const [pagination, setPagination] = useState(null);
-  const [listLoading, setListLoading] = useState(true);
-  const [listError, setListError] = useState('');
-  const [selectedSummary, setSelectedSummary] = useState(null);
-  const [detail, setDetail] = useState(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState('');
-  const [identity, setIdentity] = useState({ category: 'cardTheme', key: 'ng' });
-  const [identityAsset, setIdentityAsset] = useState(null);
-  const [uploadMode, setUploadMode] = useState('replace');
+  const queryClient = useQueryClient();
+  const filters = useAssetsViewStore((state) => state.filters);
+  const selectedAssetId = useAssetsViewStore((state) => state.selectedAssetId);
+  const identity = useAssetsViewStore((state) => state.identity);
+  const uploadMode = useAssetsViewStore((state) => state.uploadMode);
+  const setFilters = useAssetsViewStore((state) => state.setFilters);
+  const patchFilters = useAssetsViewStore((state) => state.patchFilters);
+  const setSelectedAssetId = useAssetsViewStore((state) => state.setSelectedAssetId);
+  const setIdentity = useAssetsViewStore((state) => state.setIdentity);
+  const setUploadMode = useAssetsViewStore((state) => state.setUploadMode);
   const [uploading, setUploading] = useState(false);
   const [mutation, setMutation] = useState('');
   const [notice, setNotice] = useState('');
-  const detailRequestRef = useRef(0);
-  const identityRequestRef = useRef(0);
   const uploadPanelRef = useRef(null);
 
-  const selectedId = assetId(selectedSummary || detail);
+  const listQuery = useAdminAssetsListQuery(paramsFromFilters(filters), service);
+  const items = useMemo(() => listQuery.data?.data?.data || [], [listQuery.data]);
+  const pagination = listQuery.data?.data?.pagination || null;
+  const selectedSummary = useMemo(
+    () => items.find((item) => assetId(item) === selectedAssetId) || null,
+    [items, selectedAssetId],
+  );
+  const selectedId = selectedAssetId || assetId(selectedSummary);
+  const detailQuery = useAdminAssetDetailQuery(selectedId, service);
+  const detail = detailQuery.data?.data || null;
+  const identityQuery = useAdminAssetIdentityQuery(identity, service);
+  const identityAsset = identityQuery.data || null;
+
   const uploadTarget = useMemo(() => {
     if (uploadMode === 'create') return null;
     return sameIdentity(detail, identity) ? detail : identityAsset;
   }, [detail, identity, identityAsset, uploadMode]);
 
-  const loadList = useCallback(async (nextFilters, preferredId = '') => {
-    try {
-      const result = await service.list(paramsFromFilters(nextFilters));
-      const nextItems = result.data?.data || [];
-      const nextPagination = result.data?.pagination || null;
-      setItems(nextItems);
-      setPagination(nextPagination);
-      if (preferredId) {
-        const nextSelected = nextItems.find((item) => assetId(item) === preferredId);
-        if (nextSelected) setSelectedSummary(nextSelected);
-        else if (nextFilters.page > 1 && !nextItems.length) setFilters((current) => ({ ...current, page: Math.max(1, current.page - 1) }));
-        else setSelectedSummary(nextItems[0] || null);
-      } else {
-        setSelectedSummary(nextItems[0] || null);
-      }
-    } catch (error) {
-      setListError(apiMessage(error));
-    } finally {
-      setListLoading(false);
+  useEffect(() => {
+    if (listQuery.isLoading) return;
+    if (selectedAssetId && items.some((item) => assetId(item) === selectedAssetId)) return;
+    const nextId = assetId(items[0]);
+    if (nextId || selectedAssetId) setSelectedAssetId(nextId);
+  }, [items, listQuery.isLoading, selectedAssetId, setSelectedAssetId]);
+
+  useEffect(() => {
+    if (!listQuery.isLoading && !items.length && filters.page > 1) {
+      patchFilters({ page: Math.max(1, filters.page - 1) });
     }
-  }, [service]);
+  }, [filters.page, items.length, listQuery.isLoading, patchFilters]);
 
-  useEffect(() => {
-    Promise.resolve().then(() => {
-      setListLoading(true);
-      setListError('');
-      loadList(filters);
-    });
-  }, [filters, loadList]);
-
-  useEffect(() => {
-    const id = selectedId;
-    if (!id) return undefined;
-    const requestId = detailRequestRef.current + 1;
-    detailRequestRef.current = requestId;
-    Promise.resolve().then(() => {
-      if (detailRequestRef.current !== requestId) return;
-      setDetail(null);
-      setDetailError('');
-      setDetailLoading(true);
-    });
-    service.getById(id)
-      .then((result) => {
-        if (detailRequestRef.current === requestId) setDetail(result.data);
-      })
-      .catch((error) => {
-        if (detailRequestRef.current === requestId) setDetailError(apiMessage(error));
-      })
-      .finally(() => {
-        if (detailRequestRef.current === requestId) setDetailLoading(false);
-      });
-    return () => {
-      if (detailRequestRef.current === requestId) detailRequestRef.current += 1;
-    };
-  }, [selectedId, service]);
-
-  useEffect(() => {
-    if (!identity.category || !identity.key) return undefined;
-    const requestId = identityRequestRef.current + 1;
-    identityRequestRef.current = requestId;
-    Promise.resolve().then(() => {
-      if (identityRequestRef.current === requestId) setIdentityAsset(null);
-    });
-    service.list({ category: identity.category, search: identity.key, status: 'all', limit: 10 })
-      .then((result) => {
-        if (identityRequestRef.current !== requestId) return;
-        const match = (result.data?.data || []).find((item) => sameIdentity(item, identity));
-        setIdentityAsset(match || null);
-      })
-      .catch(() => {
-        if (identityRequestRef.current === requestId) setIdentityAsset(null);
-      });
-    return () => {
-      if (identityRequestRef.current === requestId) identityRequestRef.current += 1;
-    };
-  }, [identity, service]);
-
-  const refreshAfterMutation = async (id = selectedId) => {
-    await loadList(filters, id);
-    if (id) {
-      const result = await service.getById(id);
-      setDetail(result.data);
-    }
+  const refreshAssets = async () => {
+    await queryClient.invalidateQueries({ queryKey: adminAssetsKey() });
   };
 
   const changeUploadMode = (nextMode) => {
@@ -155,7 +102,6 @@ export default function AssetsPage({ service = adminAssetsService }) {
     setNotice('');
     if (nextMode === 'create') {
       setIdentity({ category: 'general', key: '' });
-      setIdentityAsset(null);
       requestAnimationFrame(() => {
         uploadPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         uploadPanelRef.current?.querySelector('input[placeholder="Human-readable label"]')?.focus();
@@ -165,7 +111,7 @@ export default function AssetsPage({ service = adminAssetsService }) {
 
   const handleSelectAsset = (asset) => {
     setUploadMode('replace');
-    setSelectedSummary(asset);
+    setSelectedAssetId(assetId(asset));
   };
 
   const handleUpload = async ({ formData, asset, resetFile }) => {
@@ -176,8 +122,8 @@ export default function AssetsPage({ service = adminAssetsService }) {
       const nextId = assetId(result.data);
       setNotice(asset ? 'Asset version replaced successfully.' : 'Asset created successfully.');
       resetFile();
-      await refreshAfterMutation(nextId);
-      setSelectedSummary(result.data);
+      setSelectedAssetId(nextId);
+      await refreshAssets();
     } catch (error) {
       setNotice(apiMessage(error));
     } finally {
@@ -190,10 +136,10 @@ export default function AssetsPage({ service = adminAssetsService }) {
     setMutation(`rollback-${version}`);
     setNotice('');
     try {
-      const result = await service.setActiveVersion(assetId(asset), version);
+      await service.setActiveVersion(assetId(asset), version);
       setNotice(`Rolled back to version ${version}. Later versions remain in history.`);
-      setDetail(result.data);
-      await loadList(filters, assetId(asset));
+      setSelectedAssetId(assetId(asset));
+      await refreshAssets();
     } catch (error) {
       setNotice(apiMessage(error));
     } finally {
@@ -208,8 +154,8 @@ export default function AssetsPage({ service = adminAssetsService }) {
     try {
       await service.archive(assetId(asset));
       setNotice('Asset archived. It is removed from the active library and public map.');
-      await loadList(filters, '');
-      setDetail(null);
+      setSelectedAssetId('');
+      await refreshAssets();
     } catch (error) {
       setNotice(apiMessage(error));
     } finally {
@@ -223,9 +169,8 @@ export default function AssetsPage({ service = adminAssetsService }) {
     try {
       await service.deleteAsset(assetId(asset));
       setNotice('Asset deleted permanently.');
-      await loadList(filters, '');
-      setDetail(null);
-      setSelectedSummary(null);
+      setSelectedAssetId('');
+      await refreshAssets();
     } catch (error) {
       setNotice(apiMessage(error));
     } finally {
@@ -245,12 +190,12 @@ export default function AssetsPage({ service = adminAssetsService }) {
             <p className="text-sm text-ink-muted">Manage Cloudinary-backed FCO runtime assets and version history.</p>
           </div>
         </div>
-        <button type="button" onClick={() => loadList(filters, selectedId)} className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-2 px-3 py-1.5 text-sm text-ink-muted hover:bg-surface-3 hover:text-ink">
+        <button type="button" onClick={refreshAssets} className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-2 px-3 py-1.5 text-sm text-ink-muted hover:bg-surface-3 hover:text-ink">
           <RefreshCw className="h-3.5 w-3.5" /> Refresh
         </button>
       </div>
 
-      <AssetFilters filters={filters} onChange={setFilters} onReset={() => setFilters(DEFAULT_FILTERS)} />
+      <AssetFilters filters={filters} onChange={setFilters} onReset={() => setFilters({ ...assetsFiltersInitialState })} />
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="space-y-5">
@@ -261,9 +206,9 @@ export default function AssetsPage({ service = adminAssetsService }) {
               existingAsset={uploadTarget}
               mode={uploadMode}
               onModeChange={changeUploadMode}
-              onIdentityChange={(nextIdentity) => setIdentity((current) => (
-                current.category === nextIdentity.category && current.key === nextIdentity.key ? current : nextIdentity
-              ))}
+              onIdentityChange={(nextIdentity) => {
+                if (identity.category !== nextIdentity.category || identity.key !== nextIdentity.key) setIdentity(nextIdentity);
+              }}
               onSubmit={handleUpload}
               submitting={uploading}
               message={notice}
@@ -271,19 +216,19 @@ export default function AssetsPage({ service = adminAssetsService }) {
           </div>
           <AssetLibrary
             items={items}
-            loading={listLoading}
-            error={listError}
+            loading={listQuery.isLoading}
+            error={listQuery.error ? apiMessage(listQuery.error) : ''}
             selectedId={selectedId}
             pagination={pagination}
             onSelect={handleSelectAsset}
-            onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
-            onRetry={() => loadList(filters, selectedId)}
+            onPageChange={(page) => patchFilters({ page })}
+            onRetry={refreshAssets}
           />
         </div>
         <AssetDetailPanel
           asset={detail}
-          loading={detailLoading}
-          error={detailError}
+          loading={detailQuery.isLoading || (Boolean(selectedId) && listQuery.isLoading)}
+          error={detailQuery.error ? apiMessage(detailQuery.error) : ''}
           mutation={mutation}
           onRollback={handleRollback}
           onArchive={handleArchive}

@@ -1,9 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
-import { API_BASE } from '../../config/api';
-
-const api = axios.create({ baseURL: `${API_BASE}/admin/audit-log`, withCredentials: true });
+import { useAdminAuditLogQuery } from '../../fco/queries.js';
+import { useAdminUiStore } from '../../stores/adminUiStore.js';
 
 const ACTION_COLORS = {
   'monetization.publish': 'text-green-400',
@@ -47,29 +44,14 @@ function DiffCell({ before, after }) {
 }
 
 export default function AuditLogPage() {
-  const [logs, setLogs] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [actionFilter, setActionFilter] = useState('');
+  const page = useAdminUiStore((state) => state.auditLogPage);
+  const actionFilter = useAdminUiStore((state) => state.auditLogActionFilter);
+  const setPage = useAdminUiStore((state) => state.setAuditLogPage);
+  const setActionFilter = useAdminUiStore((state) => state.setAuditLogActionFilter);
   const limit = 50;
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = { page, limit };
-      if (actionFilter) params.action = actionFilter;
-      const res = await api.get('/', { params });
-      if (res.data.success) {
-        setLogs(res.data.data.logs);
-        setTotal(res.data.data.total);
-      }
-    } catch { /* ignore */ }
-    setLoading(false);
-  }, [page, actionFilter]);
-
-  useEffect(() => { load(); }, [load]);
-
+  const auditLogQuery = useAdminAuditLogQuery({ page, limit, actionFilter });
+  const logs = auditLogQuery.data?.logs || [];
+  const total = auditLogQuery.data?.total || 0;
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -88,13 +70,13 @@ export default function AuditLogPage() {
           type="text"
           placeholder="Filter by action..."
           value={actionFilter}
-          onChange={e => { setActionFilter(e.target.value); setPage(1); }}
+          onChange={e => setActionFilter(e.target.value)}
           className="h-9 rounded-lg border border-hairline bg-surface-2 px-3 text-sm text-ink placeholder:text-ink-subtle focus:outline-none focus:ring-1 focus:ring-brand-blue w-52"
         />
       </div>
 
       <div className="rounded-xl border border-hairline bg-surface-1 overflow-hidden">
-        {loading ? (
+        {auditLogQuery.isLoading ? (
           <p className="p-6 text-sm text-ink-muted">Loading...</p>
         ) : logs.length === 0 ? (
           <p className="p-6 text-sm text-ink-muted">No audit log entries found.</p>
@@ -137,14 +119,14 @@ export default function AuditLogPage() {
           </p>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-hairline text-ink-muted hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-hairline text-ink-muted hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed"
             >

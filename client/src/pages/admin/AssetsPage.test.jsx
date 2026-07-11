@@ -3,10 +3,13 @@ import axios from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import AssetsPage from './AssetsPage.jsx';
 import AdminSidebar from '../../components/admin/AdminSidebar.jsx';
 import { API_BASE } from '../../config/api';
+import { createTestQueryClient } from '../../testUtils/queryClient.js';
+import { assetsFiltersInitialState, assetsIdentityInitialState, useAssetsViewStore } from '../../stores/assetsViewStore.js';
 
 const { apiMock, axiosCreateMock } = vi.hoisted(() => {
   const mock = {
@@ -96,13 +99,17 @@ async function render(element) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
-  await act(async () => root.render(element));
-  await act(async () => Promise.resolve());
+  const queryClient = createTestQueryClient();
+  await act(async () => root.render(<QueryClientProvider client={queryClient}>{element}</QueryClientProvider>));
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
   return {
     container,
     root,
+    queryClient,
     unmount: async () => {
       await act(async () => root.unmount());
+      queryClient.clear();
       container.remove();
     },
   };
@@ -132,6 +139,13 @@ async function click(element) {
 }
 
 beforeEach(() => {
+  useAssetsViewStore.setState({
+    filters: { ...assetsFiltersInitialState },
+    selectedAssetId: '',
+    identity: { ...assetsIdentityInitialState },
+    uploadMode: 'replace',
+  });
+  useAssetsViewStore.persist.clearStorage();
   globalThis.__adminAuthMock = { user: { role: 'manager', permissions: ['assets.view'] }, logout: vi.fn() };
   vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:local-preview');
   vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
