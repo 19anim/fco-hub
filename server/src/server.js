@@ -24,7 +24,6 @@ import publicAssetsRoutes from './routes/publicAssets.routes.js';
 import adminAssetsRoutes from './routes/adminAssets.routes.js';
 import FCOCrawler from './services/fcoCrawler.js';
 import { syncScannedEvents } from './services/eventScanSync.js';
-import { syncFifaAddict } from './services/fifaAddictSource.js';
 import { syncNexonPlayers } from './services/nexonMetadata.js';
 import { bootstrapOwner } from './services/adminBootstrap.js';
 import { seedPlacements } from './services/seedPlacements.js';
@@ -147,15 +146,12 @@ if (process.env.ENABLE_BACKGROUND_SYNC !== 'false') {
     }
   });
 
-  cron.schedule(process.env.FIFAADDICT_SYNC_CRON || '*/30 * * * *', async () => {
-    try {
-      console.log('[CRON] Starting FIFAAddict enrichment refresh...');
-      const result = await syncFifaAddict();
-      console.log(`[CRON] FIFAAddict refresh completed: ${result.processed}/${result.discovered}`);
-    } catch (error) {
-      console.error('[CRON] FIFAAddict refresh failed:', error.message);
-    }
-  });
+  // FIFAAddict enrichment refresh disabled: data is now crawled manually via
+  // the Data Ops pipeline (Scrape Seasons -> Scrape Card Themes -> Discover
+  // by Season -> Bulk Detail Hydrate -> Backfill Club Career -> Backfill UIC),
+  // which is properly VN-server-scoped. This cron used syncFifaAddict(),
+  // which only scraped the VN homepage leaderboard and duplicated/conflicted
+  // with that manual flow.
 }
 
 // Error handling middleware
