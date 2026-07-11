@@ -170,7 +170,18 @@ async function getRelatedSeasons({ player, enrichment }) {
       .sort({ seasonCode: -1, overall: -1 })
       .limit(60)
       .lean();
-    related.push(...enrichmentRows.map(toEnrichmentOnlyPlayer));
+
+    // Abbreviated names like "R. Keane" collide across distinct players (e.g. Roy Keane vs
+    // Robbie Keane). When the target has a full name on file, only keep rows that share it.
+    const targetFullName = normalizeMetaText(enrichment?.fullNameVi || '').toLowerCase();
+    const filteredRows = targetFullName
+      ? enrichmentRows.filter((row) => {
+        const rowFullName = normalizeMetaText(row.fullNameVi || '').toLowerCase();
+        return !rowFullName || rowFullName === targetFullName;
+      })
+      : enrichmentRows;
+
+    related.push(...filteredRows.map(toEnrichmentOnlyPlayer));
   }
 
   const seen = new Set();
