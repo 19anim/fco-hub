@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQueries } from '@tanstack/react-query';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { fetchPlayerDetail } from '../api.js';
 import { playerDetailKey } from '../queryKeys.js';
 import { formatCoins, statColor, cleanName } from '../helpers.js';
@@ -24,6 +25,11 @@ const COMPARE_ROWS = [
 ];
 
 export default function CompareView({ compareIds, onUpdateCompare, onSelect }) {
+  useDocumentMeta({
+    title: 'So sánh',
+    description: 'So sánh chỉ số của nhiều cầu thủ FCOnline cùng lúc.',
+    path: '/compare',
+  });
   const [pickerOpen, setPickerOpen] = useState(false);
   const ids = compareIds.slice(0, MAX);
   const cols = MAX;

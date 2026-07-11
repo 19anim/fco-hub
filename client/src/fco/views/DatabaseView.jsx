@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { BACKEND_SEARCH_DEBOUNCE_MS, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
 import { usePlayersQuery, useMetaQuery, useClubsByLeagueQuery } from '../queries.js';
 import { formatCoins, statColor, cleanName } from '../helpers.js';
@@ -143,6 +144,11 @@ function filtersToQS(f) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }) {
+  useDocumentMeta({
+    title: 'Cầu thủ',
+    description: 'Tra cứu chỉ số, giá thị trường và thông tin chi tiết của tất cả cầu thủ FCOnline.',
+    path: '/players',
+  });
   const { getAssetUrl } = useAssets();
 
   // Init from URL query string

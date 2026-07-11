@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { useEventsQuery } from '../queries.js';
 import { filterValidEvents, groupEvents, daysUntil, openSequentially } from '../eventHelpers.js';
 import { Button, EmptyState, SkeletonRow } from '../ui.jsx';
@@ -45,6 +46,11 @@ function Group({ title, warn, events }) {
 }
 
 export default function EventsView({ showToast }) {
+  useDocumentMeta({
+    title: 'Sự kiện',
+    description: 'Danh sách sự kiện và tin tức FCOnline còn hiệu lực, kèm đếm ngược thời hạn.',
+    path: '/events',
+  });
   const [blocked, setBlocked] = useState(false);
 
   const { data: raw, isLoading: loading, error, refetch } = useEventsQuery();

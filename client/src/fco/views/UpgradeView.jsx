@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import PlayerPicker from '../components/PlayerPicker';
 import LevelBadge from '../components/LevelBadge.jsx';
 import {
@@ -42,6 +43,11 @@ const BURST_PARTICLES = [
 ];
 
 export default function UpgradeView() {
+  useDocumentMeta({
+    title: 'Nâng cấp',
+    description: 'Mô phỏng nâng cấp cầu thủ FCOnline và tính toán chỉ số OVR sau khi nâng cấp.',
+    path: '/upgrade',
+  });
   const { getAssetUrl } = useAssets();
   const [mainPlayer, setMainPlayer] = useState(null);
   const [level, setLevel] = useState(MIN_UPGRADE_LEVEL);

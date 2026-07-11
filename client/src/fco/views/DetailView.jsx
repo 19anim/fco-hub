@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { usePlayerDetailQuery } from '../queries.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpers.js';
@@ -400,6 +401,13 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   }, [id]);
 
   const { data, isLoading: loading, error } = usePlayerDetailQuery(id);
+
+  useDocumentMeta(data?.player ? {
+    title: `${cleanName(data.player.name)}${data.player.club ? ` (${data.player.club})` : ''}`,
+    description: `Chỉ số, giá thị trường và thông tin nâng cấp của ${cleanName(data.player.name)} trong FCOnline.`,
+    image: data.player.imageUrl || undefined,
+    path: `/players/${encodeURIComponent(id)}`,
+  } : { path: `/players/${encodeURIComponent(id)}` });
 
   if (loading) return <LoadingDetail />;
   if (error || !data) return (

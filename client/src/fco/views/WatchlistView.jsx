@@ -1,10 +1,16 @@
 import { useMemo } from 'react';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { usePlayersQuery } from '../queries.js';
 import { formatCoins, cleanName } from '../helpers.js';
 import { PlayerAvatar, OvrBox, PosPill, SeasonChip, EmptyState, SkeletonRow, Button } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 
 export default function WatchlistView({ watch, onToggleWatch, onSelect }) {
+  useDocumentMeta({
+    title: 'Theo dõi',
+    description: 'Danh sách cầu thủ FCOnline bạn đang theo dõi.',
+    path: '/watchlist',
+  });
   const queryFilters = useMemo(() => watch.length ? { ids: watch, pageSize: 100 } : null, [watch]);
   const { data: playersRes, isLoading: loading } = usePlayersQuery(queryFilters);
   const players = (playersRes?.players ?? []).filter(p => watch.includes(p.id));

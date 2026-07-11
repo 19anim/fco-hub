@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import PlayerPickerFiltered from '../components/PlayerPickerFiltered.jsx';
 import LevelBadge from '../components/LevelBadge.jsx';
 import TeamGradePopover from '../components/TeamGradePopover.jsx';
@@ -162,6 +163,11 @@ function getCustomFormationLabel(slots) {
 }
 
 export default function SquadView() {
+  useDocumentMeta({
+    title: 'Đội hình',
+    description: 'Xây dựng và lưu đội hình FCOnline, tính toán chỉ số đồng đội và lương đội bóng.',
+    path: '/squad-maker',
+  });
   const [squad, setSquad] = useState(() => loadSquad());
   const [pickerSlotId, setPickerSlotId] = useState(null);
   const [editSlotId, setEditSlotId] = useState(null);

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMonetizationFeed } from '../../hooks/useMonetizationFeed.js';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { BACKEND_SEARCH_DEBOUNCE_MS, BACKEND_SEARCH_MAX_LENGTH, canRunBackendSearch, normalizeBackendSearch } from '../../utils/backendSearch.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot.jsx';
 import AffiliateCtaCard from '../../components/monetization/renderers/AffiliateCtaCard.jsx';
@@ -9,6 +10,11 @@ import { EmptyState } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 
 export default function VideosView() {
+  useDocumentMeta({
+    title: 'Videos',
+    description: 'Tổng hợp gameplay, review cầu thủ và hướng dẫn FCOnline để bạn ra quyết định nhanh hơn.',
+    path: '/videos',
+  });
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, BACKEND_SEARCH_DEBOUNCE_MS);
   const activeSearch = canRunBackendSearch(debouncedSearch) ? normalizeBackendSearch(debouncedSearch) : undefined;

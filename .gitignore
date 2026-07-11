@@ -49,3 +49,6 @@ Thumbs.db
 /*.jpg
 /*.jpeg
 /*.webp
+
+# Local Netlify folder
+.netlify
