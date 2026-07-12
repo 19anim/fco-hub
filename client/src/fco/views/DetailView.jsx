@@ -721,6 +721,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
                       <SeasonChip code={r.season} name={r.seasonName} img={r.seasonImg} />
                       <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: statColor(r.ovr), fontWeight: 700 }}>{r.ovr}</span>
+                      <PosPill pos={r.primaryPos} />
                     </div>
                   </div>
                 </div>
