@@ -3,7 +3,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { usePlayerDetailQuery } from '../queries.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { statColor, cleanName, getSeason, getTrust } from '../helpers.js';
-import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
+import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState, PosPill } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 import { applyDetailBonuses, getDetailBonusModel } from './detailBonus.js';
 import { calculateTrainingOvr, getTrainingStats } from './trainingOvrConfig.js';
