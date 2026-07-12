@@ -437,8 +437,8 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
         <div className="fco-hide-sm" style={{ width: 56 }}>OVR</div>
         {isAdmin && <div className="fco-hide-md" style={{ width: 96 }}>Trust</div>}
         <div className="fco-hide-md" style={{ width: 220 }}>Chỉ số</div>
-        <div className="fco-hide-sm" style={{ width: 80, textAlign: 'right' }}>Giá</div>
         <div className="fco-hide-sm" style={{ width: 80, textAlign: 'right' }}>Lương</div>
+        <div style={{ width: 16 }} />
         <div style={{ width: 32 }} />
       </div>
 
@@ -552,7 +552,6 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
               </span>
             </div>
             <div className="fco-row-secondary">
-              <span>{p.price ? formatCoins(p.price) : '—'}</span>
               <span>{p.salary ? `Lương ${p.salary}` : 'Lương —'}</span>
             </div>
           </div>
@@ -587,9 +586,6 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
           })}
         </div>
 
-        <div className="fco-hide-sm fco-num" style={{ width: 80, textAlign: 'right', color: p.price ? 'var(--text)' : 'var(--text-faint)' }}>
-          {p.price ? formatCoins(p.price) : '—'}
-        </div>
         <div className="fco-hide-sm fco-num" style={{ width: 80, textAlign: 'right', color: p.salary ? 'var(--text)' : 'var(--text-faint)' }}>
           {p.salary ? `${p.salary}` : '—'}
         </div>

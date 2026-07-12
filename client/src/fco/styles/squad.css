@@ -962,8 +962,8 @@ span.card-bg-img.fc-bg::after {
 
 /* Team color strip — visually matched to fifaaddict.com/vn/fco-squadmaker/ */
 .pitch-teamcolor-list {
-  width: min(100%, 900px);
-  justify-self: center;
+  box-sizing: border-box;
+  width: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;

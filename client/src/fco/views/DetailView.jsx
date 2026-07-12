@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { usePlayerDetailQuery } from '../queries.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
-import { formatCoins, statColor, cleanName, getSeason, getTrust } from '../helpers.js';
+import { statColor, cleanName, getSeason, getTrust } from '../helpers.js';
 import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 import { applyDetailBonuses, getDetailBonusModel } from './detailBonus.js';
@@ -521,7 +521,6 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
                 </div>
 
                 <div className="fa-economy-row">
-                  {p.price > 0 && <span><I.Coins size={12} />Giá <b>{formatCoins(p.price)}</b></span>}
                   {p.salary > 0 && <span><I.Wallet size={12} />Lương <b>{p.salary}</b></span>}
                   {p.ovrBoost > 0 && <span>OVR boost <b>+{p.ovrBoost}</b></span>}
                 </div>

@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from 'react';
 import PlayerPickerFiltered from './PlayerPickerFiltered.jsx';
 import LevelBadge from './LevelBadge.jsx';
 import TeamGradePopover from './TeamGradePopover.jsx';
+import { PitchTeamColorList } from './TeamColorStrip.jsx';
 import { usePlayerDetailQuery } from '../queries.js';
 import {
   FORMATION_OPTIONS,
@@ -173,6 +174,8 @@ export default function SquadPitchEditor({
   headTeamGrade = MIN_UPGRADE_LEVEL,
   onHeadTeamGradeChange = null,
   activeTeamColorFocus = null,
+  onTeamColorFocusChange = null,
+  teamColorResult = null,
   pitchColor = null,
 }) {
   const [pickerSlotId, setPickerSlotId] = useState(null);
@@ -434,6 +437,14 @@ export default function SquadPitchEditor({
             )}
           </div>
         </div>
+
+        {onTeamColorFocusChange && (
+          <PitchTeamColorList
+            result={teamColorResult}
+            activeFocus={activeTeamColorFocus}
+            onToggleFocus={onTeamColorFocusChange}
+          />
+        )}
 
         <div
           className={`fco-squad-pitch${activeTeamColorFocus ? ' pitch--teamcolor-focus' : ''}${pitchColor ? ' fco-squad-pitch--tinted' : ''}`}

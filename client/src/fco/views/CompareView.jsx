@@ -20,7 +20,6 @@ const COMPARE_ROWS = [
   { key: 'defending', label: 'Phòng thủ',   type: 'stat' },
   { key: 'physical',  label: 'Thể lực',     type: 'stat' },
   { section: 'Thị trường' },
-  { key: 'price',     label: 'Giá', type: 'coin' },
   { key: 'salary',    label: 'Lương', type: 'coin' },
 ];
 

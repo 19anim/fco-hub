@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { usePlayersQuery } from '../queries.js';
-import { formatCoins, cleanName } from '../helpers.js';
+import { cleanName } from '../helpers.js';
 import { PlayerAvatar, OvrBox, PosPill, SeasonChip, EmptyState, SkeletonRow, Button } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 
@@ -55,12 +55,6 @@ export default function WatchlistView({ watch, onToggleWatch, onSelect }) {
                 </div>
                 <OvrBox value={p.ovr} pos={p.primaryPos} size="sm" />
                 <div style={{ display: 'flex', gap: 14, marginLeft: 'auto' }}>
-                  {p.price > 0 && (
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 10, color: 'var(--text-faint)' }}>Giá</div>
-                      <div style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 13, color: 'var(--accent)' }}>{formatCoins(p.price)}</div>
-                    </div>
-                  )}
                   {p.salary > 0 && (
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 10, color: 'var(--text-faint)' }}>Lương</div>
