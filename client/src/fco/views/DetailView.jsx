@@ -718,10 +718,19 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
                     <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {cleanName(r.name)}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
                       <SeasonChip code={r.season} name={r.seasonName} img={r.seasonImg} />
-                      <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: statColor(r.ovr), fontWeight: 700 }}>{r.ovr}</span>
                       <PosPill pos={r.primaryPos} />
+                      <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: statColor(r.ovr), fontWeight: 700 }}>{r.ovr}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>·</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <I.Wallet size={11} /> {r.salary}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>·</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {r.foot === 'left' ? 'L' : 'R'}{r.weakFoot}
+                        <I.Star size={11} />{r.skillMoves}
+                      </span>
                     </div>
                   </div>
                 </div>
