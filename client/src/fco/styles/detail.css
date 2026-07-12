@@ -331,7 +331,7 @@
 }
 
 /* Detail Page Attributes */
-.fa-attribute-grid { column-count: 4; column-gap: 12px; margin: 0; padding: 8px 10px; overflow: visible; border: 1px solid rgba(255,255,255,.055); border-radius: 9px; background: #0b0f14; list-style: none; }
+.fa-attribute-grid { column-count: 4; column-gap: 12px; margin: 0; padding: 8px 10px; overflow: visible; background: #0b0f14; list-style: none; }
 .fa-attribute-group { min-width: 0; padding: 0; background: transparent; border-radius: 0; }
 .fa-attribute-group-head { display: none; }
 .fa-attribute-group-head strong { font-family: var(--mono); font-size: 16px; font-weight: 900; line-height: 1; }
