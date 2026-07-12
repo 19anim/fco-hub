@@ -71,3 +71,4 @@ export const List         = mk([L(8,6,21,6),L(8,12,21,12),L(8,18,21,18),L(3,6,3.
 export const Lock         = mk([RECT(3,11,18,11,2),'M7 11V7a5 5 0 0 1 10 0v4']);
 export const Languages    = mk(['m5 8 6 6','m4 14 6-6 2-3','M2 5h12','M7 2h1','m22 22-5-10-5 10','M14 18h6']);
 export const Video        = mk([RECT(3,5,14,14,2),'m17 9 5-3v12l-5-3']);
+export const Share        = mk([C(18,5,3),C(6,12,3),C(18,19,3),L(8.6,10.5,15.4,6.5),L(8.6,13.5,15.4,17.5)]);

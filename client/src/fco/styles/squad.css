@@ -134,6 +134,16 @@
   overflow: visible;
 }
 .fco-squad-pitch::before { content: none; }
+.fco-squad-pitch--tinted::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--squad-pitch-tint);
+  mix-blend-mode: color;
+  opacity: .55;
+  pointer-events: none;
+}
 .fco-squad-pitch[data-teamcolor-tone="club"] { --teamcolor-focus: #58d6ff; }
 .fco-squad-pitch[data-teamcolor-tone="grade"] { --teamcolor-focus: #76e36f; }
 .fco-squad-pitch[data-teamcolor-tone="relation"] { --teamcolor-focus: #f1b84b; }
@@ -1313,3 +1323,176 @@ span.card-bg-img.fc-bg::after {
 @media (max-width: 360px) {
   .fco-squad-pitch { --squad-card-scale: .46; }
 }
+
+/* ── Squad sharing ──────────────────────────────────────────────────────────── */
+.fco-squad-formation-readonly {
+  display: inline-flex; align-items: center; height: 34px; padding: 0 12px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text); font-family: var(--mono); font-size: 12.5px; font-weight: 750;
+}
+.fco-squad-empty-add--readonly {
+  width: var(--squad-empty-w); height: var(--squad-empty-h);
+  border: 1px dashed var(--border-soft); background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; color: var(--text-faint); font-size: 12px; font-weight: 800;
+  letter-spacing: .04em; font-family: var(--mono);
+}
+
+.fco-squad-share-form {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;
+  padding: 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.fco-squad-share-field { display: flex; flex-direction: column; gap: 5px; }
+.fco-squad-share-field > span { font-size: 11px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; }
+.fco-squad-share-field input,
+.fco-squad-share-field select {
+  height: 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); padding: 0 10px; font-size: 13px;
+}
+.fco-squad-share-field input:focus,
+.fco-squad-share-field select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+.fco-squad-share-threshold { max-width: 260px; margin-bottom: 14px; }
+
+.fco-squad-share-field--color .fco-squad-share-color-picker {
+  height: 34px; display: flex; align-items: center; gap: 8px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--surface); padding: 0 10px;
+}
+.fco-squad-share-field--color input[type="color"] {
+  width: 26px; height: 26px; padding: 0; border: 1px solid var(--border-soft);
+  border-radius: 6px; background: none; cursor: pointer;
+}
+.fco-squad-share-color-value { font-family: var(--mono); font-size: 12px; color: var(--text-dim); text-transform: uppercase; }
+
+.fco-squad-share-field--wide { grid-column: 1 / -1; margin: -2px 0 14px; }
+.fco-squad-share-field--wide textarea {
+  border-radius: 8px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 72px;
+}
+.fco-squad-share-field--wide textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+
+.fco-squad-share-cta-wrap { flex: 0 0 auto; }
+.fco-squad-share-cta-wrap .fco-btn-primary {
+  padding: 10px 20px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  border-radius: 9px !important;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: box-shadow .14s ease, filter .14s ease;
+}
+.fco-squad-share-cta-wrap .fco-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 38%, transparent);
+}
+.fco-squad-share-cta-wrap .fco-btn-primary:active:not(:disabled) {
+  filter: brightness(.97);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.fco-squad-share-back {
+  display: inline-flex; align-items: center; gap: 5px; margin-bottom: 8px;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  color: var(--text-faint); font-size: 12.5px; font-weight: 700;
+}
+.fco-squad-share-back:hover { color: var(--text); }
+
+.fco-squad-share-gallery {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px;
+}
+.fco-squad-share-gallery-card {
+  --squad-share-card-tint: var(--accent);
+  position: relative;
+  display: flex; flex-direction: column; gap: 10px; text-align: left;
+  padding: 14px; border-radius: 14px; border: 1px solid var(--border);
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--squad-share-card-tint) 16%, transparent), transparent 60%),
+    var(--surface-2);
+  cursor: pointer; transition: border-color .14s ease, transform .14s ease, box-shadow .14s ease;
+}
+.fco-squad-share-gallery-card:hover {
+  border-color: color-mix(in srgb, var(--squad-share-card-tint) 45%, var(--border));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+.fco-squad-share-gallery-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.fco-squad-share-gallery-title { font-size: 14px; font-weight: 800; color: var(--text); }
+.fco-squad-share-gallery-mode {
+  flex: 0 0 auto; padding: 3px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .03em;
+  background: color-mix(in srgb, var(--squad-share-card-tint) 20%, transparent);
+  color: color-mix(in srgb, var(--squad-share-card-tint) 65%, var(--text));
+}
+.fco-squad-share-gallery-meta {
+  display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 11.5px; color: var(--text-faint);
+}
+.fco-squad-share-gallery-preview { display: flex; gap: 6px; }
+.fco-squad-share-gallery-mini { width: 52px; height: 60px; overflow: hidden; }
+.fco-squad-share-gallery-mini .player-card.fc-card { width: 52px; height: 60px; }
+
+.fco-squad-share-description {
+  margin: -4px 0 14px; padding: 10px 12px; border-radius: 10px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 13px; line-height: 1.5; white-space: pre-wrap;
+}
+
+.fco-squad-share-variants-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+.fco-squad-share-variant-tab {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
+  border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--text-dim);
+  font-size: 12.5px; font-weight: 800; cursor: pointer; transition: border-color .14s, color .14s, background .14s;
+}
+.fco-squad-share-variant-tab:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); color: var(--text); }
+.fco-squad-share-variant-tab.selected { color: var(--text); border-color: color-mix(in srgb, var(--border) 72%, var(--accent)); }
+.fco-squad-share-variant-tab.active {
+  border-color: var(--accent); color: var(--text);
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.fco-squad-share-variant-state-pill {
+  display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-2) 82%, var(--accent)); color: var(--text-dim);
+  font-size: 10.5px; font-weight: 850; letter-spacing: .02em;
+}
+.fco-squad-share-variant-state-pill.add {
+  background: color-mix(in srgb, var(--accent) 13%, transparent); color: var(--accent);
+}
+.fco-squad-share-variant-tab:not(.selected) {
+  border-style: dashed; color: var(--text-faint); background: transparent;
+}
+.fco-squad-share-variant-active-pill {
+  display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent);
+  font-size: 10.5px; font-weight: 900; letter-spacing: .02em;
+}
+.fco-squad-share-active-helper {
+  display: inline-flex; align-items: center; gap: 4px; margin: -4px 0 12px; padding: 7px 10px;
+  border-radius: 10px; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface)); color: var(--text-dim);
+  font-size: 12.5px; font-weight: 700;
+}
+.fco-squad-share-active-helper strong { color: var(--text); }
+.fco-squad-share-variant-remove {
+  display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;
+  border-radius: 999px; color: inherit; opacity: .7; cursor: pointer;
+}
+.fco-squad-share-variant-remove:hover { opacity: 1; }
+.fco-squad-share-variant-add {
+  display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 45%, var(--border)); background: transparent; color: var(--text-faint);
+  font-size: 12.5px; font-weight: 800; cursor: pointer; transition: border-color .14s, color .14s;
+}
+.fco-squad-share-variant-add:hover { border-color: var(--accent); color: var(--accent); }
+
+.fco-squad-share-error { margin: 10px 2px; color: #ff7a7a; font-size: 12.5px; font-weight: 600; }
+.fco-squad-share-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+
+.fco-squad-share-result {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px;
+  padding: 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border);
+}
+.fco-squad-share-link-input {
+  flex: 1; min-width: 220px; height: 38px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); padding: 0 12px; font-family: var(--mono); font-size: 12.5px;
+}
+
+.fco-squad-share-loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; color: var(--text-faint); }

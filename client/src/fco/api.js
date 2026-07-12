@@ -93,3 +93,18 @@ export async function fetchEvents() {
   const res = await axios.get(`${BASE}/events`);
   return res.data?.data || [];
 }
+
+export async function createSquadShare(payload) {
+  const res = await axios.post(`${BASE}/squad-shares`, payload);
+  return res.data?.data;
+}
+
+export async function fetchSquadShare(id) {
+  const res = await axios.get(`${BASE}/squad-shares/${id}`);
+  return res.data?.data;
+}
+
+export async function fetchSquadShares(params = {}) {
+  const res = await axios.get(`${BASE}/squad-shares`, { params });
+  return res.data?.data || [];
+}

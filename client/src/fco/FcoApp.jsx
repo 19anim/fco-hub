@@ -9,6 +9,9 @@ import DatabaseView from './views/DatabaseView.jsx';
 import EventsView from './views/EventsView.jsx';
 import UpgradeView from './views/UpgradeView.jsx';
 import SquadView from './views/SquadView.jsx';
+import SquadSharingCreateView from './views/SquadSharingCreateView.jsx';
+import SquadSharingView from './views/SquadSharingView.jsx';
+import SquadSharingListView from './views/SquadSharingListView.jsx';
 import DetailView from './views/DetailView.jsx';
 import CompareView from './views/CompareView.jsx';
 import WatchlistView from './views/WatchlistView.jsx';
@@ -21,6 +24,7 @@ const NAV_ITEMS = [
   { id: 'videos',    label: 'Videos',     icon: I.Video     },
   { id: 'upgrade',   label: 'Nâng cấp',   icon: I.Zap       },
   { id: 'squad',     label: 'Đội hình',   icon: I.Users     },
+  { id: 'squad-sharing-list', label: 'Chia sẻ đội hình', icon: I.Share },
   { id: 'compare',   label: 'So sánh',    icon: I.Compare   },
   { id: 'watchlist', label: 'Theo dõi',   icon: I.Star      },
 ];
@@ -30,6 +34,7 @@ const VIEW_PATHS = {
   videos: '/videos',
   upgrade: '/upgrade',
   squad: '/squad-maker',
+  'squad-sharing-list': '/squad-sharing',
   compare: '/compare',
   watchlist: '/watchlist',
 };
@@ -73,6 +78,11 @@ function parsePath(pathname = window.location.pathname, hash = window.location.h
   if (first === 'players') return { view: parts[1] ? 'detail' : 'db', param: parts.slice(1).join('/') || null, legacyPath: null };
   if (first === 'doi-hinh') return { view: 'squad', param: null, legacyPath: routeUrl('squad') };
   if (first === 'squad-maker') return { view: 'squad', param: null, legacyPath: null };
+  if (first === 'squad-sharing') {
+    if (!parts[1]) return { view: 'squad-sharing-list', param: null, legacyPath: null };
+    if (parts[1] === 'new') return { view: 'squad-sharing-new', param: null, legacyPath: null };
+    return { view: 'squad-sharing', param: parts[1], legacyPath: null };
+  }
   if (VIEW_PATHS[first]) return { view: first, param: null, legacyPath: null };
 
   return { view: 'db', param: null, legacyPath: '/players' };
@@ -83,6 +93,14 @@ function routeUrl(view, param = null, { keepSearch = false } = {}) {
 
   if (view === 'detail' && param) {
     return `/players/${encodeURIComponent(param)}${search}`;
+  }
+
+  if (view === 'squad-sharing' && param) {
+    return `/squad-sharing/${encodeURIComponent(param)}${search}`;
+  }
+
+  if (view === 'squad-sharing-new') {
+    return `/squad-sharing/new${search}`;
   }
 
   return `${VIEW_PATHS[view] || '/players'}${search}`;
@@ -229,7 +247,7 @@ export default function FcoApp() {
           {NAV_ITEMS.map(item => (
             <a key={item.id}
               href={routeUrl(item.id)}
-              className={`fco-navitem${activeView === item.id ? ' active' : ''}`}
+              className={`fco-navitem${(activeView === item.id || (item.id === 'squad-sharing-list' && (activeView === 'squad-sharing-new' || activeView === 'squad-sharing'))) ? ' active' : ''}`}
               onClick={e => handleNavClick(e, item.id)}>
               <item.icon size={16} />
               <span>{item.label}</span>
@@ -277,6 +295,18 @@ export default function FcoApp() {
         )}
         {activeView === 'squad' && (
           <SquadView />
+        )}
+        {activeView === 'squad-sharing-list' && (
+          <SquadSharingListView
+            onSelect={(id) => navigate('squad-sharing', id)}
+            onCreate={() => navigate('squad-sharing-new')}
+          />
+        )}
+        {activeView === 'squad-sharing-new' && (
+          <SquadSharingCreateView onShared={(id) => navigate('squad-sharing', id)} />
+        )}
+        {activeView === 'squad-sharing' && decodedParam && (
+          <SquadSharingView id={decodedParam} onBack={() => navigate('squad-sharing-list')} />
         )}
       </main>
 
