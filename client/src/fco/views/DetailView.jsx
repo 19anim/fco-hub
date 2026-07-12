@@ -450,7 +450,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   const watched = watch.includes(p.id);
 
   return (
-    <div className="fco-detail">
+    <div className="fco-detail" style={{ '--accent-view': '#8b5cf6' }}>
       {/* Breadcrumb */}
       <div className="fco-detail-top">
         <Button variant="ghost" size="sm" icon={I.ArrowLeft} onClick={onBack}>Database</Button>
@@ -577,6 +577,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
                     key={rating.label}
                     type="button"
                     className={`fa-position-rating ${selectedStatPosition === rating.label ? 'on' : ''} ${rating.recommended ? 'rec' : ''}`}
+                    aria-pressed={selectedStatPosition === rating.label}
                     onClick={() => setActivePosition(rating.label)}
                   >
                     <span>{rating.recommended && <I.Star size={10} fill="currentColor" />}{rating.label}</span>
@@ -619,7 +620,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
                     <div key={i} className="fco-trait-desc-item">
                       <div className="fco-trait-desc-name">
                         {td.iconUrl
-                          ? <img className="fco-trait-icon" src={td.iconUrl} alt="" onError={e => { e.target.style.display = 'none'; }} />
+                          ? <img className="fco-trait-icon" src={td.iconUrl} alt="" width={22} height={22} onError={e => { e.target.style.display = 'none'; }} />
                           : <I.Zap size={15} style={{ color: 'var(--accent)' }} />}
                         <span>{td.name}</span>
                       </div>

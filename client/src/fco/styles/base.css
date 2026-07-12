@@ -11,8 +11,14 @@
   --text-faint: #5e6773;
   --accent: #00e08a;
   --accent-dim: #00e08a;
+  --accent-view: var(--accent);
   --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --display: 'Rajdhani', 'Be Vietnam Pro', system-ui, sans-serif;
   --r: 12px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --border-strong: #313b48;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }

@@ -57,7 +57,7 @@ export default function CompareView({ compareIds, onUpdateCompare, onSelect }) {
           <p className="fco-sub">Thêm tối đa {MAX} cầu thủ để so sánh các chỉ số.</p>
         </div>
         {ids.length > 0 && (
-          <Button variant="ghost" size="sm" icon={I.X} onClick={() => onUpdateCompare([])}>Xoá tất cả</Button>
+          <Button variant="ghost" size="sm" icon={I.X} onClick={() => { if (window.confirm('Xoá tất cả cầu thủ khỏi so sánh?')) onUpdateCompare([]); }}>Xoá tất cả</Button>
         )}
       </div>
 
@@ -75,12 +75,12 @@ export default function CompareView({ compareIds, onUpdateCompare, onSelect }) {
                 const p = players[id];
                 return (
                   <div key={id} className="fco-cmp-head-card">
-                    <button className="fco-cmp-remove" onClick={() => removeId(id)} title="Xoá"><I.X size={12} /></button>
+                    <button className="fco-cmp-remove" onClick={() => removeId(id)} aria-label="Xoá khỏi so sánh"><I.X size={12} /></button>
                     {p ? (
                       <>
                         <PlayerAvatar player={p} size={48} />
                         <div>
-                          <div className="fco-cmp-cardname" style={{ cursor: 'pointer' }} onClick={() => onSelect(id)}>{cleanName(p.name)}</div>
+                          <button type="button" className="fco-cmp-cardname" style={{ cursor: 'pointer' }} onClick={() => onSelect(id)}>{cleanName(p.name)}</button>
                           <div className="fco-cmp-cardsub">
                             <SeasonChip code={p.season} img={p.seasonImg} />
                             {' '}<PosPill pos={p.primaryPos} />
@@ -88,7 +88,7 @@ export default function CompareView({ compareIds, onUpdateCompare, onSelect }) {
                         </div>
                       </>
                     ) : (
-                      <div style={{ color: 'var(--text-faint)' }}><I.Spinner size={20} className="fco-spin" /></div>
+                      <div style={{ color: 'var(--text-faint)' }} aria-live="polite"><I.Spinner size={20} className="fco-spin" /><span className="sr-only">Đang tải…</span></div>
                     )}
                   </div>
                 );
@@ -126,7 +126,7 @@ export default function CompareView({ compareIds, onUpdateCompare, onSelect }) {
                   {ids.map((id, ci) => {
                     const v = vals[ci];
                     const isBest = v != null && v === maxVal && numericVals.length > 1;
-                    let display = v == null ? '—' : row.key === 'salary' ? String(v) : row.type === 'coin' ? formatCoins(v) : String(v);
+                    let display = v == null ? '—' : row.key === 'salary' ? Number(v).toLocaleString('en-US') : row.type === 'coin' ? formatCoins(v) : String(v);
                     let color = v == null ? 'var(--text-faint)' : row.type === 'stat' ? statColor(v) : 'var(--text)';
                     return (
                       <div key={id} className={`fco-cmp-cell stat${isBest ? ' best' : ''}`}>

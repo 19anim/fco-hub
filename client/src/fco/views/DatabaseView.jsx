@@ -375,6 +375,8 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
                   <button key={s.seasonId}
                     className={`fco-season-opt${isSelected ? ' on' : ''}`}
                     title={s.seasonName}
+                    aria-label={s.seasonName}
+                    aria-pressed={isSelected}
                     onClick={() => {
                       const sid = String(s.seasonId);
                       setSeasons(prev => prev.includes(sid) ? prev.filter(x => x !== sid) : [...prev, sid]);
@@ -393,7 +395,7 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
                         }}
                       />
                     ) : s.seasonImg ? (
-                      <img src={s.seasonImg} alt="" className="fco-season-opt-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
+                      <img src={s.seasonImg} alt="" width={42} height={22} className="fco-season-opt-img" onError={e => { e.currentTarget.style.display = 'none'; }} />
                     ) : (
                       <div className="fco-season-opt-badge" style={{ background: seasonMeta?.bg, color: seasonMeta?.fg, borderColor: seasonMeta?.ring }}>
                         <span>{seasonMeta?.name || seasonCode}</span>
@@ -552,7 +554,7 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
               </span>
             </div>
             <div className="fco-row-secondary">
-              <span>{p.salary ? `Lương ${p.salary}` : 'Lương —'}</span>
+              <span>{p.salary ? `Lương ${Number(p.salary).toLocaleString('en-US')}` : 'Lương —'}</span>
             </div>
           </div>
         </div>
@@ -587,15 +589,16 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
         </div>
 
         <div className="fco-hide-sm fco-num" style={{ width: 80, textAlign: 'right', color: p.salary ? 'var(--text)' : 'var(--text-faint)' }}>
-          {p.salary ? `${p.salary}` : '—'}
+          {p.salary ? Number(p.salary).toLocaleString('en-US') : '—'}
         </div>
 
-        <I.ChevronRight size={16} className="fco-row-chevron" />
+        <I.ChevronRight size={16} className="fco-row-chevron" aria-hidden="true" />
       </a>
 
       <button
         className={`fco-star${watched ? ' on' : ''}`}
         onClick={e => { e.stopPropagation(); onToggleWatch(); }}
+        aria-label={watched ? 'Bỏ theo dõi' : 'Theo dõi'}
         title={watched ? 'Bỏ theo dõi' : 'Theo dõi'}>
         {watched ? <I.StarFill size={14} /> : <I.Star size={14} />}
       </button>

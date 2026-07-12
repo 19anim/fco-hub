@@ -12,7 +12,7 @@
 .fco-training-kicker { color: var(--text-primary); font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .fco-training-helper { color: var(--text-faint); font-size: 11px; margin-top: 2px; }
 .fco-training-ovr-lockup { display: flex; align-items: baseline; justify-content: center; gap: 9px; white-space: nowrap; }
-.fco-training-ovr-value { font-family: var(--mono); font-size: 36px; font-weight: 900; line-height: .9; letter-spacing: -.05em; }
+.fco-training-ovr-value { font-family: var(--display); font-size: 41px; font-weight: 800; font-style: italic; line-height: .9; letter-spacing: -.01em; }
 .fco-training-ovr-arrow { color: var(--text-faint); font-size: 17px; }
 .fco-training-dashboard-actions { display: flex; align-items: flex-end; flex-direction: column; gap: 5px; }
 .fco-training-gain { border: 1px solid var(--border-soft); border-radius: 999px; padding: 3px 8px; color: var(--text-dim); background: var(--surface); font-family: var(--mono); font-size: 12px; font-weight: 800; }

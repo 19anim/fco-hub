@@ -78,7 +78,7 @@ export default function SquadView() {
   }
 
   return (
-    <div className="fco-squad-view">
+    <div className="fco-squad-view" style={{ '--accent-view': '#22d3ee' }}>
       <div className="fco-up-machine-head">
         <div>
           <h2 className="fco-h2">Xây dựng đội hình</h2>
@@ -98,6 +98,8 @@ export default function SquadView() {
               {isEditingSalaryCap ? (
                 <input
                   type="number"
+                  inputMode="numeric"
+                  aria-label="Lương tối đa"
                   min={0}
                   max={MAX_SALARY_CAP}
                   value={salaryCap}
@@ -129,7 +131,14 @@ export default function SquadView() {
             </span>
           </div>
           <div className="fco-squad-summary-caption">Hiện tại / Tối đa</div>
-          <div className="fco-squad-summary-bar" aria-label={`Tổng lương ${salaryTotal} trên ${salaryCap}`}>
+          <div
+            className="fco-squad-summary-bar"
+            role="progressbar"
+            aria-label="Tổng lương"
+            aria-valuenow={salaryTotal}
+            aria-valuemin={0}
+            aria-valuemax={salaryCap}
+          >
             <span style={{ width: `${salaryProgress}%` }} />
           </div>
         </div>
@@ -145,7 +154,14 @@ export default function SquadView() {
                 const progress = value == null ? 0 : Math.min(100, (value / 150) * 100);
                 return (
                   <div key={key} className={`fco-squad-summary-ovr-row line-${key.toLowerCase()}`}>
-                    <span className="fco-squad-summary-ovr-bar"><span style={{ width: `${progress}%` }} /></span>
+                    <span
+                      className="fco-squad-summary-ovr-bar"
+                      role="progressbar"
+                      aria-label={`OVR trung bình ${key}`}
+                      aria-valuenow={value ?? 0}
+                      aria-valuemin={0}
+                      aria-valuemax={150}
+                    ><span style={{ width: `${progress}%` }} /></span>
                     <span className="fco-squad-summary-ovr-value">{value ?? '—'}</span>
                   </div>
                 );

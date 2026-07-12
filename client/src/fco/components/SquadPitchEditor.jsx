@@ -264,6 +264,7 @@ export default function SquadPitchEditor({
   }
 
   function clearSquad() {
+    if (!window.confirm('Xoá toàn bộ đội hình hiện tại?')) return;
     persistSquad({ formationId, bySlotId: {}, customSlots: squad.customSlots || null });
     setMovingSlotId(null);
     setDragOverSlotId(null);
@@ -405,6 +406,7 @@ export default function SquadPitchEditor({
               ) : (
                 <select
                   id="fco-squad-formation-select"
+                  aria-label="Sơ đồ đội hình"
                   className="fco-squad-formation-select"
                   value={isCustomLayout ? 'custom' : formationId}
                   onChange={(e) => {
@@ -549,7 +551,7 @@ export default function SquadPitchEditor({
         </div>
 
         {!readOnly && (
-          <div className="fco-squad-panel-note">
+          <div className="fco-squad-panel-note" aria-live="polite">
             Đã chọn {filledCount}/11 cầu thủ.
             {movingSlotId ? ' Bấm vào một vị trí khác để đổi chỗ, hoặc bấm lại icon đổi vị trí để huỷ.' : ' Kéo vị trí trên sân để tạo sơ đồ custom; thả vào vùng đã có vị trí sẽ đổi chỗ.'}
           </div>
@@ -654,8 +656,12 @@ export default function SquadPitchEditor({
       )}
 
       {!readOnly && activeEditPlayer && activeEditSlot && (
-        <div className="fco-modal-overlay" onClick={e => { if (e.target === e.currentTarget) closeEditModal(); }}>
-          <div className="fco-modal player-edit-modal">
+        <div
+          className="fco-modal-overlay"
+          onClick={e => { if (e.target === e.currentTarget) closeEditModal(); }}
+          onKeyDown={e => { if (e.key === 'Escape') closeEditModal(); }}
+        >
+          <div className="fco-modal player-edit-modal" role="dialog" aria-modal="true" aria-label={`Chỉnh cầu thủ · ${activeEditSlot.pos}`}>
             <div className="fco-modal-head">
               <div>
                 <div className="fco-modal-title">Chỉnh cầu thủ · {activeEditSlot.pos}</div>

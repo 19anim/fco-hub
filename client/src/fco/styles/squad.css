@@ -9,6 +9,7 @@
 .fco-team-grade-trigger.is-minimal { padding: 0; border: 0; border-radius: 4px; background: transparent; }
 .fco-team-grade-trigger.is-minimal:hover,
 .fco-team-grade-trigger.is-minimal:focus-visible { background: color-mix(in srgb, var(--accent) 10%, transparent); transform: translateY(-1px); outline: none; }
+.fco-team-grade-trigger.is-minimal:focus-visible { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
 .fco-team-grade-caret { color: var(--text-faint); flex-shrink: 0; }
 .fco-team-grade-popover { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.65); padding: 8px; }
 .fco-team-grade-popover-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 8px; font-size: 12px; font-weight: 700; color: var(--text-dim); }
@@ -22,19 +23,23 @@
   background: var(--surface); color: var(--text); padding: 0 34px 0 10px;
   font-family: var(--mono); font-size: 12.5px; font-weight: 750; cursor: pointer;
 }
-.fco-squad-formation-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+.fco-squad-formation-select:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
 .fco-squad-custom-formation { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: 11.5px; font-weight: 800; font-family: var(--mono); }
 
 .fco-squad-summary-strip { display: grid; grid-template-columns: minmax(150px, 176px) minmax(0, 1fr) minmax(168px, 196px); gap: 8px; }
 .fco-squad-summary-card {
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+  position: relative;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 92%, var(--accent) 8%), var(--surface-2));
+  border: 1px solid var(--border); border-radius: var(--r-sm); overflow: hidden;
   padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; justify-content: flex-start;
 }
+.fco-squad-summary-card::before { content: ''; position: absolute; inset: 0 0 auto; height: 2px; background: var(--accent-view); opacity: .7; }
+.fco-squad-summary-card.is-over-limit::before { background: #e2566f; }
 .fco-squad-summary-card.is-over-limit { border-color: rgba(226,86,111,.5); background: rgba(226,86,111,.08); }
 .fco-squad-summary-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
 .fco-squad-summary-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--text-faint); }
 .fco-squad-summary-value { font-family: var(--mono); display: flex; align-items: baseline; gap: 4px; line-height: 1; }
-.fco-squad-summary-value > span:first-child { font-size: clamp(1.4rem, 2.5vw, 1.8rem); font-weight: 800; color: var(--accent); }
+.fco-squad-summary-value > span:first-child { font-size: clamp(1.4rem, 2.5vw, 1.8rem); font-weight: 800; color: var(--accent-view); }
 .fco-squad-summary-divider,
 .fco-squad-summary-cap-wrap > span:first-child { font-size: clamp(.95rem, 1.6vw, 1.2rem); font-weight: 600; color: var(--text-dim); }
 .fco-squad-summary-cap-wrap { display: inline-flex; align-items: center; gap: 4px; }
@@ -62,7 +67,7 @@
 .fco-squad-summary-ovr-row.line-fwd .fco-squad-summary-ovr-bar > span { background: linear-gradient(90deg, #e2566f, #ff8a68); }
 .fco-squad-summary-ovr-value { text-align: right; font-size: 12px; font-weight: 700; color: var(--text); }
 .fco-squad-summary-ovr-total-wrap { min-width: 48px; display: flex; align-items: center; justify-content: flex-end; }
-.fco-squad-summary-ovr-total { font-family: var(--mono); font-weight: 800; font-size: 20px; color: var(--text); text-align: right; line-height: .95; }
+.fco-squad-summary-ovr-total { font-family: var(--display); font-weight: 800; font-style: italic; font-size: 23px; color: var(--text); text-align: right; line-height: .95; }
 
 .fco-squad-layout { display: grid; grid-template-columns: minmax(0, 900px) minmax(260px, 336px); justify-content: center; align-items: start; gap: 18px; margin-top: 14px; }
 .fco-squad-maincol { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
@@ -239,6 +244,7 @@
   font-family: var(--mono);
 }
 .fco-squad-slot.empty-slot .fco-squad-empty-add:hover { border-color: var(--accent); color: var(--text); }
+.fco-squad-slot.empty-slot .fco-squad-empty-add:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
 
 .fco-squad-slot[style*="left: 5%"] { --slot-tx: 0; }
 .fco-squad-slot[style*="left: 95%"] { --slot-tx: -100%; }
@@ -265,6 +271,7 @@
 }
 .fco-squad-empty-add { width: 34px; height: 34px; border: 1px solid rgba(255,255,255,.14); border-radius: 50%; background: rgba(255,255,255,.08); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
 .fco-squad-empty-add:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.fco-squad-empty-add:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
 .fco-squad-empty-plus { display: inline-flex; align-items: center; justify-content: center; font-size: 28px; line-height: 1; }
 .fco-squad-empty:hover,
 .fco-squad-empty.drag-over { border-color: var(--accent); color: var(--text); transform: translateY(-1px); }
@@ -529,11 +536,12 @@ span.card-bg-img.fc-bg::after {
   left: 7px;
   top: 8px;
   z-index: 2;
-  font-family: var(--mono);
-  font-size: 19px;
-  font-weight: 900;
+  font-family: var(--display);
+  font-size: 21px;
+  font-weight: 800;
+  font-style: italic;
   line-height: 1;
-  letter-spacing: -.04em;
+  letter-spacing: 0;
   color: var(--fco-card-ovr-color, #fff);
   text-shadow: 0 1px 2px rgba(0,0,0,.65);
 }
@@ -1239,7 +1247,11 @@ span.card-bg-img.fc-bg::after {
 
 @media (prefers-reduced-motion: reduce) {
   .pitch--teamcolor-focus .fco-squad-slot.teamcolor-qualified .fco-squad-card,
-  .pitch--teamcolor-focus .fco-squad-slot.teamcolor-qualified .fco-squad-card::before { animation: none !important; }
+  .pitch--teamcolor-focus .fco-squad-slot.teamcolor-qualified .fco-squad-card::before,
+  .fco-squad-slot.drag-over::before,
+  .fco-squad-empty.move-target,
+  .fco-squad-card.move-target,
+  .fco-squad-slot { animation: none !important; }
 }
 
 @media (max-width: 860px) {

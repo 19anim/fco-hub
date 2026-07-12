@@ -24,13 +24,13 @@ export default function WatchlistView({ watch, onToggleWatch, onSelect }) {
   }
 
   return (
-    <div className="fco-db">
+    <div className="fco-db" style={{ '--accent-view': '#ec4899' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <h2 className="fco-h2" style={{ marginBottom: 4 }}>Theo dõi</h2>
           <p className="fco-sub" style={{ margin: 0 }}><b>{watch.length}</b> cầu thủ đang theo dõi</p>
         </div>
-        <Button variant="ghost" size="sm" icon={I.X} onClick={() => watch.forEach(id => onToggleWatch(id))}>
+        <Button variant="ghost" size="sm" icon={I.X} onClick={() => { if (window.confirm('Xoá toàn bộ danh sách theo dõi?')) watch.forEach(id => onToggleWatch(id)); }}>
           Xoá tất cả
         </Button>
       </div>
@@ -39,9 +39,9 @@ export default function WatchlistView({ watch, onToggleWatch, onSelect }) {
         {loading
           ? Array.from({ length: Math.min(watch.length, 6) }).map((_, i) => <SkeletonRow key={i} />)
           : players.map(p => (
-              <div key={p.id} className="fco-row" tabIndex={0}
+              <div key={p.id} className="fco-row" role="button" tabIndex={0}
                 onClick={() => onSelect(p.id)}
-                onKeyDown={e => e.key === 'Enter' && onSelect(p.id)}>
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p.id); } }}>
                 <PlayerAvatar player={p} size={40} />
                 <div className="fco-row-player">
                   <div>
@@ -58,16 +58,17 @@ export default function WatchlistView({ watch, onToggleWatch, onSelect }) {
                   {p.salary > 0 && (
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 10, color: 'var(--text-faint)' }}>Lương</div>
-                      <div style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 13 }}>{p.salary}</div>
+                      <div style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 13 }}>{Number(p.salary).toLocaleString('en-US')}</div>
                     </div>
                   )}
                 </div>
                 <button className="fco-star on"
                   onClick={e => { e.stopPropagation(); onToggleWatch(p.id); }}
+                  aria-label="Bỏ theo dõi"
                   title="Bỏ theo dõi">
                   <I.StarFill size={14} />
                 </button>
-                <I.ChevronRight size={16} className="fco-row-chev" style={{ color: 'var(--text-faint)', flex: '0 0 16px' }} />
+                <I.ChevronRight size={16} className="fco-row-chev" aria-hidden="true" style={{ color: 'var(--text-faint)', flex: '0 0 16px' }} />
               </div>
             ))
         }

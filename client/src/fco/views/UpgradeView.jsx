@@ -150,6 +150,7 @@ export default function UpgradeView() {
     <div
       className="fco-up-view fco-up-machine-view"
       style={{
+        '--accent-view': '#f43f5e',
         ...(baseUrl ? { '--fco-upgrade-base-url': `url(${baseUrl})` } : {}),
         ...(shatterUrl ? { '--fco-upgrade-shatter-url': `url(${shatterUrl})` } : {}),
       }}
