@@ -347,7 +347,7 @@
 
 /* Attribute lines (no progress bar — màu text thể hiện mạnh/yếu) */
 .fco-attr-lines { display: contents; }
-.fco-attr-line { min-height: 24px; display: flex; align-items: center; justify-content: space-between; gap: 8px; break-inside: avoid; border-bottom: 1px solid rgba(255,255,255,.045); padding: 2px 0; border-radius: 0; background: transparent; font-size: 12px; line-height: 1.15; }
+.fco-attr-line { min-height: 24px; display: flex; align-items: center; justify-content: space-between; gap: 8px; break-inside: avoid; padding: 2px 0; border-radius: 0; background: transparent; font-size: 12px; line-height: 1.15; }
 .fco-attr-line:last-child { border-bottom: 0; }
 .fco-attr-line:hover { background: linear-gradient(90deg, rgba(255,255,255,.025), transparent); }
 .fco-attr-line-lab { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #8e98a6; }
