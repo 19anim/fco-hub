@@ -122,7 +122,7 @@
 @media (min-width: 761px) and (max-width: 1120px) {
   .fco-relgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.fco-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; }
+.fco-panel { background: var(--surface); border-radius: var(--r-md); overflow: hidden; }
 .fco-panel-head { display: flex; align-items: center; justify-content: space-between; min-height: 42px; padding: 0 14px; background: var(--surface); border-bottom: 1px solid var(--border-soft); }
 .fco-panel-title { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: .07em; color: var(--text-dim); }
 .fco-panel-title-sub { padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--accent-view) 16%, transparent); color: var(--accent-view); font-family: var(--mono); font-size: 11px; font-weight: 800; text-transform: none; letter-spacing: 0; }
