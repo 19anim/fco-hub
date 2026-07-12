@@ -185,8 +185,8 @@
 .fco-section-title { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 14.5px; color: var(--text); }
 .fco-section-sub { font-size: 12.5px; color: var(--text-faint); font-weight: 400; }
 .fco-relgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.fco-relcard { display: flex; align-items: center; gap: 11px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all .14s; }
-.fco-relcard:hover { border-color: #36404d; background: var(--surface-2); transform: translateY(-2px); }
+.fco-relcard { display: flex; align-items: center; gap: 11px; padding: 12px; background: var(--surface); border-radius: 12px; cursor: pointer; transition: all .14s; }
+.fco-relcard:hover { background: var(--surface-2); transform: translateY(-2px); }
 
 /* Position detailed filter */
 .fco-pos-container { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-bottom: 8px; background: var(--surface); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
