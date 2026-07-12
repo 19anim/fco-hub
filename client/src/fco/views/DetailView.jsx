@@ -727,7 +727,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
                         <I.Wallet size={11} /> {r.salary}
                       </span>
                       <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>·</span>
-                      <span style={{ fontSize: 11, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <span className="fco-mini-foot">
                         {r.foot === 'left' ? 'L' : 'R'}{r.weakFoot}
                         <I.Star size={11} />{r.skillMoves}
                       </span>
