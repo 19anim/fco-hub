@@ -171,10 +171,10 @@
 .fco-skillrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border-soft); }
 .fco-skillrow .fco-kv-k { margin-bottom: 4px; }
 .fco-traits { display: flex; flex-wrap: wrap; gap: 7px; }
-.fco-trait { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; background: color-mix(in srgb, var(--accent-view) 10%, var(--surface-2)); border: 1px solid color-mix(in srgb, var(--accent-view) 28%, var(--border)); color: var(--accent-view); border-radius: 8px; font-size: 12.5px; font-weight: 550; }
+.fco-trait { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; background: color-mix(in srgb, var(--accent-view) 10%, var(--surface-2)); color: var(--accent-view); border-radius: 8px; font-size: 12.5px; font-weight: 550; }
 .fco-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.fco-tag { font-size: 12.5px; font-weight: 550; padding: 4px 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); }
-.fco-code { font-family: var(--mono); font-size: 12px; padding: 1px 5px; background: var(--surface-3); border: 1px solid var(--border); border-radius: 4px; color: var(--text); }
+.fco-tag { font-size: 12.5px; font-weight: 550; padding: 4px 10px; background: var(--surface-2); border-radius: 8px; color: var(--text-dim); }
+.fco-code { font-family: var(--mono); font-size: 12px; padding: 1px 5px; background: var(--surface-3); border-radius: 4px; color: var(--text); }
 .fco-panel-divider { height: 10px; margin: 10px 0; background: transparent; }
 .fco-banner-icon { flex: 0 0 18px; margin-top: 2px; }
 .fco-banner-sub { display: block; font-size: 12.5px; margin-top: 2px; }
