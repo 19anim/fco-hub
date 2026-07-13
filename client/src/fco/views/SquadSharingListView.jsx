@@ -15,7 +15,7 @@ function getPreviewStarters(share) {
   return getStartersFromSquad(squad.bySlotId, slots).slice(0, 4);
 }
 
-export default function SquadSharingListView({ onSelect, onCreate }) {
+export default function SquadSharingListView({ onSelect, onCreate, canCreate }) {
   useDocumentMeta({
     title: 'Chia sẻ đội hình',
     description: 'Khám phá các đội hình FCOnline được cộng đồng chia sẻ theo tình huống tỷ số.',
@@ -44,11 +44,13 @@ export default function SquadSharingListView({ onSelect, onCreate }) {
           <h2 className="fco-h2">Chia sẻ đội hình</h2>
           <p className="fco-sub">Các đội hình được chia sẻ bởi cộng đồng, kèm HLV, chiến thuật và tình huống tỷ số.</p>
         </div>
-        <div className="fco-squad-share-cta-wrap">
-          <Button variant="primary" icon={I.Plus} onClick={onCreate}>
-            Chia sẻ đội hình
-          </Button>
-        </div>
+        {canCreate && (
+          <div className="fco-squad-share-cta-wrap">
+            <Button variant="primary" icon={I.Plus} onClick={onCreate}>
+              Chia sẻ đội hình
+            </Button>
+          </div>
+        )}
       </div>
 
       {loading && (

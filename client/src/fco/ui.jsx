@@ -36,8 +36,6 @@ export function PlayerAvatar({ player, size = 40, bare = false }) {
       <div style={{
         width: size, height: size, flex: `0 0 ${size}px`,
         borderRadius: size > 56 ? 14 : 10, overflow: 'hidden',
-        boxShadow: `inset 0 0 0 1.5px ${s.ring}66, 0 1px 2px rgba(0,0,0,.4)`,
-        background: s.bg,
       }}>
         <img src={player.imageUrl} alt={player.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           onError={e => { e.target.style.display = 'none'; }} />
@@ -93,7 +91,17 @@ export function PlayerCardMini({ player, slotPos, ovr, ovrIsFallback = false, le
 
 // ── OVR Box ────────────────────────────────────────────────────────────────────
 export function OvrBox({ value, pos, size = 'md' }) {
-  const dims = { sm: [40, 16, 9], md: [52, 22, 11], lg: [88, 40, 18], xl: [120, 56, 24] }[size];
+  if (size === 'sm') {
+    return (
+      <div className="fco-ovr-hex" style={{ color: statColor(value) }}>
+        <svg className="fco-ovr-hex-shape" viewBox="0 0 40 46" aria-hidden="true">
+          <path d="M20,1 L37.6,11.5 L37.6,34.5 L20,45 L2.4,34.5 L2.4,11.5 Z" />
+        </svg>
+        <span className="fco-ovr-hex-num">{value}</span>
+      </div>
+    );
+  }
+  const dims = { md: [52, 22, 11], lg: [88, 40, 18], xl: [120, 56, 24] }[size];
   const posColor = getPos(pos).color;
   return (
     <div style={{

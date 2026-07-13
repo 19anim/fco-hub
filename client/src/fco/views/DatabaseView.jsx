@@ -507,9 +507,58 @@ export default function DatabaseView({ isAdmin, watch, onToggleWatch, onSelect }
   );
 }
 
+const SKILL_MOVES_MAX = 6;
+function MiniStars({ n }) {
+  return (
+    <span className="fco-mini-badge-stars">
+      {Array.from({ length: SKILL_MOVES_MAX }, (_, i) => (
+        <svg key={i} width="9" height="9" viewBox="0 0 24 24" className={`fco-mini-star${i < n ? ' on' : ''}`} fill="inherit">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+const FOOT_SPRITE_FALLBACK = '/fco/icons/foot.png';
+const FOOT_FRAME_W = 46;
+const FOOT_FRAME_H = 91;
+const FOOT_SHEET_H = 364;
+function MiniFootIcon({ active, mirror, size, rating, spriteUrl }) {
+  const scale = size / FOOT_FRAME_W;
+  return (
+    <span className={`fco-foot-icon${active ? ' on' : ''}`} style={{ width: size, height: FOOT_FRAME_H * scale }}>
+      <span
+        className="fco-foot-icon-img"
+        style={{
+          backgroundImage: `url(${spriteUrl})`,
+          backgroundSize: `${size}px ${FOOT_SHEET_H * scale}px`,
+          backgroundPosition: `0 ${active ? -(FOOT_FRAME_H + 1) * scale : 0}px`,
+          transform: mirror ? 'scaleX(-1)' : undefined,
+        }}
+      />
+      <span className="fco-foot-icon-num">{rating}</span>
+    </span>
+  );
+}
+
+const WR_TIER = { high: 3, medium: 2, mid: 2, low: 1 };
+function WorkRateGauge({ value, color }) {
+  const tier = WR_TIER[String(value || '').toLowerCase()] || 1;
+  return (
+    <span className="fco-wr-gauge" style={{ color }}>
+      {[0, 1, 2].map(i => (
+        <I.ChevronUp key={i} size={9} style={{ opacity: i < tier ? 1 : .22 }} />
+      ))}
+    </span>
+  );
+}
+
 // ── Player row ────────────────────────────────────────────────────────────────
 function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
   if (!p || !p.name) return null; // Safety check for malformed data
+  const { getAssetUrl } = useAssets();
+  const footSpriteUrl = getAssetUrl('playerDetailAsset', 'foot') || FOOT_SPRITE_FALLBACK;
   const href = `/players/${encodeURIComponent(p.id)}`;
 
   function handleClick(e) {
@@ -522,7 +571,7 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
     <div className="fco-row">
       <a className="fco-row-link" href={href} onClick={handleClick}>
         <div className="fco-row-core">
-          <PlayerAvatar player={p} size={40} />
+          <PlayerAvatar player={p} size={52} />
 
           <div className="fco-row-player">
             <div className="fco-row-mainline">
@@ -543,14 +592,16 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
               {p.club && <span className="fco-row-club">{p.club}</span>}
             </div>
             <div className="fco-row-meta-inline">
-              <span className="fco-mini-badge wf">
-                {p.foot === 'left' ? '5' : p._raw?.enrichment?.weakFoot || '?'}/{p.foot === 'right' ? '5' : p._raw?.enrichment?.weakFoot || '?'}
+              <span className="fco-mini-badge wf" title={`Chân thuận: ${p.foot === 'left' ? 'Trái' : 'Phải'} · Chân nghịch ${p.weakFoot}/5`}>
+                <MiniFootIcon active={p.foot === 'left'} size={13} rating={p.foot === 'left' ? 5 : p.weakFoot} spriteUrl={footSpriteUrl} />
+                <MiniFootIcon active={p.foot === 'right'} mirror size={13} rating={p.foot === 'right' ? 5 : p.weakFoot} spriteUrl={footSpriteUrl} />
               </span>
-              <span className="fco-mini-badge sm">
-                {p.skillMoves}★
+              <span className="fco-mini-badge sm" title={`Kỹ năng ${p.skillMoves}/5`}>
+                <MiniStars n={p.skillMoves} />
               </span>
-              <span className="fco-mini-badge wr">
-                {p.workRateAttack}/{p.workRateDefense}
+              <span className="fco-mini-badge wr" title={`Cường độ chạy: Tấn công ${p.workRateAttack} · Phòng ngự ${p.workRateDefense}`}>
+                <WorkRateGauge value={p.workRateAttack} color="#f97066" />
+                <WorkRateGauge value={p.workRateDefense} color="#5b9df9" />
               </span>
             </div>
             <div className="fco-row-secondary">
@@ -588,8 +639,15 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
           })}
         </div>
 
-        <div className="fco-hide-sm fco-num" style={{ width: 80, textAlign: 'right', color: p.salary ? 'var(--text)' : 'var(--text-faint)' }}>
-          {p.salary ? Number(p.salary).toLocaleString('en-US') : '—'}
+        <div className="fco-hide-sm fco-row-salary" style={{ width: 80 }}>
+          {p.salary ? (
+            <span className="fco-mini-salary" title={`Lương ${Number(p.salary).toLocaleString('en-US')}`}>
+              <svg className="fco-mini-salary-hex" width="26" height="28" viewBox="0 0 17 17">
+                <path d="M8.5,16.5 L0.5,13 L0.5,4 L8.5,0.5 L16.5,4 L16.5,13 L8.5,16.5 Z" />
+              </svg>
+              <span className="fco-mini-salary-num">{Number(p.salary).toLocaleString('en-US')}</span>
+            </span>
+          ) : <span className="fco-num" style={{ color: 'var(--text-faint)' }}>—</span>}
         </div>
 
         <I.ChevronRight size={16} className="fco-row-chevron" aria-hidden="true" />

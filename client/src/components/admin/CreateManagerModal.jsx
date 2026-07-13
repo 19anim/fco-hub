@@ -10,6 +10,7 @@ const ALL_PERMISSIONS = [
   'dataOps.view', 'dataOps.run',
   'analytics.view', 'auditLog.view',
   'settings.view', 'settings.edit',
+  'squadSharing.create',
 ];
 
 export default function CreateManagerModal({ onClose, onCreated }) {

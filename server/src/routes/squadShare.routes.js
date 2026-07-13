@@ -1,10 +1,11 @@
 import express from 'express';
 import { createSquadShare, getSquadShareById, listSquadShares } from '../controllers/squadShare.controller.js';
+import { adminAuth, requirePermission } from '../middleware/adminAuth.js';
 
 const router = express.Router();
 
 // POST /api/squad-shares - Create a new squad share
-router.post('/', createSquadShare);
+router.post('/', adminAuth, requirePermission('squadSharing.create'), createSquadShare);
 
 // GET /api/squad-shares - List squad shares
 router.get('/', listSquadShares);
