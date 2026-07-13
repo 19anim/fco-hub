@@ -187,6 +187,12 @@
 .fco-relgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .fco-relcard { display: flex; align-items: center; gap: 11px; padding: 12px; background: var(--surface); border-radius: 12px; cursor: pointer; transition: all .14s; }
 .fco-relcard:hover { background: var(--surface-2); transform: translateY(-2px); }
+.fco-relmeta { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 5px; min-width: 0; }
+.fco-relmeta-row { display: flex; align-items: center; min-width: 0; }
+.fco-relmeta-row.main { gap: 6px; }
+.fco-relmeta-row.secondary { gap: 9px; min-height: 28px; }
+.fco-relmeta-row.secondary .fco-mini-foot { margin-left: -1px; }
+.fco-rel-ovr { font-family: var(--mono); font-size: 12px; font-weight: 800; line-height: 1; }
 
 /* Position detailed filter */
 .fco-pos-container { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-bottom: 8px; background: var(--surface); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
@@ -377,23 +383,3 @@
 .fco-star.on { color: #f5c84b; background: rgba(245,200,75,.14); border-color: rgba(245,200,75,.32); }
 .fco-row-club { color: var(--text-faint); margin-left: 2px; }
 
-
-/* Mini icons for related cards */
-.fco-mini-salary {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 850;
-  color: var(--text-dim);
-}
-.fco-mini-foot {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-dim);
-}
-.fco-mini-salary svg { color: var(--accent); }
