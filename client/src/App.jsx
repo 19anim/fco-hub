@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import FcoApp from './fco/FcoApp';
+import { AssetProvider } from './fco/assets/AssetProvider.jsx';
 import { AdminAuthProvider } from './contexts/AdminAuthContext';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import AdminLayout from './layouts/AdminLayout';
@@ -30,7 +31,9 @@ export default function App() {
             path="/admin"
             element={
               <AdminProtectedRoute>
-                <AdminLayout />
+                <AssetProvider>
+                  <AdminLayout />
+                </AssetProvider>
               </AdminProtectedRoute>
             }
           >

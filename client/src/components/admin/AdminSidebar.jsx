@@ -9,11 +9,11 @@ import {
   Users,
   ClipboardList,
   Settings,
-  Shield,
   LogOut,
   X,
 } from 'lucide-react';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
+import FcoBrandLogo from '../../fco/assets/FcoBrandLogo.jsx';
 
 const NAV_ITEMS = [
   { label: 'Overview', icon: LayoutDashboard, to: '/admin', end: true, permission: null },
@@ -57,12 +57,14 @@ export default function AdminSidebar({ isOpen, onClose }) {
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-hairline px-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-blue">
-              <Shield className="h-4 w-4 text-white" />
-            </div>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2.5 rounded-lg -mx-1 px-1 py-1 transition-opacity hover:opacity-80 cursor-pointer"
+          >
+            <FcoBrandLogo className="h-8 w-8 rounded-lg object-cover" />
             <span className="text-sm font-semibold text-ink">FCO Admin</span>
-          </div>
+          </button>
           <button
             onClick={onClose}
             className="rounded-lg p-1 text-ink-muted hover:bg-surface-2 hover:text-ink transition-colors lg:hidden"

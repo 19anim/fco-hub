@@ -3,8 +3,9 @@ import { useAdminAuth } from '../contexts/AdminAuthContext';
 import './fco.css';
 import { LS_KEY } from './constants.js';
 import { useMetaQuery } from './queries.js';
-import { AssetProvider, useAssets } from './assets/AssetProvider.jsx';
+import { AssetProvider } from './assets/AssetProvider.jsx';
 import FaviconAsset from './assets/FaviconAsset.jsx';
+import FcoBrandLogo, { FCO_SITE_LOGO_URL } from './assets/FcoBrandLogo.jsx';
 import DatabaseView from './views/DatabaseView.jsx';
 import EventsView from './views/EventsView.jsx';
 import UpgradeView from './views/UpgradeView.jsx';
@@ -127,20 +128,12 @@ function savePersisted(s) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch {}
 }
 
-const FCO_SITE_LOGO_URL = 'https://res.cloudinary.com/dk6nhyxaq/image/upload/v1783688033/Fco-hub/site-assets/favicon-v3.png';
-
-function FcoBrandLogo() {
-  const { loading, getAssetUrl } = useAssets();
-  const logoUrl = loading ? FCO_SITE_LOGO_URL : (getAssetUrl('siteAsset', 'favicon') || FCO_SITE_LOGO_URL);
-
-  return <img className="fco-brand-logo" src={logoUrl} alt="FCO Đá Phím" />;
-}
-
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function FcoApp() {
   const persisted = loadPersisted();
   const { user } = useAdminAuth();
   const isAdmin = !!user;
+  const canCreateSquadShare = !!user && (user.role === 'owner' || user.permissions?.includes('squadSharing.create'));
 
   const [route,      setRoute]      = useState(() => parsePath());
   const [watch,      setWatch]      = useState(persisted.watch || []);
@@ -298,11 +291,12 @@ export default function FcoApp() {
         )}
         {activeView === 'squad-sharing-list' && (
           <SquadSharingListView
+            canCreate={canCreateSquadShare}
             onSelect={(id) => navigate('squad-sharing', id)}
             onCreate={() => navigate('squad-sharing-new')}
           />
         )}
-        {activeView === 'squad-sharing-new' && (
+        {activeView === 'squad-sharing-new' && canCreateSquadShare && (
           <SquadSharingCreateView onShared={(id) => navigate('squad-sharing', id)} />
         )}
         {activeView === 'squad-sharing' && decodedParam && (
