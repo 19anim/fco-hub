@@ -3,7 +3,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { usePlayerDetailQuery } from '../queries.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
 import { statColor, cleanName, getSeason, getTrust } from '../helpers.js';
-import { PlayerAvatar, SeasonChip, TrustBadge, Button, Stars, EmptyState, PosPill } from '../ui.jsx';
+import { PlayerAvatar, SeasonChip, TrustBadge, Button, EmptyState, PosPill } from '../ui.jsx';
 import { useAssets } from '../assets/AssetProvider.jsx';
 import * as I from '../Icons.jsx';
 import { applyDetailBonuses, getDetailBonusModel } from './detailBonus.js';
@@ -761,30 +761,28 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
             <div className="fco-relgrid">
               {[...related].sort((a, b) => (b.ovr ?? 0) - (a.ovr ?? 0)).map(r => (
                 <div key={r.id} className="fco-relcard" onClick={() => onSelect(r.id)}>
-                  <PlayerAvatar player={r} size={40} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {cleanName(r.name)}
+                  <div className="fco-rel-avatar">
+                    <PlayerAvatar player={r} size={50} bare />
+                  </div>
+                  <div className="fco-rel-topline">
+                    <SeasonChip code={r.season} name={r.seasonName} img={r.seasonImg} />
+                    <div className="fco-rel-name">{cleanName(r.name)}</div>
+                    <div className="fco-rel-rating">
+                      <PosPill pos={r.primaryPos} />
+                      <span className="fco-rel-ovr" style={{ color: statColor(r.ovr) }}>{r.ovr}</span>
                     </div>
-                    <div className="fco-relmeta">
-                      <div className="fco-relmeta-row main">
-                        <SeasonChip code={r.season} name={r.seasonName} img={r.seasonImg} />
-                        <PosPill pos={r.primaryPos} />
-                        <span className="fco-rel-ovr" style={{ color: statColor(r.ovr) }}>{r.ovr}</span>
-                      </div>
-                      <div className="fco-relmeta-row secondary">
-                        {r.salary > 0 && (
-                          <span className="fco-mini-salary" title={`Lương ${r.salary}`}>
-                            <svg className="fco-mini-salary-hex" width="26" height="28" viewBox="0 0 17 17">
-                              <path d="M8.5,16.5 L0.5,13 L0.5,4 L8.5,0.5 L16.5,4 L16.5,13 L8.5,16.5 Z" />
-                            </svg>
-                            <span className="fco-mini-salary-num">{r.salary}</span>
-                          </span>
-                        )}
-                        {(r.foot || r.weakFoot > 0) && <PreferredFoot foot={r.foot} weakFoot={r.weakFoot} spriteUrl={footSpriteUrl} />}
-                        {r.skillMoves > 0 && <SkillStars n={r.skillMoves} />}
-                      </div>
-                    </div>
+                  </div>
+                  <div className="fco-rel-bottomline">
+                    {r.salary > 0 && (
+                      <span className="fco-mini-salary" title={`Lương ${r.salary}`}>
+                        <svg className="fco-mini-salary-hex" width="26" height="28" viewBox="0 0 17 17">
+                          <path d="M8.5,16.5 L0.5,13 L0.5,4 L8.5,0.5 L16.5,4 L16.5,13 L8.5,16.5 Z" />
+                        </svg>
+                        <span className="fco-mini-salary-num">{r.salary}</span>
+                      </span>
+                    )}
+                    {(r.foot || r.weakFoot > 0) && <PreferredFoot foot={r.foot} weakFoot={r.weakFoot} spriteUrl={footSpriteUrl} />}
+                    {r.skillMoves > 0 && <SkillStars n={r.skillMoves} />}
                   </div>
                 </div>
               ))}

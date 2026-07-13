@@ -184,15 +184,23 @@
 .fco-related { display: flex; flex-direction: column; gap: 12px; }
 .fco-section-title { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 14.5px; color: var(--text); }
 .fco-section-sub { font-size: 12.5px; color: var(--text-faint); font-weight: 400; }
-.fco-relgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.fco-relcard { display: flex; align-items: center; gap: 11px; padding: 12px; background: var(--surface); border-radius: 12px; cursor: pointer; transition: all .14s; }
-.fco-relcard:hover { background: var(--surface-2); transform: translateY(-2px); }
-.fco-relmeta { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 5px; min-width: 0; }
-.fco-relmeta-row { display: flex; align-items: center; min-width: 0; }
-.fco-relmeta-row.main { gap: 6px; }
-.fco-relmeta-row.secondary { gap: 9px; min-height: 28px; }
-.fco-relmeta-row.secondary .fco-mini-foot { margin-left: -1px; }
-.fco-rel-ovr { font-family: var(--mono); font-size: 12px; font-weight: 800; line-height: 1; }
+.fco-relgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.fco-relcard { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr); grid-template-rows: 22px 24px; gap: 3px 8px; align-items: center; min-height: 58px; padding: 5px 8px 5px 6px; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--surface); cursor: pointer; transition: background .14s, border-color .14s, transform .14s; }
+.fco-relcard:hover { border-color: color-mix(in srgb, var(--accent-view) 26%, var(--border-soft)); background: var(--surface-2); transform: translateY(-1px); }
+.fco-rel-avatar { grid-row: 1 / span 2; align-self: stretch; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.fco-rel-avatar > * { max-width: 46px; max-height: 50px; }
+.fco-rel-topline { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto; align-items: center; column-gap: 0; min-width: 0; }
+.fco-rel-topline .fco-season-chip { justify-self: start; min-height: 18px; height: 18px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.fco-rel-topline .fco-season-chip img { max-width: 30px; height: 18px; filter: none; }
+.fco-rel-topline .fco-season-sprite { transform: scale(.72); transform-origin: left center; filter: none; }
+.fco-rel-topline .fco-season-chip.fallback { max-width: 32px; padding: 0; overflow: hidden; font-size: 9.5px; text-overflow: ellipsis; }
+.fco-rel-name { min-width: 0; overflow: hidden; color: var(--text); font-size: 11.5px; font-weight: 750; line-height: 1.12; text-overflow: ellipsis; white-space: nowrap; }
+.fco-rel-rating { display: inline-grid; grid-template-columns: auto 22px; align-items: center; justify-content: end; gap: 3px; min-width: 46px; }
+.fco-rel-rating span:first-child { padding: 1px 4px !important; font-size: 9px !important; border-radius: 4px !important; }
+.fco-rel-bottomline { display: flex; align-items: center; gap: 5px; min-height: 24px; min-width: 0; overflow: hidden; }
+.fco-rel-bottomline .fco-mini-foot { margin-left: -1px; }
+.fco-rel-bottomline .fco-mini-stars { flex: 0 1 auto; min-width: 0; overflow: hidden; }
+.fco-rel-ovr { font-family: var(--display); font-size: 15.5px; font-weight: 850; font-style: italic; line-height: 1; text-align: right; }
 
 /* Position detailed filter */
 .fco-pos-container { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-bottom: 8px; background: var(--surface); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
