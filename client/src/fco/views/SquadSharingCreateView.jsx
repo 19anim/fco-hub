@@ -3,7 +3,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import SquadPitchEditor from '../components/SquadPitchEditor.jsx';
 import { Button } from '../ui.jsx';
 import * as I from '../Icons.jsx';
-import { DEFAULT_FORMATION_ID, loadSquad } from '../squadHelpers.js';
+import { DEFAULT_FORMATION_ID } from '../squadHelpers.js';
 import { MANAGERS, TACTICS } from '../managerTacticCatalog.js';
 import { createSquadShare } from '../api.js';
 
@@ -45,7 +45,7 @@ export default function SquadSharingCreateView({ onShared }) {
   const [tacticId, setTacticId] = useState('');
   const [description, setDescription] = useState('');
   const [pitchColor, setPitchColor] = useState('#1f8a4c');
-  const [variants, setVariants] = useState(() => [makeVariant(REQUIRED_CONDITION_TYPE, loadSquad())]);
+  const [variants, setVariants] = useState(() => [makeVariant(REQUIRED_CONDITION_TYPE, emptySquad())]);
   const [activeVariantKey, setActiveVariantKey] = useState(REQUIRED_CONDITION_TYPE);
   const [isSharing, setIsSharing] = useState(false);
   const [shareError, setShareError] = useState('');
@@ -211,6 +211,9 @@ export default function SquadSharingCreateView({ onShared }) {
         />
       </label>
 
+      <div className="fco-squad-share-variants-count">
+        Đội hình đã thêm: <strong>{variants.length}</strong>/{CONDITION_TYPES.length}
+      </div>
       <div className="fco-squad-share-variants-bar" role="group" aria-label="Tuỳ chọn đội hình theo tỷ số">
         {CONDITION_TYPES.map((condition) => {
           const variant = variants.find((v) => v.conditionType === condition.type);
@@ -227,14 +230,14 @@ export default function SquadSharingCreateView({ onShared }) {
               }}
               aria-pressed={selected}
             >
-              <span>{condition.label}</span>
-              {condition.required && <span className="fco-squad-share-variant-state-pill">Bắt buộc</span>}
-              {!condition.required && (
-                <span className={`fco-squad-share-variant-state-pill${selected ? '' : ' add'}`}>
-                  {selected ? 'Đã thêm đội hình' : '+ Thêm đội hình'}
-                </span>
+              {!condition.required && !selected && (
+                <>
+                  <I.Plus size={14} strokeWidth={2.75} className="fco-squad-share-variant-add-icon" />
+                  <span className="fco-squad-share-variant-add-text">Thêm đội hình khi</span>
+                </>
               )}
-              {active && <span className="fco-squad-share-variant-active-pill">Đang chỉnh</span>}
+              <span>{condition.label}</span>
+              {condition.required && <span className="fco-squad-share-variant-required">Bắt buộc</span>}
               {!condition.required && selected && (
                 <span
                   role="button"
@@ -250,7 +253,7 @@ export default function SquadSharingCreateView({ onShared }) {
                   }}
                   aria-label={`Bỏ chọn ${condition.label}`}
                 >
-                  <I.X size={12} />
+                  <I.X size={13} />
                 </span>
               )}
             </button>
