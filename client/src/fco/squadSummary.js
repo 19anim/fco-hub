@@ -19,12 +19,20 @@ export function getSlotTeamColorOvrBonus(slot, player, perPlayerBonuses, liveOvr
   return liveOvrBonusBySlot?.get(slot?.id) ?? localBonus;
 }
 
-export function getSlotDisplayOvr(slot, player, perPlayerBonuses, liveOvrBonusBySlot) {
-  const positionOvr = getOvrForSlotPosition(player, slot?.pos).ovr;
-  return positionOvr + getOvrIncreaseForLevel(player?.upgradeLevel) + getSlotTeamColorOvrBonus(slot, player, perPlayerBonuses, liveOvrBonusBySlot);
+export const SQUAD_LEVEL_MAX = 5;
+export const SQUAD_LEVEL_OVR_PER_STEP = 1;
+
+export function getSquadLevelOvrBonus(squadLevel) {
+  const level = Math.max(1, Math.min(SQUAD_LEVEL_MAX, Number(squadLevel) || 1));
+  return (level - 1) * SQUAD_LEVEL_OVR_PER_STEP;
 }
 
-export function getLineAverages(slots, bySlotId, perPlayerBonuses, liveOvrBonusBySlot) {
+export function getSlotDisplayOvr(slot, player, perPlayerBonuses, liveOvrBonusBySlot, squadLevelBonus = 0) {
+  const positionOvr = getOvrForSlotPosition(player, slot?.pos).ovr;
+  return positionOvr + getOvrIncreaseForLevel(player?.upgradeLevel) + getSlotTeamColorOvrBonus(slot, player, perPlayerBonuses, liveOvrBonusBySlot) + squadLevelBonus;
+}
+
+export function getLineAverages(slots, bySlotId, perPlayerBonuses, liveOvrBonusBySlot, squadLevelBonus = 0) {
   const buckets = { GK: [], DEF: [], MID: [], FWD: [] };
   const all = [];
 
@@ -32,9 +40,7 @@ export function getLineAverages(slots, bySlotId, perPlayerBonuses, liveOvrBonusB
     const player = bySlotId?.[slot.id];
     if (!player) return;
     const group = POSITIONS_META[String(slot.pos || '').toUpperCase()]?.group;
-    const baseOvr = getOvrForSlotPosition(player, slot.pos).ovr;
-    const bonus = getSlotTeamColorOvrBonus(slot, player, perPlayerBonuses, liveOvrBonusBySlot);
-    const ovr = baseOvr + bonus;
+    const ovr = getSlotDisplayOvr(slot, player, perPlayerBonuses, liveOvrBonusBySlot, squadLevelBonus);
     if (!Number.isFinite(ovr)) return;
     all.push(ovr);
     if (group && buckets[group]) buckets[group].push(ovr);

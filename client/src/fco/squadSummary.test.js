@@ -15,8 +15,8 @@ describe('getLineAverages', () => {
       liveOvrBonusBySlot
     );
 
-    expect(result.FWD).toBe(130);
-    expect(result.overall).toBe(130);
+    expect(result.FWD).toBe(136);
+    expect(result.overall).toBe(136);
   });
 
   it('matches the Kane +5 case when live grade team color adds one OVR', () => {

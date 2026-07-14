@@ -18,7 +18,7 @@ import {
   getPickerPosGroupsForSlot,
 } from '../squadHelpers.js';
 import { getOvrForSlotPosition } from '../positionOvr.js';
-import { getSlotDisplayOvr } from '../squadSummary.js';
+import { SQUAD_LEVEL_MAX, getSlotDisplayOvr } from '../squadSummary.js';
 import { getPlayerSquadBonus } from '../teamColor.js';
 import { getPlayerCardKey, normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import { MIN_UPGRADE_LEVEL } from '../upgradeConfig.js';
@@ -31,6 +31,7 @@ const FORMATION_GROUPS = [
   { label: '5 Back', prefix: '5-' },
 ];
 const EDIT_GRADE_LEVELS = Array.from({ length: 14 }, (_, index) => index);
+const SEASONS_COLLAPSED_LIMIT = 6;
 const DRAG_BOUNDS = { left: 5, right: 95, top: 10, bottom: 82 };
 
 function normalizeSquadGrade(level) {
@@ -177,9 +178,13 @@ export default function SquadPitchEditor({
   onTeamColorFocusChange = null,
   teamColorResult = null,
   pitchColor = null,
+  squadLevelMaxed = false,
+  onSquadLevelMaxedChange = null,
+  squadLevelBonus = 0,
 }) {
   const [pickerSlotId, setPickerSlotId] = useState(null);
   const [editSlotId, setEditSlotId] = useState(null);
+  const [seasonsExpanded, setSeasonsExpanded] = useState(false);
   const [movingSlotId, setMovingSlotId] = useState(null);
   const [activeSlotId, setActiveSlotId] = useState(null);
   const [dragSlotId, setDragSlotId] = useState(null);
@@ -239,6 +244,7 @@ export default function SquadPitchEditor({
     if (readOnly) return;
     setActiveSlotId(slotId);
     setEditSlotId(slotId);
+    setSeasonsExpanded(false);
   }
 
   function openReplacePicker(slotId) {
@@ -427,9 +433,20 @@ export default function SquadPitchEditor({
 
             {!readOnly && showQuickGrade && filledCount > 0 && (
               <div className="fco-squad-toolbar-group">
-                <span className="fco-squad-toolbar-label">Cấp nhanh cả đội</span>
                 <TeamGradePopover value={headTeamGrade} onChange={applyQuickLevel} />
               </div>
+            )}
+
+            {!readOnly && onSquadLevelMaxedChange && filledCount > 0 && (
+              <button
+                type="button"
+                className={`fco-squad-level-toggle${squadLevelMaxed ? ' is-on' : ''}`}
+                onClick={() => onSquadLevelMaxedChange(!squadLevelMaxed)}
+                aria-pressed={squadLevelMaxed}
+              >
+                <span className="fco-squad-level-toggle-label">Lv{squadLevelMaxed ? SQUAD_LEVEL_MAX : 1}</span>
+                <span className="fco-squad-level-toggle-track"><span className="fco-squad-level-toggle-thumb" /></span>
+              </button>
             )}
 
             {!readOnly && filledCount > 0 && (
@@ -490,7 +507,7 @@ export default function SquadPitchEditor({
             const player = bySlotId[slot.id];
             const bonus = getPlayerSquadBonus(perPlayerBonus, player);
             const positionOvr = getOvrForSlotPosition(player, slot.pos);
-            const boostedOvr = getSlotDisplayOvr(slot, player, perPlayerBonus, ovrBonusBySlot);
+            const boostedOvr = getSlotDisplayOvr(slot, player, perPlayerBonus, ovrBonusBySlot, squadLevelBonus);
             const isMovingSource = movingSlotId === slot.id;
             const isMoveTarget = movingSlotId && movingSlotId !== slot.id;
             const isDropTarget = dragSlotId && dragSlotId !== slot.id;
@@ -603,7 +620,7 @@ export default function SquadPitchEditor({
                   </button>
                 );
               }
-              const boostedOvr = getSlotDisplayOvr(slot, player, perPlayerBonus, ovrBonusBySlot);
+              const boostedOvr = getSlotDisplayOvr(slot, player, perPlayerBonus, ovrBonusBySlot, squadLevelBonus);
               if (readOnly) {
                 return (
                   <div key={slot.id} className="fco-squad-rail-roster-row">
@@ -712,20 +729,42 @@ export default function SquadPitchEditor({
                   {editPlayerSeasonsLoading ? (
                     <div className="player-edit-seasons-loading"><I.Spinner size={16} className="fco-spin" /></div>
                   ) : (
-                    <div className="player-edit-seasons-grid">
-                      {[...editPlayerSeasons].sort((a, b) => (b.ovr ?? 0) - (a.ovr ?? 0)).map((seasonPlayer) => (
-                        <button
-                          key={seasonPlayer.id}
-                          type="button"
-                          className="player-edit-season-btn"
-                          onClick={() => switchPlayerSeason(editSlotId, seasonPlayer)}
-                          aria-label={`Đổi sang mùa thẻ ${seasonPlayer.seasonName || seasonPlayer.season}`}
-                        >
-                          <SeasonChip code={seasonPlayer.season} name={seasonPlayer.seasonName} img={seasonPlayer.seasonImg} />
-                          <span className="player-edit-season-ovr">{seasonPlayer.ovr}</span>
-                        </button>
-                      ))}
-                    </div>
+                    (() => {
+                      const sortedSeasons = [...editPlayerSeasons].sort((a, b) => (b.ovr ?? 0) - (a.ovr ?? 0));
+                      const hasOverflow = sortedSeasons.length > SEASONS_COLLAPSED_LIMIT;
+                      const visibleSeasons = seasonsExpanded ? sortedSeasons : sortedSeasons.slice(0, SEASONS_COLLAPSED_LIMIT);
+                      return (
+                        <>
+                          <div className="player-edit-seasons-grid">
+                            {visibleSeasons.map((seasonPlayer) => (
+                              <button
+                                key={seasonPlayer.id}
+                                type="button"
+                                className="player-edit-season-btn"
+                                onClick={() => switchPlayerSeason(editSlotId, seasonPlayer)}
+                                aria-label={`Đổi sang mùa thẻ ${seasonPlayer.seasonName || seasonPlayer.season}`}
+                              >
+                                <SeasonChip code={seasonPlayer.season} name={seasonPlayer.seasonName} img={seasonPlayer.seasonImg} />
+                                <span className="player-edit-season-ovr">{seasonPlayer.ovr}</span>
+                              </button>
+                            ))}
+                          </div>
+                          {hasOverflow && (
+                            <button
+                              type="button"
+                              className="player-edit-seasons-toggle"
+                              onClick={() => setSeasonsExpanded((v) => !v)}
+                            >
+                              {seasonsExpanded ? (
+                                <>Thu gọn <I.ChevronUp size={14} /></>
+                              ) : (
+                                <>Xem thêm {sortedSeasons.length - SEASONS_COLLAPSED_LIMIT} mùa thẻ <I.ChevronDown size={14} /></>
+                              )}
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()
                   )}
                 </div>
               )}

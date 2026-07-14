@@ -9,7 +9,7 @@ import {
 } from '../squadHelpers.js';
 import { buildTeamColorPayload, getLiveTeamColorOvrBonusBySlot, getTeamColorPayloadHash, evaluateTeamColorLive } from '../teamColorLive.js';
 import { TeamColorStrip } from '../components/TeamColorStrip.jsx';
-import { DEFAULT_SALARY_CAP, MAX_SALARY_CAP, getLineAverages, getSquadSalaryTotal } from '../squadSummary.js';
+import { DEFAULT_SALARY_CAP, MAX_SALARY_CAP, SQUAD_LEVEL_MAX, getLineAverages, getSquadLevelOvrBonus, getSquadSalaryTotal } from '../squadSummary.js';
 import { computeSquadBonuses } from '../teamColor.js';
 import { MIN_UPGRADE_LEVEL } from '../upgradeConfig.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot.jsx';
@@ -25,6 +25,8 @@ export default function SquadView() {
   const [isEditingSalaryCap, setIsEditingSalaryCap] = useState(false);
   const [teamGrade, setTeamGrade] = useState(MIN_UPGRADE_LEVEL);
   const [activeTeamColorFocus, setActiveTeamColorFocus] = useState(null);
+  const [squadLevelMaxed, setSquadLevelMaxed] = useState(false);
+  const squadLevelBonus = useMemo(() => (squadLevelMaxed ? getSquadLevelOvrBonus(SQUAD_LEVEL_MAX) : 0), [squadLevelMaxed]);
 
   const { bySlotId } = squad;
   const slots = useMemo(() => getActiveSquadSlots(squad), [squad]);
@@ -37,7 +39,7 @@ export default function SquadView() {
   const [liveTeamColorError, setLiveTeamColorError] = useState(false);
   const lastPayloadHashRef = useRef('');
   const liveOvrBonusBySlot = useMemo(() => getLiveTeamColorOvrBonusBySlot(liveTeamColor), [liveTeamColor]);
-  const lineAverages = useMemo(() => getLineAverages(slots, bySlotId, squadBonuses.perPlayer, liveOvrBonusBySlot), [slots, bySlotId, squadBonuses.perPlayer, liveOvrBonusBySlot]);
+  const lineAverages = useMemo(() => getLineAverages(slots, bySlotId, squadBonuses.perPlayer, liveOvrBonusBySlot, squadLevelBonus), [slots, bySlotId, squadBonuses.perPlayer, liveOvrBonusBySlot, squadLevelBonus]);
   const salaryProgress = salaryCap > 0 ? Math.min(100, (salaryTotal / salaryCap) * 100) : 100;
   const isOverSalaryCap = salaryTotal > salaryCap;
 
@@ -185,6 +187,9 @@ export default function SquadView() {
         activeTeamColorFocus={activeTeamColorFocus}
         onTeamColorFocusChange={setActiveTeamColorFocus}
         teamColorResult={liveTeamColor}
+        squadLevelMaxed={squadLevelMaxed}
+        onSquadLevelMaxedChange={setSquadLevelMaxed}
+        squadLevelBonus={squadLevelBonus}
         railTop={<MonetizationSlot placement="squad_top" limit={1} className="fco-squad-rail-ad" />}
         railBottom={<MonetizationSlot placement="squad_bottom" limit={1} className="fco-squad-rail-ad" />}
       />

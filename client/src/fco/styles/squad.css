@@ -2,8 +2,14 @@
 .fco-squad-controls-bar { display: flex; flex-direction: column; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); }
 .fco-squad-controls-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 .fco-squad-toolbar-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.fco-squad-toolbar-label { font-size: 11px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; }
 .fco-squad-formation-select-wrap { display: inline-flex; align-items: center; gap: 8px; }
+.fco-squad-level-toggle { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; cursor: pointer; flex-shrink: 0; }
+.fco-squad-level-toggle-label { font-family: var(--mono); font-size: 13.5px; font-weight: 800; color: var(--text-dim); min-width: 24px; }
+.fco-squad-level-toggle.is-on .fco-squad-level-toggle-label { color: var(--accent-view); }
+.fco-squad-level-toggle-track { position: relative; width: 38px; height: 20px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--border); transition: background .14s; }
+.fco-squad-level-toggle.is-on .fco-squad-level-toggle-track { background: color-mix(in srgb, var(--accent-view) 55%, var(--surface)); }
+.fco-squad-level-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text-dim); transition: transform .14s, background .14s; }
+.fco-squad-level-toggle.is-on .fco-squad-level-toggle-thumb { transform: translateX(18px); background: var(--accent-view); }
 .fco-team-grade-trigger { position: relative; display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px 3px 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); cursor: pointer; transition: border-color .14s, background .14s, transform .14s; flex-shrink: 0; }
 .fco-team-grade-trigger:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
 .fco-team-grade-trigger.is-minimal { padding: 0; border: 0; border-radius: 4px; background: transparent; }
@@ -337,6 +343,8 @@
   flex-direction: column;
   gap: 14px;
   padding: 14px 16px 16px;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .player-edit-current {
@@ -460,6 +468,31 @@
   font-weight: 700;
   color: var(--text-faint);
   letter-spacing: .04em;
+}
+
+.player-edit-seasons-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  align-self: center;
+  margin-top: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color .14s ease, border-color .14s ease, background .14s ease;
+}
+
+.player-edit-seasons-toggle:hover,
+.player-edit-seasons-toggle:focus-visible {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border-soft));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .fco-player-card-mini-wrap {
