@@ -81,6 +81,7 @@
 .fco-squad-rail-ad { min-height: 0; }
 .fco-squad-rail-ad:empty { display: none; }
 .fco-squad-rail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.fco-squad-rail-tactics { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
 .fco-squad-rail-roster { display: flex; flex-direction: column; }
 .fco-squad-rail-roster-head {
   display: grid; grid-template-columns: 34px minmax(0, 1fr) 46px 32px 40px; align-items: center; gap: 6px;
@@ -292,6 +293,38 @@
   transition: transform .14s ease, filter .18s ease, opacity .18s ease;
 }
 .fco-squad-card:active { cursor: grabbing; }
+.fco-squad-card-settings {
+  position: absolute;
+  left: -10px;
+  top: -10px;
+  z-index: 6;
+  width: 24px;
+  height: 24px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, #fff 16%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(2px) scale(.92);
+  pointer-events: none;
+  box-shadow: 0 5px 14px rgba(0,0,0,.24);
+  transition: opacity .14s ease, transform .14s ease, border-color .14s ease, background .14s ease;
+}
+.fco-squad-card:hover .fco-squad-card-settings {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.fco-squad-card-settings:hover,
+.fco-squad-card-settings:focus-visible {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  outline: none;
+}
 .fco-squad-card.moving,
 .fco-squad-card.move-target { transform: translateY(-2px); filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 36%, transparent)); }
 .fco-squad-card.move-target { animation: fco-squad-float 1.1s ease-in-out infinite; }
@@ -1522,6 +1555,264 @@ span.card-bg-img.fc-bg::after {
 .fco-squad-share-link-input {
   flex: 1; min-width: 220px; height: 38px; border-radius: 8px; border: 1px solid var(--border);
   background: var(--surface); color: var(--text); padding: 0 12px; font-family: var(--mono); font-size: 12.5px;
+}
+
+/* ── Tactic instructions panel (player edit modal) ─────────────────────────── */
+.fco-tactic-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fco-tactic-row {
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+  overflow: hidden;
+  background: rgba(255,255,255,.02);
+}
+
+.fco-tactic-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.fco-tactic-row-head:hover { background: rgba(255,255,255,.03); }
+
+.fco-tactic-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  padding: 3px 4px;
+  border-radius: 6px;
+  line-height: 1.15;
+}
+
+.fco-tactic-chip-code {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,.35);
+}
+
+.fco-tactic-chip-name {
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.fco-tactic-current {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.fco-tactic-current-code {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.fco-tactic-current-name {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fco-tactic-options {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-soft);
+}
+
+.fco-tactic-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-top: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+.fco-tactic-option-btn:first-child { border-top: 0; }
+
+.fco-tactic-option-btn:hover { background: rgba(255,255,255,.03); }
+
+.fco-tactic-option-btn.active { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+.fco-tactic-option-code {
+  flex-shrink: 0;
+  width: 34px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.fco-tactic-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fco-tactic-option-name { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.fco-tactic-option-desc { font-size: 11px; color: var(--text-faint); line-height: 1.35; }
+
+/* ── Tactic summary box + tendency badges on player card ─────────────────────── */
+.fc-tactic-box {
+  position: absolute;
+  left: 50%;
+  top: -38px;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  gap: 3px;
+  border-radius: 4px;
+  padding: 2px;
+  white-space: nowrap;
+}
+
+.fc-tactic-box-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--fco-tactic-entry-color, #444);
+}
+
+.fc-tactic-box-entry b {
+  font-size: 9.5px;
+  font-weight: 900;
+  color: rgba(255,255,255,.7);
+}
+
+.fc-tendency-house {
+  position: absolute;
+  top: 30px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,.4);
+  box-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+.fc-tendency-house--red {
+  left: -26px;
+  background: #e03b3b;
+  clip-path: polygon(50% 0%, 100% 38%, 100% 100%, 0% 100%, 0% 38%);
+}
+
+.fc-tendency-house--blue {
+  right: -26px;
+  background: #2f6fe0;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 62%, 50% 100%, 0% 62%);
+}
+
+/* ── Tendency selector panel (player edit modal) ──────────────────────────────── */
+.fco-tendency-panel {
+  display: flex;
+  gap: 18px;
+}
+
+.fco-tendency-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fco-tendency-group-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.fco-tendency-house-row {
+  display: flex;
+  gap: 6px;
+}
+
+button.fco-tendency-house {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.fco-tendency-house-shape {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(50% 0%, 100% 38%, 100% 100%, 0% 100%, 0% 38%);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,.4);
+}
+
+button.fco-tendency-house--red .fco-tendency-house-shape { background: rgba(224,59,59,.35); }
+button.fco-tendency-house--blue .fco-tendency-house-shape {
+  background: rgba(47,111,224,.35);
+  clip-path: polygon(0% 0%, 100% 0%, 100% 62%, 50% 100%, 0% 62%);
+}
+
+button.fco-tendency-house--red.active .fco-tendency-house-shape { background: #e03b3b; }
+button.fco-tendency-house--blue.active .fco-tendency-house-shape { background: #2f6fe0; }
+
+button.fco-tendency-house:hover { transform: translateY(-1px); }
+
+button.fco-tendency-house.active {
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .fco-squad-share-loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; color: var(--text-faint); }

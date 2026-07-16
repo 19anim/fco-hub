@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import SquadPitchEditor from '../components/SquadPitchEditor.jsx';
-import { fetchSquadShare } from '../api.js';
+import { deleteSquadShare, fetchSquadShare } from '../api.js';
 import * as I from '../Icons.jsx';
+import { Button } from '../ui.jsx';
 
 const MODE_LABELS = { da_tay: 'Đá Tay', glxh: 'GLXH' };
 
@@ -13,11 +14,21 @@ function conditionDisplayLabel(variant) {
   return variant.conditionLabel || 'Mặc định - Hòa';
 }
 
-export default function SquadSharingView({ id, onBack }) {
+export default function SquadSharingView({
+  id,
+  onBack,
+  canEdit = false,
+  canDelete = false,
+  onEdit,
+  onDeleted,
+  showToast,
+}) {
   const [share, setShare] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [activeVariantKey, setActiveVariantKey] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useDocumentMeta({
     title: share?.label ? `Đội hình · ${share.label}` : 'Đội hình chia sẻ',
@@ -30,6 +41,7 @@ export default function SquadSharingView({ id, onBack }) {
     let cancelled = false;
     setLoading(true);
     setError(false);
+    setDeleteError('');
     fetchSquadShare(id)
       .then((data) => {
         if (cancelled) return;
@@ -40,6 +52,26 @@ export default function SquadSharingView({ id, onBack }) {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [id]);
+
+  async function handleDelete() {
+    if (!canDelete || deleting) return;
+    if (!window.confirm('Xoá đội hình chia sẻ này? Hành động này không thể hoàn tác.')) return;
+
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await deleteSquadShare(id);
+      onDeleted?.();
+    } catch (err) {
+      const message = err.response?.status === 403
+        ? 'Bạn không có quyền xoá đội hình này.'
+        : 'Không thể xoá đội hình. Vui lòng thử lại.';
+      setDeleteError(message);
+      showToast?.(message, 'error');
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -80,7 +112,23 @@ export default function SquadSharingView({ id, onBack }) {
             {share.tacticName ? ` · ${share.tacticName}` : ''}
           </p>
         </div>
+        {(canEdit || canDelete) && (
+          <div className="fco-squad-share-cta-wrap">
+            {canEdit && (
+              <Button variant="ghost" onClick={onEdit}>
+                Chỉnh sửa
+              </Button>
+            )}
+            {canDelete && (
+              <Button variant="ghost" danger disabled={deleting} onClick={handleDelete}>
+                {deleting ? 'Đang xoá...' : 'Xoá'}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
+
+      {deleteError && <div className="fco-squad-share-error">{deleteError}</div>}
 
       {share.description && (
         <p className="fco-squad-share-description">{share.description}</p>

@@ -4,6 +4,7 @@ import { useAssets } from '../assets/AssetProvider.jsx';
 import { normalizeUpgradeLevel } from '../upgradeHelpers.js';
 import LevelBadge from './LevelBadge.jsx';
 import { getClubCrest, getLeagueLogo, getNationFlag } from '../flagAssets.js';
+import { getTacticSummary, getTendencyBadges } from '../tacticInstructions.js';
 
 function getPlayerImage(player) {
   return player?.imageUrl || player?.avatar || '';
@@ -41,6 +42,8 @@ export function FcoPlayerCard({
   const playerName = cleanName(player?.name);
   const playerImage = getPlayerImage(player);
   const flagItems = getFlagItems(player, flags);
+  const tacticSummary = player?.instructions ? getTacticSummary(displayedPos, player.instructions) : [];
+  const tendencyBadges = player ? getTendencyBadges(player.tendency) : { red: null, blue: null };
   const Root = onClick ? 'button' : 'div';
 
   return (
@@ -69,6 +72,28 @@ export function FcoPlayerCard({
 
       <span className="card-ovr fc-ovr">{displayedOvr}</span>
       <span className="card-pos-label fc-pos">{displayedPos}</span>
+
+      {tacticSummary.length > 0 && (
+        <span className="fc-tactic-box" aria-hidden="true">
+          {tacticSummary.map((entry) => (
+            <span
+              key={entry.categoryCode}
+              className="fc-tactic-box-entry"
+              style={{ '--fco-tactic-entry-color': entry.colorHex }}
+            >
+              {entry.categoryCode}
+              <b>{entry.level}</b>
+            </span>
+          ))}
+        </span>
+      )}
+
+      {tendencyBadges.red && (
+        <span className="fc-tendency-house fc-tendency-house--red" aria-hidden="true">{tendencyBadges.red}</span>
+      )}
+      {tendencyBadges.blue && (
+        <span className="fc-tendency-house fc-tendency-house--blue" aria-hidden="true">{tendencyBadges.blue}</span>
+      )}
       <span
         className={`fc-salary${displayedSalary ? '' : ' is-empty'}`}
         aria-label={displayedSalary ? `Salary ${displayedSalary}` : undefined}

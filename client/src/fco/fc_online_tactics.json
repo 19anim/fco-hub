@@ -1,0 +1,1109 @@
+{
+  "positions": {
+    "ST-LS-RS-CF-LF-RF": {
+      "position_codes": [
+        "ST",
+        "LS",
+        "RS",
+        "CF",
+        "LF",
+        "RF"
+      ],
+      "categories": [
+        {
+          "category_code": "AR",
+          "category_name": "Tấn công",
+          "category_name_en": "Attacking Role",
+          "options": [
+            {
+              "option_code": "AR",
+              "is_default": true,
+              "name": "Tấn công trung bình",
+              "description": "Tham gia vào tấn công khi cầu thủ có cơ hội (mặc định)",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AR 1",
+              "is_default": false,
+              "name": "Xẻ nách",
+              "description": "Xâm nhập bất ngờ từ sau lưng hàng hậu vệ",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AR 2",
+              "is_default": false,
+              "name": "Tiền đạo mục tiêu",
+              "description": "Tập trung các đợt tấn công và sẵn sàng nhận bóng",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AR 3",
+              "is_default": false,
+              "name": "Một cuộc tấn công giả",
+              "description": "Lùi về tuyến 2 và hỗ trợ xây dựng lối chơi",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            }
+          ]
+        },
+        {
+          "category_code": "DP",
+          "category_name": "Pressing",
+          "category_name_en": "Defensive Positioning",
+          "options": [
+            {
+              "option_code": "DP",
+              "is_default": true,
+              "name": "Hỗ trợ phòng thủ cơ bản",
+              "description": "Không dâng cao để hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DP 1",
+              "is_default": false,
+              "name": "Luôn hỗ trợ phòng thủ",
+              "description": "Luôn hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DP 2",
+              "is_default": false,
+              "name": "Luôn ở trên",
+              "description": "Không lùi về hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            }
+          ]
+        },
+        {
+          "category_code": "IN",
+          "category_name": "Chặn",
+          "category_name_en": "Interception",
+          "options": [
+            {
+              "option_code": "IN",
+              "is_default": true,
+              "name": "Đánh chặn thông thường",
+              "description": "Bám sát và chờ cướp bóng đúng lúc thích hợp",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 1",
+              "is_default": false,
+              "name": "Đánh chặn chủ động",
+              "description": "Chủ động ngăn chặn các pha chuyền bóng",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 2",
+              "is_default": false,
+              "name": "Đánh chặn bị động",
+              "description": "Hạn chế đánh chặn, chỉ chặn khi biết có thể cắt thành công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "SR",
+          "category_name": "Hỗ trợ di chuyển",
+          "category_name_en": "Support Runs",
+          "options": [
+            {
+              "option_code": "SR",
+              "is_default": true,
+              "name": "Hỗ trợ xâm nhập cân bằng",
+              "description": "Tìm khoảng trống hay xâm nhập vào hàng phòng ngự đối phương",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 1",
+              "is_default": false,
+              "name": "Chạy chỗ",
+              "description": "Di chuyển không bóng để tìm khoảng trống",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 2",
+              "is_default": false,
+              "name": "Khu vực trung tâm",
+              "description": "Xác định khu vực trung tâm",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            }
+          ]
+        }
+      ]
+    },
+    "LW-RW": {
+      "position_codes": [
+        "LW",
+        "RW"
+      ],
+      "categories": [
+        {
+          "category_code": "CC",
+          "category_name": "Tạo ra cơ hội",
+          "category_name_en": "Chance Creation",
+          "options": [
+            {
+              "option_code": "CC",
+              "is_default": true,
+              "name": "Cơ hội tạo ra như nhau",
+              "description": "Tùy vào tình hình, bạn có thể di chuyển tự do (text partially cropped in source image)",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "CC 1",
+              "is_default": false,
+              "name": "Đột phá",
+              "description": "Xuyên phá hàng phòng ngự đối thủ",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "CC 2",
+              "is_default": false,
+              "name": "Bám biên",
+              "description": "Luôn di chuyển dọc hành lang cánh",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "CC 3",
+              "is_default": false,
+              "name": "Vai trò tự do",
+              "description": "Có quyền tự do xung quanh khu vực tấn công (text partially cropped in source image)",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            }
+          ]
+        },
+        {
+          "category_code": "DS",
+          "category_name": "Hỗ trợ thủ",
+          "category_name_en": "Defensive Support",
+          "options": [
+            {
+              "option_code": "DS",
+              "is_default": true,
+              "name": "Hỗ trợ phòng thủ cơ bản",
+              "description": "Không dâng cao để hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DS 1",
+              "is_default": false,
+              "name": "Luôn hỗ trợ phòng ngự",
+              "description": "Luôn hỗ trợ phòng ngự",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DS 2",
+              "is_default": false,
+              "name": "Đợi ở phía trên",
+              "description": "Không lùi về hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            }
+          ]
+        },
+        {
+          "category_code": "IN",
+          "category_name": "Chặn",
+          "category_name_en": "Interception",
+          "options": [
+            {
+              "option_code": "IN",
+              "is_default": true,
+              "name": "Đánh chặn thông thường",
+              "description": "Bám sát và chờ cướp bóng đúng lúc thích hợp",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 1",
+              "is_default": false,
+              "name": "Đánh chặn chủ động",
+              "description": "Chủ động ngăn chặn các pha chuyền bóng",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 2",
+              "is_default": false,
+              "name": "Đánh chặn bị động",
+              "description": "Hạn chế đánh chặn, chỉ chặn khi biết có thể cắt thành công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "SC",
+          "category_name": "Hỗ trợ tạt bóng",
+          "category_name_en": "Support Crossing",
+          "options": [
+            {
+              "option_code": "SC",
+              "is_default": true,
+              "name": "Hỗ trợ tạt bóng cân bằng",
+              "description": "Xâm nhập vòng cấm hoặc bám biên",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SC 1",
+              "is_default": false,
+              "name": "Xâm nhập vòng cấm",
+              "description": "Xâm nhập vào vòng cấm khi có cơ hội tạt bóng",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SC 2",
+              "is_default": false,
+              "name": "Chờ ở cánh",
+              "description": "Chờ ở cánh khi tạt",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            }
+          ]
+        },
+        {
+          "category_code": "SR",
+          "category_name": "Hỗ trợ di chuyển",
+          "category_name_en": "Support Runs",
+          "options": [
+            {
+              "option_code": "SR",
+              "is_default": true,
+              "name": "Hỗ trợ xâm nhập TB",
+              "description": "Tùy vào tình huống, CT sẽ xâm nhập hoặc ở lại (text partially cropped in source image)",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 1",
+              "is_default": false,
+              "name": "Chọc khe",
+              "description": "Di chuyển từ phía sau lưng hàng phòng ngự (text partially cropped in source image)",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 2",
+              "is_default": false,
+              "name": "Hỗ trợ đồng đội",
+              "description": "Di chuyển cạnh đồng đội và gọi bóng",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 3",
+              "is_default": false,
+              "name": "Tiền đạo mục tiêu",
+              "description": "Đứng trong vòng cấm và yêu cầu chuyền bóng (text partially cropped in source image)",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            }
+          ]
+        }
+      ]
+    },
+    "CAM-LAM-RAM": {
+      "position_codes": [
+        "CAM",
+        "LAM",
+        "RAM"
+      ],
+      "categories": [
+        {
+          "category_code": "DS",
+          "category_name": "Hỗ trợ thủ",
+          "category_name_en": "Defensive Support",
+          "options": [
+            {
+              "option_code": "DS",
+              "is_default": true,
+              "name": "Hỗ trợ phòng thủ cơ bản",
+              "description": "Không dâng cao để hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DS 1",
+              "is_default": false,
+              "name": "Luôn hỗ trợ phòng ngự",
+              "description": "Luôn hỗ trợ phòng ngự",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DS 2",
+              "is_default": false,
+              "name": "Đợi ở phía trên",
+              "description": "Không lùi về hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            }
+          ]
+        },
+        {
+          "category_code": "IN",
+          "category_name": "Chặn",
+          "category_name_en": "Interception",
+          "options": [
+            {
+              "option_code": "IN",
+              "is_default": true,
+              "name": "Đánh chặn thông thường",
+              "description": "Bám sát và chờ cướp bóng đúng lúc thích hợp",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 1",
+              "is_default": false,
+              "name": "Đánh chặn chủ động",
+              "description": "Chủ động ngăn chặn các pha chuyền bóng",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 2",
+              "is_default": false,
+              "name": "Đánh chặn bị động",
+              "description": "Hạn chế đánh chặn, chỉ chặn khi biết có thể cắt thành công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "PF",
+          "category_name": "Tự do di chuyển",
+          "category_name_en": "Positional Freedom",
+          "options": [
+            {
+              "option_code": "PF",
+              "is_default": true,
+              "name": "Duy trì vị trí",
+              "description": "Tuân theo vị trí thi đấu khi tham gia tấn công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "PF 1",
+              "is_default": false,
+              "name": "Cầu thủ tự do",
+              "description": "Được phép di chuyển tự do khi tấn công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "PF 2",
+              "is_default": false,
+              "name": "Di chuyển rộng",
+              "description": "Xâm nhập vào khoảng trống giữa các hậu vệ",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "SC",
+          "category_name": "Hỗ trợ tạt bóng",
+          "category_name_en": "Support Crossing",
+          "options": [
+            {
+              "option_code": "SC",
+              "is_default": true,
+              "name": "Hỗ trợ tạt bóng cân bằng",
+              "description": "Xâm nhập vòng cấm hoặc bám biên",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SC 1",
+              "is_default": false,
+              "name": "Xâm nhập vòng cấm",
+              "description": "Xâm nhập vào vòng cấm khi có cơ hội tạt bóng",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SC 2",
+              "is_default": false,
+              "name": "Chờ ở cánh",
+              "description": "Chờ ở cánh khi tạt",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            }
+          ]
+        }
+      ]
+    },
+    "CM-LCM-RCM": {
+      "position_codes": [
+        "CM",
+        "LCM",
+        "RCM"
+      ],
+      "categories": [
+        {
+          "category_code": "AS",
+          "category_name": "Hỗ trợ tấn công",
+          "category_name_en": "Attacking Support",
+          "options": [
+            {
+              "option_code": "AS",
+              "is_default": true,
+              "name": "Tấn công cân bằng",
+              "description": "Tham gia tấn công ngay khi có cơ hội",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AS 1",
+              "is_default": false,
+              "name": "Giữ vị trí",
+              "description": "Không dâng cao hỗ trợ tấn công",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AS 2",
+              "is_default": false,
+              "name": "Tham gia tấn công",
+              "description": "Tham gia tấn công và sẵn sàng xâm nhập vòng cấm",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AS 3",
+              "is_default": false,
+              "name": "Vị trí giữa các hậu vệ",
+              "description": "Cầu thủ duy trì đội hình giữa các hậu vệ.",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            }
+          ]
+        },
+        {
+          "category_code": "DP",
+          "category_name": "Pressing",
+          "category_name_en": "Defensive Positioning",
+          "options": [
+            {
+              "option_code": "DP",
+              "is_default": true,
+              "name": "Phòng thủ ở biên",
+              "description": "Chủ động đội hình dâng cao, hãy bọc lót khoảng trống (text partially cropped in source image)",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DP 1",
+              "is_default": false,
+              "name": "Tập trung ở trung lộ",
+              "description": "Luôn cố gắng đánh chặn ở trung lộ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            }
+          ]
+        },
+        {
+          "category_code": "IN",
+          "category_name": "Chặn",
+          "category_name_en": "Interception",
+          "options": [
+            {
+              "option_code": "IN",
+              "is_default": true,
+              "name": "Đánh chặn thông thường",
+              "description": "Bám sát và chờ cướp bóng đúng lúc thích hợp",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 1",
+              "is_default": false,
+              "name": "Đánh chặn chủ động",
+              "description": "Chủ động ngăn chặn các pha chuyền bóng",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 2",
+              "is_default": false,
+              "name": "Đánh chặn bị động",
+              "description": "Hạn chế đánh chặn, chỉ chặn khi biết có thể cắt thành công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "PF",
+          "category_name": "Tự do di chuyển",
+          "category_name_en": "Positional Freedom",
+          "options": [
+            {
+              "option_code": "PF",
+              "is_default": true,
+              "name": "Duy trì vị trí",
+              "description": "Tuân theo vị trí thi đấu khi tham gia tấn công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "PF 1",
+              "is_default": false,
+              "name": "Cầu thủ tự do",
+              "description": "Được phép di chuyển tự do khi tấn công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "SC",
+          "category_name": "Hỗ trợ tạt bóng",
+          "category_name_en": "Support Crossing",
+          "options": [
+            {
+              "option_code": "SC",
+              "is_default": true,
+              "name": "Hỗ trợ tạt bóng cân bằng",
+              "description": "Xâm nhập vòng cấm hoặc bám biên",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SC 1",
+              "is_default": false,
+              "name": "Xâm nhập vòng cấm",
+              "description": "Xâm nhập vào vòng cấm khi có cơ hội tạt bóng",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SC 2",
+              "is_default": false,
+              "name": "Chờ ở cánh",
+              "description": "Chờ ở cánh khi tạt",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            }
+          ]
+        }
+      ]
+    },
+    "LM-RM": {
+      "position_codes": [
+        "LM",
+        "RM"
+      ],
+      "categories": [
+        {
+          "category_code": "CC",
+          "category_name": "Tạo ra cơ hội",
+          "category_name_en": "Chance Creation",
+          "options": [
+            {
+              "option_code": "CC",
+              "is_default": true,
+              "name": "Cơ hội tạo ra như nhau",
+              "description": "Tùy vào tình hình, bạn có thể di chuyển tự do (text partially cropped in source image)",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "CC 1",
+              "is_default": false,
+              "name": "Đột phá",
+              "description": "Xuyên phá hàng phòng ngự đối thủ",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "CC 2",
+              "is_default": false,
+              "name": "Bám biên",
+              "description": "Luôn di chuyển dọc hành lang cánh",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            }
+          ]
+        },
+        {
+          "category_code": "DS",
+          "category_name": "Hỗ trợ thủ",
+          "category_name_en": "Defensive Support",
+          "options": [
+            {
+              "option_code": "DS",
+              "is_default": true,
+              "name": "Hỗ trợ phòng thủ cơ bản",
+              "description": "Không dâng cao để hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DS 1",
+              "is_default": false,
+              "name": "Luôn hỗ trợ phòng ngự",
+              "description": "Luôn hỗ trợ phòng ngự",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DS 2",
+              "is_default": false,
+              "name": "Đợi ở phía trên",
+              "description": "Không lùi về hỗ trợ phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            }
+          ]
+        },
+        {
+          "category_code": "IN",
+          "category_name": "Chặn",
+          "category_name_en": "Interception",
+          "options": [
+            {
+              "option_code": "IN",
+              "is_default": true,
+              "name": "Đánh chặn thông thường",
+              "description": "Bám sát và chờ cướp bóng đúng lúc thích hợp",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 1",
+              "is_default": false,
+              "name": "Đánh chặn chủ động",
+              "description": "Chủ động ngăn chặn các pha chuyền bóng",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 2",
+              "is_default": false,
+              "name": "Đánh chặn bị động",
+              "description": "Hạn chế đánh chặn, chỉ chặn khi biết có thể cắt thành công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "PF",
+          "category_name": "Tự do di chuyển",
+          "category_name_en": "Positional Freedom",
+          "options": [
+            {
+              "option_code": "PF",
+              "is_default": true,
+              "name": "Duy trì vị trí",
+              "description": "Tuân theo vị trí thi đấu khi tham gia tấn công (text partially cropped in source image)",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "PF 1",
+              "is_default": false,
+              "name": "Cầu thủ tự do",
+              "description": "Được phép di chuyển tự do khi tấn công (text partially cropped in source image)",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "SC",
+          "category_name": "Hỗ trợ tạt bóng",
+          "category_name_en": "Support Crossing",
+          "options": [
+            {
+              "option_code": "SC",
+              "is_default": true,
+              "name": "Hỗ trợ tạt bóng cân bằng",
+              "description": "Xâm nhập vòng cấm hoặc bám biên",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SC 1",
+              "is_default": false,
+              "name": "Xâm nhập vòng cấm",
+              "description": "Xâm nhập vào vòng cấm khi có cơ hội tạt bóng",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SC 2",
+              "is_default": false,
+              "name": "Chờ ở cánh",
+              "description": "Chờ ở cánh khi tạt",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            }
+          ]
+        },
+        {
+          "category_code": "SR",
+          "category_name": "Hỗ trợ di chuyển",
+          "category_name_en": "Support Runs",
+          "options": [
+            {
+              "option_code": "SR",
+              "is_default": true,
+              "name": "Hỗ trợ xâm nhập TB",
+              "description": "Tùy vào tình huống, CT sẽ xâm nhập hoặc ở lại (text partially cropped in source image)",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 1",
+              "is_default": false,
+              "name": "Chọc khe",
+              "description": "Di chuyển từ phía sau lưng hàng phòng ngự (text partially cropped in source image)",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 2",
+              "is_default": false,
+              "name": "Hỗ trợ đồng đội",
+              "description": "Di chuyển cạnh đồng đội và gọi bóng",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            }
+          ]
+        }
+      ]
+    },
+    "CDM-LDM-RDM": {
+      "position_codes": [
+        "CDM",
+        "LDM",
+        "RDM"
+      ],
+      "categories": [
+        {
+          "category_code": "AS",
+          "category_name": "Hỗ trợ tấn công",
+          "category_name_en": "Attacking Support",
+          "options": [
+            {
+              "option_code": "AS",
+              "is_default": true,
+              "name": "Tấn công cân bằng",
+              "description": "Tham gia tấn công ngay khi có cơ hội",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AS 1",
+              "is_default": false,
+              "name": "Giữ vị trí",
+              "description": "Không dâng cao hỗ trợ tấn công",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AS 2",
+              "is_default": false,
+              "name": "Tham gia tấn công",
+              "description": "Tham gia tấn công và sẵn sàng xâm nhập vòng cấm (text partially cropped in source image)",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AS 3",
+              "is_default": false,
+              "name": "Vị trí giữa các hậu vệ",
+              "description": "Cầu thủ duy trì đội hình giữa các hậu vệ.",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            }
+          ]
+        },
+        {
+          "category_code": "DB",
+          "category_name": "Bắt người",
+          "category_name_en": "Defensive Balance / Marking",
+          "options": [
+            {
+              "option_code": "DB",
+              "is_default": true,
+              "name": "Phòng thủ trung bình",
+              "description": "Giữ cự ly phòng thủ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DB 1",
+              "is_default": false,
+              "name": "Cắt bóng",
+              "description": "Cố gắng cắt các đường chuyền",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DB 2",
+              "is_default": false,
+              "name": "Phòng ngự 1 kèm 1",
+              "description": "Kèm chặt",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            }
+          ]
+        },
+        {
+          "category_code": "DP",
+          "category_name": "Pressing",
+          "category_name_en": "Defensive Positioning",
+          "options": [
+            {
+              "option_code": "DP",
+              "is_default": true,
+              "name": "Phòng thủ ở biên",
+              "description": "Chủ động đội hình dâng cao, hãy bọc lót khoảng trống (text partially cropped in source image)",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            },
+            {
+              "option_code": "DP 1",
+              "is_default": false,
+              "name": "Tập trung ở trung lộ",
+              "description": "Luôn cố gắng đánh chặn ở trung lộ",
+              "color_group": "blue",
+              "color_hex": "#2F6FE0"
+            }
+          ]
+        },
+        {
+          "category_code": "IN",
+          "category_name": "Chặn",
+          "category_name_en": "Interception",
+          "options": [
+            {
+              "option_code": "IN",
+              "is_default": true,
+              "name": "Đánh chặn thông thường",
+              "description": "Bám sát và chờ cướp bóng đúng lúc thích hợp",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 1",
+              "is_default": false,
+              "name": "Đánh chặn chủ động",
+              "description": "Chủ động ngăn chặn các pha chuyền bóng",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 2",
+              "is_default": false,
+              "name": "Đánh chặn bị động",
+              "description": "Hạn chế đánh chặn, chỉ chặn khi biết có thể cắt thành công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        }
+      ]
+    },
+    "CB-LCB-RCB": {
+      "position_codes": [
+        "CB",
+        "LCB",
+        "RCB"
+      ],
+      "categories": [
+        {
+          "category_code": "AS",
+          "category_name": "Hỗ trợ tấn công",
+          "category_name_en": "Attacking Support",
+          "options": [
+            {
+              "option_code": "AS",
+              "is_default": true,
+              "name": "Giữ vị trí",
+              "description": "Không dâng cao hỗ trợ tấn công",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AS 1",
+              "is_default": false,
+              "name": "Tham gia tấn công",
+              "description": "Tham gia tấn công ngay khi có cơ hội",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AS 2",
+              "is_default": false,
+              "name": "Chơi như một tiền đạo",
+              "description": "Thi đấu như một tiền đạo đích thực",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            }
+          ]
+        },
+        {
+          "category_code": "IN",
+          "category_name": "Chặn",
+          "category_name_en": "Interception",
+          "options": [
+            {
+              "option_code": "IN",
+              "is_default": true,
+              "name": "Đánh chặn thông thường",
+              "description": "Bám sát và chờ cướp bóng đúng lúc thích hợp",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 1",
+              "is_default": false,
+              "name": "Đánh chặn chủ động",
+              "description": "Chủ động ngăn chặn các pha chuyền bóng",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 2",
+              "is_default": false,
+              "name": "Đánh chặn bị động",
+              "description": "Hạn chế đánh chặn, chỉ chặn khi biết có thể cắt thành công",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        }
+      ]
+    },
+    "LB-LWB-RB-RWB": {
+      "position_codes": [
+        "LB",
+        "LWB",
+        "RB",
+        "RWB"
+      ],
+      "categories": [
+        {
+          "category_code": "AR",
+          "category_name": "Tấn công",
+          "category_name_en": "Attacking Role",
+          "options": [
+            {
+              "option_code": "AR",
+              "is_default": true,
+              "name": "Tấn công cân bằng",
+              "description": "Hỗ trợ tấn công khi có cơ hội",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AR 1",
+              "is_default": false,
+              "name": "Luôn luôn chồng cánh",
+              "description": "Tham gia thường xuyên vào các cuộc tấn công (text partially cropped in source image)",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            },
+            {
+              "option_code": "AR 2",
+              "is_default": false,
+              "name": "Không tham gia tấn công",
+              "description": "Không tiến lên khi bị tấn công",
+              "color_group": "red",
+              "color_hex": "#E03B3B"
+            }
+          ]
+        },
+        {
+          "category_code": "IN",
+          "category_name": "Chặn",
+          "category_name_en": "Interception",
+          "options": [
+            {
+              "option_code": "IN",
+              "is_default": true,
+              "name": "Đánh chặn thông thường",
+              "description": "Bám sát và chờ cướp bóng đúng lúc thích hợp (text partially cropped in source image)",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 1",
+              "is_default": false,
+              "name": "Đánh chặn chủ động",
+              "description": "Chủ động ngăn chặn các pha chuyền bóng (text partially cropped in source image)",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            },
+            {
+              "option_code": "IN 2",
+              "is_default": false,
+              "name": "Đánh chặn bị động",
+              "description": "Hạn chế đánh chặn, chỉ chặn khi biết có thể cắt thành công (text partially cropped in source image)",
+              "color_group": "teal",
+              "color_hex": "#4F8FA8"
+            }
+          ]
+        },
+        {
+          "category_code": "SR",
+          "category_name": "Hỗ trợ di chuyển",
+          "category_name_en": "Support Runs",
+          "options": [
+            {
+              "option_code": "SR",
+              "is_default": true,
+              "name": "Hỗ trợ xâm nhập cân bằng",
+              "description": "Tùy thuộc vào tình hình, cầu thủ có thể: (text partially cropped in source image)",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 1",
+              "is_default": false,
+              "name": "Cầu thủ sẽ di chuyển từ cánh vào trung tâm",
+              "description": "Làm tường ở khu vực trung tâm để hỗ trợ (text partially cropped in source image)",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            },
+            {
+              "option_code": "SR 2",
+              "is_default": false,
+              "name": "Phối hợp chồng cánh",
+              "description": "Chồng cánh nhưng chạy cắt mặt",
+              "color_group": "green",
+              "color_hex": "#2FA84F"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

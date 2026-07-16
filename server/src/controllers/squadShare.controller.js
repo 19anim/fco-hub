@@ -22,27 +22,33 @@ function sanitizeVariants(variants) {
   return sanitized;
 }
 
+function sanitizeSquadSharePayload(body = {}) {
+  const { label, mode, managerName, tacticName, description, pitchColor, variants } = body;
+  const sanitizedVariants = sanitizeVariants(variants);
+  if (!sanitizedVariants) return null;
+
+  return {
+    label: label || '',
+    mode: mode === 'glxh' ? 'glxh' : 'da_tay',
+    managerName: managerName || '',
+    tacticName: tacticName || '',
+    description: String(description || '').slice(0, 2000),
+    pitchColor: /^#[0-9a-fA-F]{6}$/.test(pitchColor || '') ? pitchColor : '',
+    variants: sanitizedVariants,
+  };
+}
+
 export const createSquadShare = async (req, res) => {
   try {
-    const { label, mode, managerName, tacticName, description, pitchColor, variants } = req.body || {};
-
-    const sanitizedVariants = sanitizeVariants(variants);
-    if (!sanitizedVariants) {
+    const payload = sanitizeSquadSharePayload(req.body);
+    if (!payload) {
       return res.status(400).json({
         success: false,
         message: 'At least one valid squad variant is required',
       });
     }
 
-    const squadShare = await SquadShare.create({
-      label: label || '',
-      mode: mode === 'glxh' ? 'glxh' : 'da_tay',
-      managerName: managerName || '',
-      tacticName: tacticName || '',
-      description: String(description || '').slice(0, 2000),
-      pitchColor: /^#[0-9a-fA-F]{6}$/.test(pitchColor || '') ? pitchColor : '',
-      variants: sanitizedVariants,
-    });
+    const squadShare = await SquadShare.create(payload);
 
     res.status(201).json({
       success: true,
@@ -100,6 +106,65 @@ export const getSquadShareById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching squad share',
+      error: error.message,
+    });
+  }
+};
+
+export const updateSquadShare = async (req, res) => {
+  try {
+    const payload = sanitizeSquadSharePayload(req.body);
+    if (!payload) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one valid squad variant is required',
+      });
+    }
+
+    const squadShare = await SquadShare.findByIdAndUpdate(req.params.id, payload, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!squadShare) {
+      return res.status(404).json({
+        success: false,
+        message: 'Squad share not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: squadShare,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error updating squad share',
+      error: error.message,
+    });
+  }
+};
+
+export const deleteSquadShare = async (req, res) => {
+  try {
+    const squadShare = await SquadShare.findByIdAndDelete(req.params.id);
+
+    if (!squadShare) {
+      return res.status(404).json({
+        success: false,
+        message: 'Squad share not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Squad share deleted',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting squad share',
       error: error.message,
     });
   }

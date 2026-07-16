@@ -1,5 +1,6 @@
 import { POSITIONS_META, resolvePositionCode } from './constants.js';
 import { normalizeUpgradeLevel } from './upgradeHelpers.js';
+import { getDefaultInstructions, getDefaultTendency } from './tacticInstructions.js';
 
 function normalizeSquadPlayerLevel(level) {
   const numericLevel = Math.trunc(Number(level));
@@ -640,8 +641,10 @@ export function getStartersFromSquad(bySlotId, slots = getFormationSlots(DEFAULT
   return slots.map((slot) => bySlotId?.[slot.id] || null).filter(Boolean);
 }
 
-export function assignPlayerToSlot(bySlotId, slotId, player) {
-  return { ...(bySlotId || {}), [slotId]: player };
+export function assignPlayerToSlot(bySlotId, slotId, player, slotPos) {
+  const instructions = player.instructions || getDefaultInstructions(slotPos);
+  const tendency = player.tendency || getDefaultTendency();
+  return { ...(bySlotId || {}), [slotId]: { ...player, instructions, tendency } };
 }
 
 export function clearSlot(bySlotId, slotId) {
@@ -678,6 +681,24 @@ export function updateSquadPlayerLevel(bySlotId, slotId, level) {
   return {
     ...(bySlotId || {}),
     [slotId]: { ...player, upgradeLevel: normalizeSquadPlayerLevel(level) },
+  };
+}
+
+export function updateSquadPlayerInstruction(bySlotId, slotId, categoryCode, optionCode) {
+  const player = bySlotId?.[slotId];
+  if (!player) return bySlotId || {};
+  return {
+    ...(bySlotId || {}),
+    [slotId]: { ...player, instructions: { ...(player.instructions || {}), [categoryCode]: optionCode } },
+  };
+}
+
+export function updateSquadPlayerTendency(bySlotId, slotId, type, level) {
+  const player = bySlotId?.[slotId];
+  if (!player) return bySlotId || {};
+  return {
+    ...(bySlotId || {}),
+    [slotId]: { ...player, tendency: { ...(player.tendency || getDefaultTendency()), [type]: level } },
   };
 }
 

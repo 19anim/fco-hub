@@ -82,11 +82,16 @@ function parsePath(pathname = window.location.pathname, hash = window.location.h
   if (first === 'squad-sharing') {
     if (!parts[1]) return { view: 'squad-sharing-list', param: null, legacyPath: null };
     if (parts[1] === 'new') return { view: 'squad-sharing-new', param: null, legacyPath: null };
+    if (parts[2] === 'edit') return { view: 'squad-sharing-edit', param: parts[1], legacyPath: null };
     return { view: 'squad-sharing', param: parts[1], legacyPath: null };
   }
   if (VIEW_PATHS[first]) return { view: first, param: null, legacyPath: null };
 
   return { view: 'db', param: null, legacyPath: '/players' };
+}
+
+function hasPermission(user, permission) {
+  return !!user && (user.role === 'owner' || user.permissions?.includes(permission));
 }
 
 function routeUrl(view, param = null, { keepSearch = false } = {}) {
@@ -98,6 +103,10 @@ function routeUrl(view, param = null, { keepSearch = false } = {}) {
 
   if (view === 'squad-sharing' && param) {
     return `/squad-sharing/${encodeURIComponent(param)}${search}`;
+  }
+
+  if (view === 'squad-sharing-edit' && param) {
+    return `/squad-sharing/${encodeURIComponent(param)}/edit${search}`;
   }
 
   if (view === 'squad-sharing-new') {
@@ -133,7 +142,9 @@ export default function FcoApp() {
   const persisted = loadPersisted();
   const { user } = useAdminAuth();
   const isAdmin = !!user;
-  const canCreateSquadShare = !!user && (user.role === 'owner' || user.permissions?.includes('squadSharing.create'));
+  const canCreateSquadShare = hasPermission(user, 'squadSharing.create');
+  const canEditSquadShare = hasPermission(user, 'squadSharing.edit');
+  const canDeleteSquadShare = hasPermission(user, 'squadSharing.delete');
 
   const [route,      setRoute]      = useState(() => parsePath());
   const [watch,      setWatch]      = useState(persisted.watch || []);
@@ -240,7 +251,7 @@ export default function FcoApp() {
           {NAV_ITEMS.map(item => (
             <a key={item.id}
               href={routeUrl(item.id)}
-              className={`fco-navitem${(activeView === item.id || (item.id === 'squad-sharing-list' && (activeView === 'squad-sharing-new' || activeView === 'squad-sharing'))) ? ' active' : ''}`}
+              className={`fco-navitem${(activeView === item.id || (item.id === 'squad-sharing-list' && (activeView === 'squad-sharing-new' || activeView === 'squad-sharing' || activeView === 'squad-sharing-edit'))) ? ' active' : ''}`}
               onClick={e => handleNavClick(e, item.id)}>
               <item.icon size={16} />
               <span>{item.label}</span>
@@ -299,8 +310,30 @@ export default function FcoApp() {
         {activeView === 'squad-sharing-new' && canCreateSquadShare && (
           <SquadSharingCreateView onShared={(id) => navigate('squad-sharing', id)} />
         )}
-        {activeView === 'squad-sharing' && decodedParam && (
+        {activeView === 'squad-sharing-edit' && decodedParam && canEditSquadShare && (
+          <SquadSharingCreateView
+            id={decodedParam}
+            mode="edit"
+            onShared={(id) => navigate('squad-sharing', id)}
+            onCancel={() => navigate('squad-sharing', decodedParam)}
+          />
+        )}
+        {activeView === 'squad-sharing-edit' && decodedParam && !canEditSquadShare && (
           <SquadSharingView id={decodedParam} onBack={() => navigate('squad-sharing-list')} />
+        )}
+        {activeView === 'squad-sharing' && decodedParam && (
+          <SquadSharingView
+            id={decodedParam}
+            canEdit={canEditSquadShare}
+            canDelete={canDeleteSquadShare}
+            onBack={() => navigate('squad-sharing-list')}
+            onEdit={() => navigate('squad-sharing-edit', decodedParam)}
+            onDeleted={() => {
+              navigate('squad-sharing-list');
+              showToast('Đã xoá đội hình chia sẻ', 'success');
+            }}
+            showToast={showToast}
+          />
         )}
       </main>
 

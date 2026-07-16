@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import SquadPitchEditor from '../components/SquadPitchEditor.jsx';
 import { Button } from '../ui.jsx';
 import * as I from '../Icons.jsx';
 import { DEFAULT_FORMATION_ID } from '../squadHelpers.js';
-import { MANAGERS, TACTICS } from '../managerTacticCatalog.js';
-import { createSquadShare } from '../api.js';
+import { createSquadShare, fetchSquadShare, updateSquadShare } from '../api.js';
 
 const CONDITION_TYPES = [
   { type: 'drawing', label: 'Mặc định - Hòa', needsThreshold: false, required: true },
@@ -32,26 +31,58 @@ function makeVariant(conditionType, seedSquad) {
   };
 }
 
-export default function SquadSharingCreateView({ onShared }) {
+export default function SquadSharingCreateView({ id = null, mode: formMode = 'create', onShared, onCancel }) {
+  const isEdit = formMode === 'edit';
+
   useDocumentMeta({
-    title: 'Chia sẻ đội hình',
-    description: 'Chia sẻ đội hình FCOnline theo tình huống tỷ số, kèm HLV và chiến thuật.',
-    path: '/squad-sharing/new',
+    title: isEdit ? 'Chỉnh sửa đội hình' : 'Chia sẻ đội hình',
+    description: isEdit ? 'Chỉnh sửa đội hình FCOnline đã chia sẻ.' : 'Chia sẻ đội hình FCOnline theo tình huống tỷ số.',
+    path: isEdit && id ? `/squad-sharing/${id}/edit` : '/squad-sharing/new',
   });
 
   const [label, setLabel] = useState('');
-  const [mode, setMode] = useState('da_tay');
-  const [managerId, setManagerId] = useState('');
-  const [tacticId, setTacticId] = useState('');
+  const [shareMode, setShareMode] = useState('da_tay');
   const [description, setDescription] = useState('');
   const [pitchColor, setPitchColor] = useState('#1f8a4c');
   const [variants, setVariants] = useState(() => [makeVariant(REQUIRED_CONDITION_TYPE, emptySquad())]);
   const [activeVariantKey, setActiveVariantKey] = useState(REQUIRED_CONDITION_TYPE);
   const [isSharing, setIsSharing] = useState(false);
+  const [loadingShare, setLoadingShare] = useState(isEdit);
+  const [loadError, setLoadError] = useState('');
   const [shareError, setShareError] = useState('');
   const [shareResult, setShareResult] = useState(null);
 
   const activeVariant = variants.find((v) => v.key === activeVariantKey) || variants[0];
+
+  useEffect(() => {
+    if (!isEdit || !id) return;
+    let cancelled = false;
+    setLoadingShare(true);
+    setLoadError('');
+    setShareError('');
+
+    fetchSquadShare(id)
+      .then((share) => {
+        if (cancelled) return;
+        const loadedVariants = Array.isArray(share?.variants) && share.variants.length
+          ? share.variants
+          : [makeVariant(REQUIRED_CONDITION_TYPE, emptySquad())];
+        setLabel(share?.label || '');
+        setShareMode(share?.mode === 'glxh' ? 'glxh' : 'da_tay');
+        setDescription(share?.description || '');
+        setPitchColor(/^#[0-9a-fA-F]{6}$/.test(share?.pitchColor || '') ? share.pitchColor : '#1f8a4c');
+        setVariants(loadedVariants);
+        setActiveVariantKey(loadedVariants[0]?.key || REQUIRED_CONDITION_TYPE);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError('Không thể tải đội hình để chỉnh sửa.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingShare(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [id, isEdit]);
 
   function updateVariant(key, patch) {
     setVariants((prev) => prev.map((v) => (v.key === key ? { ...v, ...patch } : v)));
@@ -87,17 +118,13 @@ export default function SquadSharingCreateView({ onShared }) {
     setActiveVariantKey(next.key);
   }
 
-  async function handleShare() {
+  async function handleSubmit() {
     setIsSharing(true);
     setShareError('');
     try {
-      const manager = MANAGERS.find((m) => m.id === managerId);
-      const tactic = TACTICS.find((t) => t.id === tacticId);
       const payload = {
         label,
-        mode,
-        managerName: manager?.name || '',
-        tacticName: tactic?.name || '',
+        mode: shareMode,
         description,
         pitchColor,
         variants: CONDITION_TYPES
@@ -107,14 +134,44 @@ export default function SquadSharingCreateView({ onShared }) {
             key, conditionType, conditionLabel, conditionThreshold, formationId, bySlotId, customSlots,
           })),
       };
-      const created = await createSquadShare(payload);
-      setShareResult(created);
-      onShared?.(created._id);
+      const saved = isEdit ? await updateSquadShare(id, payload) : await createSquadShare(payload);
+      if (isEdit) {
+        onShared?.(saved._id);
+        return;
+      }
+      setShareResult(saved);
+      onShared?.(saved._id);
     } catch (err) {
-      setShareError('Không thể chia sẻ đội hình. Vui lòng thử lại.');
+      setShareError(isEdit ? 'Không thể lưu thay đổi. Vui lòng thử lại.' : 'Không thể chia sẻ đội hình. Vui lòng thử lại.');
     } finally {
       setIsSharing(false);
     }
+  }
+
+  if (loadingShare) {
+    return (
+      <div className="fco-squad-view fco-squad-share-loading">
+        <I.Spinner size={20} className="fco-spin" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="fco-squad-view">
+        <div className="fco-up-machine-head">
+          <div>
+            <h2 className="fco-h2">Không thể chỉnh sửa đội hình</h2>
+            <p className="fco-sub">{loadError}</p>
+          </div>
+          {onCancel && (
+            <div className="fco-squad-share-cta-wrap">
+              <Button variant="ghost" onClick={onCancel}>Quay lại</Button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   if (shareResult) {
@@ -144,17 +201,24 @@ export default function SquadSharingCreateView({ onShared }) {
     <div className="fco-squad-view">
       <div className="fco-up-machine-head">
         <div>
-          <h2 className="fco-h2">Chia sẻ đội hình</h2>
-          <p className="fco-sub">Thiết lập HLV, chiến thuật và các đội hình theo tỷ số trận đấu.</p>
+          <h2 className="fco-h2">{isEdit ? 'Chỉnh sửa đội hình' : 'Chia sẻ đội hình'}</h2>
+          <p className="fco-sub">Thiết lập các đội hình theo tỷ số trận đấu.</p>
         </div>
         <div className="fco-squad-share-cta-wrap">
+          {isEdit && onCancel && (
+            <Button variant="ghost" onClick={onCancel} disabled={isSharing}>
+              Huỷ
+            </Button>
+          )}
           <Button
             variant="primary"
             icon={I.Share}
-            onClick={handleShare}
+            onClick={handleSubmit}
             disabled={isSharing}
           >
-            {isSharing ? 'Đang chia sẻ...' : 'Chia sẻ đội hình'}
+            {isEdit
+              ? (isSharing ? 'Đang lưu...' : 'Lưu thay đổi')
+              : (isSharing ? 'Đang chia sẻ...' : 'Chia sẻ đội hình')}
           </Button>
         </div>
       </div>
@@ -169,25 +233,9 @@ export default function SquadSharingCreateView({ onShared }) {
 
         <label className="fco-squad-share-field">
           <span>Chế độ</span>
-          <select value={mode} onChange={(e) => setMode(e.target.value)}>
+          <select value={shareMode} onChange={(e) => setShareMode(e.target.value)}>
             <option value="da_tay">Đá Tay</option>
             <option value="glxh">GLXH</option>
-          </select>
-        </label>
-
-        <label className="fco-squad-share-field">
-          <span>HLV</span>
-          <select value={managerId} onChange={(e) => setManagerId(e.target.value)}>
-            <option value="">Chọn HLV</option>
-            {MANAGERS.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
-          </select>
-        </label>
-
-        <label className="fco-squad-share-field">
-          <span>Chiến thuật</span>
-          <select value={tacticId} onChange={(e) => setTacticId(e.target.value)}>
-            <option value="">Chọn chiến thuật</option>
-            {TACTICS.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </label>
 

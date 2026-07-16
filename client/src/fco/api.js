@@ -95,8 +95,18 @@ export async function fetchEvents() {
 }
 
 export async function createSquadShare(payload) {
-  const res = await axios.post(`${BASE}/squad-shares`, payload);
+  const res = await axios.post(`${BASE}/squad-shares`, payload, { withCredentials: true });
   return res.data?.data;
+}
+
+export async function updateSquadShare(id, payload) {
+  const res = await axios.put(`${BASE}/squad-shares/${id}`, payload, { withCredentials: true });
+  return res.data?.data;
+}
+
+export async function deleteSquadShare(id) {
+  const res = await axios.delete(`${BASE}/squad-shares/${id}`, { withCredentials: true });
+  return res.data;
 }
 
 export async function fetchSquadShare(id) {

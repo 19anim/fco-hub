@@ -2,6 +2,9 @@ import { useState, useMemo, useRef } from 'react';
 import PlayerPickerFiltered from './PlayerPickerFiltered.jsx';
 import LevelBadge from './LevelBadge.jsx';
 import TeamGradePopover from './TeamGradePopover.jsx';
+import TacticInstructionsPanel from './TacticInstructionsPanel.jsx';
+import TendencyPanel from './TendencyPanel.jsx';
+import { getInstructionGroup } from '../tacticInstructions.js';
 import { PitchTeamColorList } from './TeamColorStrip.jsx';
 import { usePlayerDetailQuery } from '../queries.js';
 import {
@@ -14,6 +17,8 @@ import {
   swapSquadSlots,
   movePlayerToSlot,
   updateSquadPlayerLevel,
+  updateSquadPlayerInstruction,
+  updateSquadPlayerTendency,
   mapSquadToFormation,
   getPickerPosGroupsForSlot,
 } from '../squadHelpers.js';
@@ -235,7 +240,8 @@ export default function SquadPitchEditor({
 
   function handleAddPlayer(player) {
     if (!pickerSlotId) return;
-    persist(assignPlayerToSlot(bySlotId, pickerSlotId, player));
+    const slot = visibleSlots.find((s) => s.id === pickerSlotId);
+    persist(assignPlayerToSlot(bySlotId, pickerSlotId, player, slot?.pos));
     setPickerSlotId(null);
     setEditSlotId(null);
   }
@@ -254,10 +260,13 @@ export default function SquadPitchEditor({
 
   function switchPlayerSeason(slotId, seasonPlayer) {
     const current = bySlotId[slotId];
+    const slot = visibleSlots.find((s) => s.id === slotId);
     persist(assignPlayerToSlot(bySlotId, slotId, {
       ...seasonPlayer,
       upgradeLevel: current?.upgradeLevel ?? MIN_UPGRADE_LEVEL,
-    }));
+      instructions: current?.instructions,
+      tendency: current?.tendency,
+    }, slot?.pos));
   }
 
   function closeEditModal() {
@@ -278,6 +287,14 @@ export default function SquadPitchEditor({
 
   function changeLevel(slotId, level) {
     persist(updateSquadPlayerLevel(bySlotId, slotId, level));
+  }
+
+  function changeInstruction(slotId, categoryCode, optionCode) {
+    persist(updateSquadPlayerInstruction(bySlotId, slotId, categoryCode, optionCode));
+  }
+
+  function changeTendency(slotId, type, level) {
+    persist(updateSquadPlayerTendency(bySlotId, slotId, type, level));
   }
 
   function applyQuickLevel(level) {
@@ -397,6 +414,8 @@ export default function SquadPitchEditor({
   const activeEditSlot = visibleSlots.find((s) => s.id === editSlotId) || null;
   const activeEditPlayer = editSlotId ? bySlotId[editSlotId] : null;
   const rosterSlots = useMemo(() => [...visibleSlots].sort((a, b) => a.y - b.y || a.x - b.x), [visibleSlots]);
+  const activeTacticSlot = visibleSlots.find((s) => s.id === activeSlotId) || null;
+  const activeTacticPlayer = activeSlotId ? bySlotId[activeSlotId] : null;
 
   return (
     <div className="fco-squad-layout">
@@ -530,6 +549,20 @@ export default function SquadPitchEditor({
                   <div
                     className={`fco-squad-card${isMovingSource ? ' moving' : ''}${isMoveTarget ? ' move-target' : ''}${dragSlotId === slot.id ? ' dragging' : ''}`}
                   >
+                    {!readOnly && !movingSlotId && (
+                      <button
+                        type="button"
+                        className="fco-squad-card-settings"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (suppressClickRef.current) return;
+                          openEditModal(slot.id);
+                        }}
+                        aria-label={`Chỉnh cầu thủ ${player.name}`}
+                      >
+                        <I.Settings size={13} />
+                      </button>
+                    )}
                     <PlayerCardMini
                       player={player}
                       slotPos={slot.pos}
@@ -540,7 +573,7 @@ export default function SquadPitchEditor({
                       onClick={() => {
                         if (readOnly) return;
                         if (suppressClickRef.current) return;
-                        movingSlotId ? handleSlotClick(slot.id) : openEditModal(slot.id);
+                        handleSlotClick(slot.id);
                       }}
                     />
                   </div>
@@ -577,6 +610,26 @@ export default function SquadPitchEditor({
 
       <aside className="fco-squad-rail">
         {railTop}
+
+        {!readOnly && activeTacticPlayer && activeTacticSlot && getInstructionGroup(activeTacticSlot.pos) && (
+          <section className="fco-squad-rail-panel fco-squad-rail-tactics">
+            <div className="player-edit-grade-block">
+              <div className="player-edit-label">Chiến thuật vị trí · {activeTacticPlayer.name}</div>
+              <TacticInstructionsPanel
+                pos={activeTacticSlot.pos}
+                selections={activeTacticPlayer.instructions}
+                onChange={(categoryCode, optionCode) => changeInstruction(activeSlotId, categoryCode, optionCode)}
+              />
+            </div>
+            <div className="player-edit-grade-block">
+              <div className="player-edit-label">Xu hướng thi đấu</div>
+              <TendencyPanel
+                tendency={activeTacticPlayer.tendency}
+                onChange={(type, level) => changeTendency(activeSlotId, type, level)}
+              />
+            </div>
+          </section>
+        )}
 
         <section className="fco-squad-rail-panel fco-squad-rail-roster">
           <div className="fco-squad-rail-roster-head">
