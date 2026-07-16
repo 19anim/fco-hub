@@ -69,6 +69,13 @@ export default function ItemForm({ data, onChange, errors = [] }) {
 
   const filteredPlacements = filterLivePlacements(placements)
     .filter((p) => !data.type || p.supportedTypes?.includes(data.type));
+  const selectedPlacements = placements.filter((p) => placementIds.includes(p._id));
+  const hasPlayerPlacement = selectedPlacements.some((p) => p.key === 'player_detail_sidebar');
+  const hasSquadSharePlacement = selectedPlacements.some((p) => p.key === 'squad_sharing_top' || p.key === 'squad_sharing_bottom');
+  const linkedEntityModes = [
+    hasPlayerPlacement ? 'player' : null,
+    hasSquadSharePlacement ? 'squad_share' : null,
+  ].filter(Boolean);
 
   return (
     <div className="space-y-5">
@@ -207,10 +214,11 @@ export default function ItemForm({ data, onChange, errors = [] }) {
         </div>
       )}
 
-      <Field label="Linked Players" note="Link players for entity-targeted placement">
+      <Field label="Linked entities" note="Player Detail – Sidebar links players; Squad Sharing rails link shared squads.">
         <LinkedEntityPicker
           linkedEntities={data.linkedEntities ?? []}
           onChange={(v) => onChange({ ...data, linkedEntities: v })}
+          modes={linkedEntityModes}
         />
       </Field>
 

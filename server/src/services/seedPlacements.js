@@ -9,6 +9,8 @@ const DEFAULTS = [
   { key: 'player_detail_sidebar', label: 'Player Detail – Sidebar', page: 'player', supportedTypes: ['affiliate_link', 'custom_cta', 'youtube_video'], defaultLimit: 2 },
   { key: 'squad_top', label: 'Squad Maker – Rail trên', page: 'squad', supportedTypes: ['sponsor_banner', 'ad_slot', 'custom_cta', 'affiliate_link', 'youtube_video'], defaultLimit: 1 },
   { key: 'squad_bottom', label: 'Squad Maker – Rail dưới', page: 'squad', supportedTypes: ['sponsor_banner', 'ad_slot', 'custom_cta', 'affiliate_link', 'youtube_video'], defaultLimit: 1 },
+  { key: 'squad_sharing_top', label: 'Squad Sharing – Rail trên', page: 'squad-sharing', supportedTypes: ['sponsor_banner', 'ad_slot', 'custom_cta', 'affiliate_link', 'youtube_video'], defaultLimit: 1 },
+  { key: 'squad_sharing_bottom', label: 'Squad Sharing – Rail dưới', page: 'squad-sharing', supportedTypes: ['sponsor_banner', 'ad_slot', 'custom_cta', 'affiliate_link', 'youtube_video'], defaultLimit: 1 },
 ];
 
 const LEGACY_KEYS = [

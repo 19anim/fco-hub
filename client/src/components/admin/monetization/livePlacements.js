@@ -6,6 +6,8 @@ const LIVE_PLACEMENT_KEYS = new Set([
   'player_detail_sidebar',
   'squad_top',
   'squad_bottom',
+  'squad_sharing_top',
+  'squad_sharing_bottom',
 ]);
 
 export function filterLivePlacements(placements = []) {

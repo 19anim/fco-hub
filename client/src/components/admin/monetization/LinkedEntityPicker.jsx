@@ -15,6 +15,20 @@ async function searchPlayers(q) {
   return res.data.data.players;
 }
 
+async function searchSquadShares(q) {
+  const res = await axios.get(`${API_BASE}/squad-shares`, {
+    params: q ? { q } : {},
+    withCredentials: true,
+  });
+  const shares = res.data?.data || [];
+  const normalizedQuery = normalizeBackendSearch(q);
+  if (!normalizedQuery) return shares.slice(0, 10);
+  return shares.filter((share) => {
+    const text = [share.label, share.managerName, share.tacticName, share.description].filter(Boolean).join(' ');
+    return text.toLowerCase().includes(normalizedQuery.toLowerCase());
+  }).slice(0, 10);
+}
+
 function EntityOverridePanel({ entity, onChange, onRemove }) {
   const [open, setOpen] = useState(false);
 
@@ -100,50 +114,107 @@ function EntityOverridePanel({ entity, onChange, onRemove }) {
   );
 }
 
-export default function LinkedEntityPicker({ linkedEntities = [], onChange }) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [searching, setSearching] = useState(false);
-  const debouncedQuery = useDebouncedValue(query, BACKEND_SEARCH_DEBOUNCE_MS);
+export default function LinkedEntityPicker({ linkedEntities = [], onChange, modes = [] }) {
+  const [playerQuery, setPlayerQuery] = useState('');
+  const [playerResults, setPlayerResults] = useState([]);
+  const [playerSearching, setPlayerSearching] = useState(false);
+  const [squadShareQuery, setSquadShareQuery] = useState('');
+  const [squadShareResults, setSquadShareResults] = useState([]);
+  const [squadShareSearching, setSquadShareSearching] = useState(false);
+  const debouncedPlayerQuery = useDebouncedValue(playerQuery, BACKEND_SEARCH_DEBOUNCE_MS);
+  const debouncedSquadShareQuery = useDebouncedValue(squadShareQuery, BACKEND_SEARCH_DEBOUNCE_MS);
+  const isPlayerMode = modes.includes('player');
+  const isSquadShareMode = modes.includes('squad_share');
 
   useEffect(() => {
-    const normalizedQuery = normalizeBackendSearch(debouncedQuery);
-    if (!normalizedQuery || !canRunBackendSearch(debouncedQuery)) return;
+    if (isPlayerMode) return;
+    setPlayerQuery('');
+    setPlayerResults([]);
+    setPlayerSearching(false);
+  }, [isPlayerMode]);
+
+  useEffect(() => {
+    if (isSquadShareMode) return;
+    setSquadShareQuery('');
+    setSquadShareResults([]);
+    setSquadShareSearching(false);
+  }, [isSquadShareMode]);
+
+  useEffect(() => {
+    const normalizedQuery = normalizeBackendSearch(debouncedPlayerQuery);
+    if (!isPlayerMode || !normalizedQuery || !canRunBackendSearch(debouncedPlayerQuery)) return;
 
     let ignore = false;
     searchPlayers(normalizedQuery)
       .then((players) => {
-        if (!ignore) setResults(players);
+        if (!ignore) setPlayerResults(players);
       })
       .catch(() => {
-        if (!ignore) setResults([]);
+        if (!ignore) setPlayerResults([]);
       })
       .finally(() => {
-        if (!ignore) setSearching(false);
+        if (!ignore) setPlayerSearching(false);
       });
 
     return () => {
       ignore = true;
     };
-  }, [debouncedQuery]);
+  }, [debouncedPlayerQuery, isPlayerMode]);
 
-  const addPlayer = (player) => {
-    const entityId = String(player.entityId || player._id);
+  useEffect(() => {
+    const normalizedQuery = normalizeBackendSearch(debouncedSquadShareQuery);
+    if (!isSquadShareMode || !normalizedQuery || !canRunBackendSearch(debouncedSquadShareQuery)) return;
+
+    let ignore = false;
+    setSquadShareSearching(true);
+    searchSquadShares(normalizedQuery)
+      .then((shares) => {
+        if (!ignore) setSquadShareResults(shares);
+      })
+      .catch(() => {
+        if (!ignore) setSquadShareResults([]);
+      })
+      .finally(() => {
+        if (!ignore) setSquadShareSearching(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [debouncedSquadShareQuery, isSquadShareMode]);
+
+  const addEntity = ({ entityType, entityId, label }) => {
     const alreadyAdded = linkedEntities.some(
-      e => e.entityType === 'player' && e.entityId === entityId
+      e => e.entityType === entityType && e.entityId === entityId
     );
-    if (alreadyAdded) return;
+    if (alreadyAdded) return false;
     onChange([
       ...linkedEntities,
-      {
-        entityType: 'player',
-        entityId,
-        label: `${player.name} (${player.seasonName || player.seasonId})`,
-        relationType: 'primary',
-      },
+      { entityType, entityId, label, relationType: 'primary' },
     ]);
-    setQuery('');
-    setResults([]);
+    return true;
+  };
+
+  const addPlayer = (player) => {
+    const added = addEntity({
+      entityType: 'player',
+      entityId: String(player.entityId || player._id),
+      label: `${player.name} (${player.seasonName || player.seasonId})`,
+    });
+    if (!added) return;
+    setPlayerQuery('');
+    setPlayerResults([]);
+  };
+
+  const addSquadShare = (share) => {
+    const added = addEntity({
+      entityType: 'squad_share',
+      entityId: String(share._id),
+      label: share.label || `Squad share ${share._id}`,
+    });
+    if (!added) return;
+    setSquadShareQuery('');
+    setSquadShareResults([]);
   };
 
   const updateEntity = (idx, updated) => {
@@ -156,59 +227,122 @@ export default function LinkedEntityPicker({ linkedEntities = [], onChange }) {
 
   return (
     <div className="space-y-3">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
-        <input
-          type="text"
-          value={query}
-          maxLength={BACKEND_SEARCH_MAX_LENGTH}
-          onChange={(e) => {
-            const nextQuery = e.target.value;
-            setQuery(nextQuery);
-            if (!normalizeBackendSearch(nextQuery) || !canRunBackendSearch(nextQuery)) {
-              setResults([]);
-              setSearching(false);
-            } else {
-              setSearching(true);
-            }
-          }}
-          placeholder="Search players by name..."
-          className="h-10 w-full rounded-lg border border-hairline bg-canvas-dark pl-9 pr-3 text-sm text-ink outline-none focus:border-brand-blue"
-        />
-        {searching && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-muted">Searching...</span>
-        )}
-      </div>
-      {normalizeBackendSearch(query).length === 1 && (
-        <p className="text-xs text-ink-muted mt-1">Nhập ít nhất 2 ký tự để tìm kiếm</p>
+      {isPlayerMode && (
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
+            <input
+              type="text"
+              value={playerQuery}
+              maxLength={BACKEND_SEARCH_MAX_LENGTH}
+              onChange={(e) => {
+                const nextQuery = e.target.value;
+                setPlayerQuery(nextQuery);
+                if (!normalizeBackendSearch(nextQuery) || !canRunBackendSearch(nextQuery)) {
+                  setPlayerResults([]);
+                  setPlayerSearching(false);
+                } else {
+                  setPlayerSearching(true);
+                }
+              }}
+              placeholder="Search players by name..."
+              className="h-10 w-full rounded-lg border border-hairline bg-canvas-dark pl-9 pr-3 text-sm text-ink outline-none focus:border-brand-blue"
+            />
+            {playerSearching && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-muted">Searching...</span>
+            )}
+          </div>
+          {normalizeBackendSearch(playerQuery).length === 1 && (
+            <p className="text-xs text-ink-muted mt-1">Nhập ít nhất 2 ký tự để tìm kiếm</p>
+          )}
+          {playerResults.length > 0 && (
+            <div className="rounded-lg border border-hairline bg-canvas-dark divide-y divide-hairline overflow-hidden max-h-56 overflow-y-auto">
+              {playerResults.map(player => {
+                const entityId = String(player.entityId || player._id);
+                const added = linkedEntities.some(
+                  e => e.entityType === 'player' && e.entityId === entityId
+                );
+                return (
+                  <button
+                    key={entityId}
+                    disabled={added}
+                    onClick={() => addPlayer(player)}
+                    className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors ${added ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-2'}`}
+                  >
+                    {player.imageUrl && (
+                      <img src={player.imageUrl} alt="" className="h-8 w-8 rounded object-cover shrink-0" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink truncate">{player.name}</p>
+                      <p className="text-xs text-ink-muted">{player.position} · OVR {player.overall} · {player.seasonName}</p>
+                    </div>
+                    {added && <span className="ml-auto text-xs text-ink-subtle shrink-0">Added</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
 
-      {results.length > 0 && (
-        <div className="rounded-lg border border-hairline bg-canvas-dark divide-y divide-hairline overflow-hidden max-h-56 overflow-y-auto">
-          {results.map(player => {
-            const entityId = String(player.entityId || player._id);
-            const added = linkedEntities.some(
-              e => e.entityType === 'player' && e.entityId === entityId
-            );
-            return (
-              <button
-                key={entityId}
-                disabled={added}
-                onClick={() => addPlayer(player)}
-                className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors ${added ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-2'}`}
-              >
-                {player.imageUrl && (
-                  <img src={player.imageUrl} alt="" className="h-8 w-8 rounded object-cover shrink-0" />
-                )}
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-ink truncate">{player.name}</p>
-                  <p className="text-xs text-ink-muted">{player.position} · OVR {player.overall} · {player.seasonName}</p>
-                </div>
-                {added && <span className="ml-auto text-xs text-ink-subtle shrink-0">Added</span>}
-              </button>
-            );
-          })}
+      {isSquadShareMode && (
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
+            <input
+              type="text"
+              value={squadShareQuery}
+              maxLength={BACKEND_SEARCH_MAX_LENGTH}
+              onChange={(e) => {
+                const nextQuery = e.target.value;
+                setSquadShareQuery(nextQuery);
+                if (!normalizeBackendSearch(nextQuery) || !canRunBackendSearch(nextQuery)) {
+                  setSquadShareResults([]);
+                  setSquadShareSearching(false);
+                } else {
+                  setSquadShareSearching(true);
+                }
+              }}
+              placeholder="Search squad sharing by title..."
+              className="h-10 w-full rounded-lg border border-hairline bg-canvas-dark pl-9 pr-3 text-sm text-ink outline-none focus:border-brand-blue"
+            />
+            {squadShareSearching && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-muted">Searching...</span>
+            )}
+          </div>
+          {squadShareResults.length > 0 && (
+            <div className="rounded-lg border border-hairline bg-canvas-dark divide-y divide-hairline overflow-hidden max-h-56 overflow-y-auto">
+              {squadShareResults.map(share => {
+                const entityId = String(share._id);
+                const added = linkedEntities.some(
+                  e => e.entityType === 'squad_share' && e.entityId === entityId
+                );
+                return (
+                  <button
+                    key={entityId}
+                    disabled={added}
+                    onClick={() => addSquadShare(share)}
+                    className={`flex w-full items-center gap-3 px-3 py-2 text-left transition-colors ${added ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-2'}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink truncate">{share.label || 'Đội hình chia sẻ'}</p>
+                      <p className="text-xs text-ink-muted">
+                        {[share.mode, share.managerName && `HLV ${share.managerName}`, share.tacticName].filter(Boolean).join(' · ')}
+                      </p>
+                    </div>
+                    {added && <span className="ml-auto text-xs text-ink-subtle shrink-0">Added</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
+      )}
+
+      {!isPlayerMode && !isSquadShareMode && (
+        <p className="rounded-lg border border-hairline bg-canvas-dark px-3 py-2 text-xs text-ink-subtle">
+          Select Player Detail – Sidebar or a Squad Sharing rail placement to link a specific entity.
+        </p>
       )}
 
       {linkedEntities.length > 0 && (

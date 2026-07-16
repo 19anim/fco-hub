@@ -4,6 +4,7 @@ import SquadPitchEditor from '../components/SquadPitchEditor.jsx';
 import { deleteSquadShare, fetchSquadShare } from '../api.js';
 import * as I from '../Icons.jsx';
 import { Button } from '../ui.jsx';
+import MonetizationSlot from '../../components/monetization/MonetizationSlot.jsx';
 
 const MODE_LABELS = { da_tay: 'Đá Tay', glxh: 'GLXH' };
 
@@ -154,6 +155,8 @@ export default function SquadSharingView({
           onChange={() => {}}
           readOnly
           pitchColor={share.pitchColor || null}
+          railTop={<MonetizationSlot placement="squad_sharing_top" entity={{ type: 'squad_share', id }} limit={1} className="fco-squad-rail-ad" />}
+          railBottom={<MonetizationSlot placement="squad_sharing_bottom" entity={{ type: 'squad_share', id }} limit={1} className="fco-squad-rail-ad" />}
         />
       )}
     </div>
