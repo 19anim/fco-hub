@@ -5,6 +5,7 @@ import { deleteSquadShare, fetchSquadShare } from '../api.js';
 import * as I from '../Icons.jsx';
 import { Button } from '../ui.jsx';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot.jsx';
+import AdSenseUnit from '../../components/monetization/AdSenseUnit.jsx';
 
 const MODE_LABELS = { da_tay: 'Đá Tay', glxh: 'GLXH' };
 
@@ -98,67 +99,73 @@ export default function SquadSharingView({
   const activeVariant = share.variants.find((v) => v.key === activeVariantKey) || share.variants[0];
 
   return (
-    <div className="fco-squad-view">
-      <div className="fco-up-machine-head">
-        <div>
-          {onBack && (
-            <button type="button" className="fco-squad-share-back" onClick={onBack}>
-              <I.ArrowLeft size={14} /> Tất cả đội hình
-            </button>
-          )}
-          <h2 className="fco-h2">{share.label || 'Đội hình chia sẻ'}</h2>
-          <p className="fco-sub">
-            {MODE_LABELS[share.mode] || share.mode}
-            {share.managerName ? ` · HLV ${share.managerName}` : ''}
-            {share.tacticName ? ` · ${share.tacticName}` : ''}
-          </p>
-        </div>
-        {(canEdit || canDelete) && (
-          <div className="fco-squad-share-cta-wrap">
-            {canEdit && (
-              <Button variant="ghost" onClick={onEdit}>
-                Chỉnh sửa
-              </Button>
+    <div className="fco-squad-share-layout">
+      <aside className="fco-squad-share-adcol">
+        <AdSenseUnit slotId="SQUAD_SHARING_LEFT_SLOT_ID" />
+      </aside>
+
+      <div className="fco-squad-view">
+        <div className="fco-up-machine-head">
+          <div>
+            {onBack && (
+              <button type="button" className="fco-squad-share-back" onClick={onBack}>
+                <I.ArrowLeft size={14} /> Tất cả đội hình
+              </button>
             )}
-            {canDelete && (
-              <Button variant="ghost" danger disabled={deleting} onClick={handleDelete}>
-                {deleting ? 'Đang xoá...' : 'Xoá'}
-              </Button>
-            )}
+            <h2 className="fco-h2">{share.label || 'Đội hình chia sẻ'}</h2>
+            <p className="fco-sub">
+              {MODE_LABELS[share.mode] || share.mode}
+              {share.managerName ? ` · HLV ${share.managerName}` : ''}
+              {share.tacticName ? ` · ${share.tacticName}` : ''}
+            </p>
           </div>
+          {(canEdit || canDelete) && (
+            <div className="fco-squad-share-cta-wrap">
+              {canEdit && (
+                <Button variant="ghost" onClick={onEdit}>
+                  Chỉnh sửa
+                </Button>
+              )}
+              {canDelete && (
+                <Button variant="ghost" danger disabled={deleting} onClick={handleDelete}>
+                  {deleting ? 'Đang xoá...' : 'Xoá'}
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {deleteError && <div className="fco-squad-share-error">{deleteError}</div>}
+
+        {share.description && (
+          <p className="fco-squad-share-description">{share.description}</p>
+        )}
+
+        <div className="fco-squad-share-variants-bar">
+          {share.variants.map((v) => (
+            <button
+              key={v.key}
+              type="button"
+              className={`fco-squad-share-variant-tab${activeVariant?.key === v.key ? ' active' : ''}`}
+              onClick={() => setActiveVariantKey(v.key)}
+            >
+              {conditionDisplayLabel(v)}
+            </button>
+          ))}
+        </div>
+
+        {activeVariant && (
+          <SquadPitchEditor
+            key={activeVariant.key}
+            squad={{ formationId: activeVariant.formationId, bySlotId: activeVariant.bySlotId || {}, customSlots: activeVariant.customSlots }}
+            onChange={() => {}}
+            readOnly
+            pitchColor={share.pitchColor || null}
+            railTop={<MonetizationSlot placement="squad_sharing_top" entity={{ type: 'squad_share', id }} limit={1} className="fco-squad-rail-ad" />}
+            railBottom={<AdSenseUnit slotId="SQUAD_SHARING_RAIL_BOTTOM_SLOT_ID" className="fco-squad-rail-ad" />}
+          />
         )}
       </div>
-
-      {deleteError && <div className="fco-squad-share-error">{deleteError}</div>}
-
-      {share.description && (
-        <p className="fco-squad-share-description">{share.description}</p>
-      )}
-
-      <div className="fco-squad-share-variants-bar">
-        {share.variants.map((v) => (
-          <button
-            key={v.key}
-            type="button"
-            className={`fco-squad-share-variant-tab${activeVariant?.key === v.key ? ' active' : ''}`}
-            onClick={() => setActiveVariantKey(v.key)}
-          >
-            {conditionDisplayLabel(v)}
-          </button>
-        ))}
-      </div>
-
-      {activeVariant && (
-        <SquadPitchEditor
-          key={activeVariant.key}
-          squad={{ formationId: activeVariant.formationId, bySlotId: activeVariant.bySlotId || {}, customSlots: activeVariant.customSlots }}
-          onChange={() => {}}
-          readOnly
-          pitchColor={share.pitchColor || null}
-          railTop={<MonetizationSlot placement="squad_sharing_top" entity={{ type: 'squad_share', id }} limit={1} className="fco-squad-rail-ad" />}
-          railBottom={<MonetizationSlot placement="squad_sharing_bottom" entity={{ type: 'squad_share', id }} limit={1} className="fco-squad-rail-ad" />}
-        />
-      )}
     </div>
   );
 }

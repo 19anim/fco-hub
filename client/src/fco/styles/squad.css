@@ -75,6 +75,13 @@
 .fco-squad-summary-ovr-total-wrap { min-width: 48px; display: flex; align-items: center; justify-content: flex-end; }
 .fco-squad-summary-ovr-total { font-family: var(--display); font-weight: 800; font-style: italic; font-size: 23px; color: var(--text); text-align: right; line-height: .95; }
 
+.fco-squad-share-layout { display: grid; grid-template-columns: minmax(180px, 240px) 1fr; gap: 18px; align-items: start; }
+.fco-squad-share-adcol { position: sticky; top: 74px; min-height: 250px; }
+@media (max-width: 1160px) {
+  .fco-squad-share-layout { grid-template-columns: 1fr; }
+  .fco-squad-share-adcol { position: static; order: -1; }
+}
+
 .fco-squad-layout { display: grid; grid-template-columns: minmax(0, 900px) minmax(260px, 336px); justify-content: center; align-items: start; gap: 18px; margin-top: 14px; }
 .fco-squad-maincol { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 .fco-squad-rail { display: grid; grid-template-rows: auto 1fr auto; gap: 12px; align-self: start; position: sticky; top: 74px; }

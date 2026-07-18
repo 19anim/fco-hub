@@ -543,12 +543,12 @@ function MiniFootIcon({ active, mirror, size, rating, spriteUrl }) {
 }
 
 const WR_TIER = { high: 3, medium: 2, mid: 2, low: 1 };
-function WorkRateGauge({ value, color }) {
+function WorkRateGauge({ value, color, flip }) {
   const tier = WR_TIER[String(value || '').toLowerCase()] || 1;
   return (
     <span className="fco-wr-gauge" style={{ color }}>
-      {[0, 1, 2].map(i => (
-        <I.ChevronUp key={i} size={9} style={{ opacity: i < tier ? 1 : .22 }} />
+      {Array.from({ length: tier }, (_, i) => (
+        <I.ChevronUp key={i} size={13} style={flip ? { transform: 'scaleY(-1)' } : undefined} />
       ))}
     </span>
   );
@@ -600,8 +600,8 @@ function PlayerRow({ player: p, isAdmin, watched, onToggleWatch, onClick }) {
                 <MiniStars n={p.skillMoves} />
               </span>
               <span className="fco-mini-badge wr" title={`Cường độ chạy: Tấn công ${p.workRateAttack} · Phòng ngự ${p.workRateDefense}`}>
-                <WorkRateGauge value={p.workRateAttack} color="#f97066" />
-                <WorkRateGauge value={p.workRateDefense} color="#5b9df9" />
+                <WorkRateGauge value={p.workRateAttack} color="#ff5c4d" />
+                <WorkRateGauge value={p.workRateDefense} color="#3b8bff" flip />
               </span>
             </div>
             <div className="fco-row-secondary">

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta.js';
 import { usePlayerDetailQuery } from '../queries.js';
 import MonetizationSlot from '../../components/monetization/MonetizationSlot';
+import AdSenseUnit from '../../components/monetization/AdSenseUnit';
 import { statColor, cleanName, getSeason, getTrust } from '../helpers.js';
 import { PlayerAvatar, SeasonChip, TrustBadge, Button, EmptyState, PosPill } from '../ui.jsx';
 import { useAssets } from '../assets/AssetProvider.jsx';
@@ -712,6 +713,8 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
         </div>
 
         <div className="fco-detail-right">
+          <AdSenseUnit slotId="PLAYER_DETAIL_SIDEBAR_SLOT_ID" className="fco-ad-sidebar" />
+
           <MonetizationSlot
             placement="player_detail_sidebar"
             entity={p.id ? { type: 'player', id: String(p.id) } : null}
@@ -794,8 +797,18 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
   );
 }
 
-const WR_LABEL = { high: 'High', medium: 'Medium', mid: 'Medium', low: 'Low' };
-const WR_COLOR = { high: '#f97316', medium: '#facc15', mid: '#facc15', low: '#60a5fa' };
+const WR_TIER = { high: 3, medium: 2, mid: 2, low: 1 };
+
+function WorkRateGauge({ value, color, flip }) {
+  const tier = WR_TIER[String(value || '').toLowerCase()] || 1;
+  return (
+    <span className="fa-wr-gauge" style={{ color }}>
+      {Array.from({ length: tier }, (_, i) => (
+        <I.ChevronUp key={i} size={13} style={flip ? { transform: 'scaleY(-1)' } : undefined} />
+      ))}
+    </span>
+  );
+}
 
 function FootStars({ label, n, dim }) {
   return (
@@ -826,14 +839,11 @@ function BioStars({ n, label }) {
 }
 
 function WorkrateBadge({ attack, defense }) {
-  const a = (attack || '').toLowerCase();
-  const d = (defense || '').toLowerCase();
   return (
     <span className="fa-workrate-badge">
       <span className="fa-wr-label">Workrate</span>
-      <span style={{ color: WR_COLOR[a] || '#aab0ba' }}>{WR_LABEL[a] || a}</span>
-      <span className="fa-wr-sep">/</span>
-      <span style={{ color: WR_COLOR[d] || '#aab0ba' }}>{WR_LABEL[d] || d}</span>
+      <WorkRateGauge value={attack} color="#ff5c4d" />
+      <WorkRateGauge value={defense} color="#3b8bff" flip />
     </span>
   );
 }
