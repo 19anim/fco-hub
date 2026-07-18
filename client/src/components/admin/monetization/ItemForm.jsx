@@ -8,6 +8,7 @@ import { applyYoutubeUrl } from './youtubeContent';
 const TYPES = ['youtube_video', 'affiliate_link', 'sponsor_banner', 'ad_slot', 'custom_cta'];
 const PLATFORMS = ['youtube', 'shopee', 'tiktok_shop', 'google_ads', 'custom'];
 const STATUSES = ['draft', 'published', 'scheduled', 'disabled'];
+const AD_PROVIDERS = [{ value: 'google_adsense', label: 'Google AdSense' }];
 
 function Field({ label, children, note }) {
   return (
@@ -197,19 +198,15 @@ export default function ItemForm({ data, onChange, errors = [] }) {
           <p className="text-sm text-ink-muted mb-3">Ad Provider Config</p>
           <div className="space-y-3">
             <Field label="Provider">
-              <Input
+              <Select
                 value={data.content?.providerConfig?.provider}
                 onChange={(v) => onChange({ ...data, content: { ...data.content, providerConfig: { ...data.content?.providerConfig, provider: v } } })}
-                placeholder="google_adsense, etc."
+                options={AD_PROVIDERS}
               />
             </Field>
-            <Field label="Slot ID">
-              <Input
-                value={data.content?.providerConfig?.slotId}
-                onChange={(v) => onChange({ ...data, content: { ...data.content, providerConfig: { ...data.content?.providerConfig, slotId: v } } })}
-                placeholder="Ad slot ID"
-              />
-            </Field>
+            <p className="text-xs text-ink-subtle">
+              Ad size/format is chosen automatically based on which placement(s) you select below — no manual shape or slot ID needed.
+            </p>
           </div>
         </div>
       )}

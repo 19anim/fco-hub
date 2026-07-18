@@ -713,7 +713,7 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
         </div>
 
         <div className="fco-detail-right">
-          <AdSenseUnit slotId="PLAYER_DETAIL_SIDEBAR_SLOT_ID" className="fco-ad-sidebar" />
+          <AdSenseUnit slotId="8451268833" className="fco-ad-sidebar" />
 
           <MonetizationSlot
             placement="player_detail_sidebar"
