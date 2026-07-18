@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 const AD_CLIENT = 'ca-pub-3945555281408942';
 
-export default function AdSenseUnit({ slotId, className = '', style }) {
+export default function AdSenseUnit({ slotId, width, height, className = '', style }) {
   const pushed = useRef(false);
 
   useEffect(() => {
@@ -15,14 +15,15 @@ export default function AdSenseUnit({ slotId, className = '', style }) {
     }
   }, [slotId]);
 
+  const sized = width && height;
+
   return (
     <ins
       className={`adsbygoogle ${className}`}
-      style={{ display: 'block', ...style }}
+      style={{ display: 'inline-block', ...(sized ? { width, height } : {}), ...style }}
       data-ad-client={AD_CLIENT}
       data-ad-slot={slotId}
-      data-ad-format="auto"
-      data-full-width-responsive="true"
+      {...(sized ? {} : { 'data-ad-format': 'auto', 'data-full-width-responsive': 'true' })}
     />
   );
 }

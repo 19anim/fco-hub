@@ -517,6 +517,10 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
         </div>
       </div>
 
+      <div className="fco-detail-adtop">
+        <AdSenseUnit slotId="8451268833" width="100%" height={100} />
+      </div>
+
       {/* Main grid */}
       <div className="fco-detail-grid">
         <div className="fco-detail-left">
@@ -713,8 +717,6 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
         </div>
 
         <div className="fco-detail-right">
-          <AdSenseUnit slotId="8451268833" className="fco-ad-sidebar" />
-
           <MonetizationSlot
             placement="player_detail_sidebar"
             entity={p.id ? { type: 'player', id: String(p.id) } : null}
@@ -793,6 +795,10 @@ export default function DetailView({ id, isAdmin, watch, onToggleWatch, onBack, 
           </div>
         </div>
       )}
+
+      <div className="fco-detail-adbottom">
+        <AdSenseUnit slotId="8451268833" width="100%" height={100} />
+      </div>
     </div>
   );
 }

@@ -100,9 +100,9 @@ export default function SquadSharingView({
 
   return (
     <div className="fco-squad-share-layout">
-      <aside className="fco-squad-share-adcol">
-        <AdSenseUnit slotId="1778169412" />
-      </aside>
+      <div className="fco-squad-share-adtop">
+        <AdSenseUnit slotId="8451268833" width="100%" height={100} />
+      </div>
 
       <div className="fco-squad-view">
         <div className="fco-up-machine-head">
@@ -162,9 +162,12 @@ export default function SquadSharingView({
             readOnly
             pitchColor={share.pitchColor || null}
             railTop={<MonetizationSlot placement="squad_sharing_top" entity={{ type: 'squad_share', id }} limit={1} className="fco-squad-rail-ad" />}
-            railBottom={<AdSenseUnit slotId="7900604498" className="fco-squad-rail-ad" />}
           />
         )}
+      </div>
+
+      <div className="fco-squad-share-adbottom">
+        <AdSenseUnit slotId="8451268833" width="100%" height={100} />
       </div>
     </div>
   );

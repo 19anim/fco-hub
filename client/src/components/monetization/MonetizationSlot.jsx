@@ -5,13 +5,13 @@ import SponsorBanner   from './renderers/SponsorBanner';
 import AdSlotPlaceholder from './renderers/AdSlotPlaceholder';
 
 function renderItem(item, placement, entity) {
-  const props = { key: item._id, item, placement, entity };
+  const props = { item, placement, entity };
   switch (item.type) {
-    case 'youtube_video':   return <YouTubeCard {...props} />;
-    case 'affiliate_link':  return <AffiliateCtaCard {...props} />;
-    case 'sponsor_banner':  return <SponsorBanner {...props} />;
-    case 'ad_slot':         return <AdSlotPlaceholder {...props} />;
-    case 'custom_cta':      return <AffiliateCtaCard {...props} />;
+    case 'youtube_video':   return <YouTubeCard key={item._id} {...props} />;
+    case 'affiliate_link':  return <AffiliateCtaCard key={item._id} {...props} />;
+    case 'sponsor_banner':  return <SponsorBanner key={item._id} {...props} />;
+    case 'ad_slot':         return <AdSlotPlaceholder key={item._id} {...props} />;
+    case 'custom_cta':      return <AffiliateCtaCard key={item._id} {...props} />;
     default:                return null;
   }
 }

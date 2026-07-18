@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { trackImpression } from '../../../utils/monetizationTracking';
-import { resolveAdSlotId } from '../adPlacementShapes';
+import { resolveAdSlotId, resolveAdSize } from '../adPlacementShapes';
 
 const DEFAULT_AD_CLIENT = 'ca-pub-3945555281408942';
 
@@ -15,8 +15,9 @@ export default function AdSlotPlaceholder({ item, placement, entity }) {
     }
   }, [item._id, placement, entity]);
 
-  const { provider, size, adClient } = item.content?.providerConfig || {};
+  const { provider, adClient } = item.content?.providerConfig || {};
   const slotId = resolveAdSlotId(placement);
+  const size = resolveAdSize(placement);
 
   useEffect(() => {
     if (provider !== 'google_adsense' || !slotId || pushed.current) return;
@@ -28,15 +29,13 @@ export default function AdSlotPlaceholder({ item, placement, entity }) {
     }
   }, [provider, slotId]);
 
-  if (provider === 'google_adsense' && slotId) {
+  if (provider === 'google_adsense' && slotId && size) {
     return (
       <ins
         className="adsbygoogle block"
-        style={{ display: 'block', minHeight: size?.height || 100, ...(size?.width && { width: size.width }), ...(size?.height && { height: size.height }) }}
+        style={{ display: 'inline-block', width: size.width, height: size.height }}
         data-ad-client={adClient || DEFAULT_AD_CLIENT}
         data-ad-slot={slotId}
-        data-ad-format="auto"
-        data-full-width-responsive="true"
       />
     );
   }

@@ -1,4 +1,11 @@
 /* ===== FCO Hub — dark utility theme ===== */
+.fco-detail-adtop:has(ins.adsbygoogle[data-ad-status="unfilled"]),
+.fco-detail-adbottom:has(ins.adsbygoogle[data-ad-status="unfilled"]),
+.fco-ad-sidebar:has(ins.adsbygoogle[data-ad-status="unfilled"]),
+.fco-squad-share-adtop:has(ins.adsbygoogle[data-ad-status="unfilled"]),
+.fco-squad-share-adbottom:has(ins.adsbygoogle[data-ad-status="unfilled"]),
+.fco-squad-rail-ad:has(ins.adsbygoogle[data-ad-status="unfilled"]) { display: none; }
+
 :root {
   --bg: #0a0c10;
   --surface: #0f1217;

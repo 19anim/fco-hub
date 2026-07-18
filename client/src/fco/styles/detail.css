@@ -101,9 +101,10 @@
 .fco-banner.kr > svg { color: #f5b942; }
 .fco-banner > div b, .fco-banner > div { color: var(--text); }
 
+.fco-detail-adtop, .fco-detail-adbottom { display: flex; justify-content: center; min-height: 100px; }
 .fco-detail-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
 .fco-detail-left, .fco-detail-right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.fco-ad-sidebar { min-height: 100px; }
+.fco-ad-sidebar { min-height: 100px; display: flex; justify-content: center; }
 @media (max-width: 1024px) {
   .fco-detail-grid { grid-template-columns: 1fr; }
   .fco-detail-right { order: 2; }
