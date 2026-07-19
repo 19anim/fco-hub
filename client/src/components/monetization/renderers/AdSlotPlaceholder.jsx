@@ -1,12 +1,25 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { trackImpression } from '../../../utils/monetizationTracking';
+import { detectAdBlock } from '../../../utils/adBlockDetection';
 import { resolveAdSlotId, resolveAdSize } from '../adPlacementShapes';
 
 const DEFAULT_AD_CLIENT = 'ca-pub-3945555281408942';
+const FILL_CHECK_DELAY_MS = 6000;
 
 export default function AdSlotPlaceholder({ item, placement, entity }) {
   const tracked = useRef(false);
   const pushed = useRef(false);
+  const insRef = useRef(null);
+  // Don't touch adsbygoogle.push() until we know a blocker isn't present —
+  // Google's own script paints a white iframe immediately on push, before
+  // any post-hoc "unfilled" check can react, so gate render on detection first.
+  const [blocked, setBlocked] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    detectAdBlock().then((isBlocked) => { if (!cancelled) setBlocked(isBlocked); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (!tracked.current) {
@@ -20,22 +33,36 @@ export default function AdSlotPlaceholder({ item, placement, entity }) {
   const size = resolveAdSize(placement);
 
   useEffect(() => {
-    if (provider !== 'google_adsense' || !slotId || pushed.current) return;
-    pushed.current = true;
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch {
-      // AdSense script not ready/blocked — ins stays empty, no crash
+    if (provider !== 'google_adsense' || !slotId || blocked !== false) return;
+
+    if (!pushed.current) {
+      pushed.current = true;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch {
+        // AdSense script not ready — ins stays empty, no crash
+      }
     }
-  }, [provider, slotId]);
+
+    const timer = setTimeout(() => {
+      const el = insRef.current;
+      if (el && !el.getAttribute('data-ad-status')) {
+        el.setAttribute('data-ad-status', 'unfilled');
+      }
+    }, FILL_CHECK_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [provider, slotId, blocked]);
 
   if (provider === 'google_adsense' && slotId && size) {
+    if (blocked === null) return null;
     return (
       <ins
+        ref={insRef}
         className="adsbygoogle block"
         style={{ display: 'inline-block', width: size.width, height: size.height }}
         data-ad-client={adClient || DEFAULT_AD_CLIENT}
         data-ad-slot={slotId}
+        {...(blocked ? { 'data-ad-status': 'unfilled' } : {})}
       />
     );
   }

@@ -121,7 +121,8 @@ function setPath(view, param = null) {
   const next = routeUrl(view, param, { keepSearch });
   const current = `${window.location.pathname}${window.location.search}`;
   if (current !== next || window.location.hash) {
-    window.history.pushState(null, '', next);
+    const depth = (window.history.state?.fcoDepth || 0) + 1;
+    window.history.pushState({ fcoDepth: depth }, '', next);
   }
 }
 
@@ -209,7 +210,16 @@ export default function FcoApp() {
   function selectPlayer(id) { navigate('detail', id); }
 
   function goBack() {
-    window.history.back();
+    // If we arrived here via in-app navigation (pushState tagged a depth),
+    // history.back() lands on the previous in-app view. Otherwise (direct
+    // URL load, new tab, bookmark) there's nothing of ours to go back to —
+    // history.back() would exit the app onto whatever preceded it in the
+    // tab's history, so fall back to the database view instead.
+    if (window.history.state?.fcoDepth > 0) {
+      window.history.back();
+    } else {
+      navigate('db');
+    }
   }
 
   function addToCompare(id) {
