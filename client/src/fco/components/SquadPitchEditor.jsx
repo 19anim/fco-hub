@@ -354,9 +354,9 @@ export default function SquadPitchEditor({
   }
 
   function handleSlotPointerDown(slot, event) {
-    if (readOnly) return;
     if (event.button !== 0) return;
     setActiveSlotId(slot.id);
+    if (readOnly) return;
     if (slot.pos === 'GK') return;
     if (event.target.closest('button') && !event.target.closest('.fco-player-card-mini-wrap') && !event.target.closest('.fco-squad-empty-add')) return;
     const baseSlots = slots.map((s) => ({ ...s }));
